@@ -1,0 +1,345 @@
+TYPEMAP
+
+negative_is_error     I_NEG_IS_ERROR
+ALPM_DB               T_ALPM_DB
+ALPM_Package          T_ALPM_PACKAGE
+ALPM_PackageFree      T_ALPM_PACKAGEFREE
+ALPM_Group            T_ALPM_GROUP
+
+StringListFree        L_STRING_FREE
+StringListNoFree      L_STRING_NOFREE
+ListAutoFree          L_AUTO_FREE
+
+PackageListFree       L_PACKAGE_FREE
+PackageListNoFree     L_PACKAGE_NOFREE
+DatabaseList          L_DATABASE
+DependList            L_DEPEND
+GroupList             L_GROUP
+
+pmpkgreason_t         T_PKGREASON
+off_t                 T_INT
+
+
+INPUT
+I_NEG_IS_ERROR
+    $var = SvIV($arg)
+
+T_ALPM_DB
+	if ( sv_derived_from($arg, \"ALPM::DB\") ) {
+	    IV tmp = SvIV( (SV*)SvRV($arg) );
+	    $var = INT2PTR( $type,tmp );
+	}
+	else
+	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::DB\")
+
+T_ALPM_PACKAGE
+	if ( sv_derived_from($arg, \"ALPM::Package\") ) {
+	    IV tmp = SvIV( (SV*)SvRV($arg) );
+	    $var = INT2PTR( $type,tmp );
+	}
+	else
+	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::Package\")
+
+T_ALPM_PACKAGEFREE
+	if ( sv_derived_from($arg, \"ALPM::PackageFree\") ) {
+	    IV tmp = SvIV( (SV*)SvRV($arg) );
+	    $var = INT2PTR( $type,tmp );
+	}
+	else
+	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::PackageFree\")
+
+T_ALPM_GROUP
+	if ( sv_derived_from($arg, \"ALPM::Group\") ) {
+	    IV tmp = SvIV( (SV*)SvRV($arg) );
+	    $var = INT2PTR( $type,tmp );
+	}
+	else
+	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::Group\")
+
+L_AUTO_FREE
+	if ( sv_derived_from($arg, \"ALPM::ListAutoFree\") ) {
+	    IV tmp = SvIV( (SV*)SvRV($arg) );
+	    $var = INT2PTR( $type,tmp );
+	}
+	else
+	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::Package\")
+
+L_PACKAGE_FREE
+    if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
+        AV *package_array;
+        I32 i, max;
+        SV **elem, *cleanup;
+        IV tmp;
+        STRLEN string_len;
+
+        $ntype list;
+        pmpkg_t *package;
+
+        package_array = (AV *)SvRV($arg);
+        max = av_len(string_array);
+        list = NULL;
+
+        for ( i=0; i<=max; ++i ) {
+            elem = av_fetch( string_array, i, 0 );
+            if ( !sv_derived_from(elem, \"ALPM::Package\") ) {
+                croak(\"All elements of arrayref must be ALPM::Package objects\");
+            }
+
+            tmp     = SvIV( (SV*)SvRV(elem) );
+	        package = INT2PTR( pmpkg_t, tmp );
+            list    = alpm_list_add( list, (void *)package );
+        }
+
+        if ( list != NULL ) {
+            cleanup = sv_newmortal();
+            sv_setref_pv( cleanup, \"ALPM::ListAutoFree\", (void *)list );
+        }
+
+        $var = list;
+    }
+    else
+	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\");
+
+L_STRING_FREE
+    if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
+        AV *string_array;
+        I32 i, max;
+        SV **elem, *cleanup;
+        STRLEN string_len;
+
+        $ntype list;
+        char *new_string, *old_string;
+
+        string_array = (AV *)SvRV($arg);
+        max = av_len(string_array);
+        list = NULL;
+
+        for ( i=0; i<=max; ++i ) {
+            elem = av_fetch( string_array, i, 0 );
+            old_string = (char *) SvPV( *elem, string_len );
+
+            new_string = malloc( string_len+1 );
+            memcpy( new_string, old_string, string_len );
+            new_string[string_len] = 0;
+
+            list = alpm_list_add( list, new_string );
+
+        }
+
+        if ( list != NULL ) {
+            cleanup = sv_newmortal();
+            sv_setref_pv( cleanup, \"ALPM::ListAutoFree\", (void *)list );
+        }
+
+        $var = list;
+    }
+    else
+	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\");
+
+L_STRING_NOFREE
+    if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
+        AV *string_array;
+        I32 i, max;
+        SV **elem, *cleanup;
+        STRLEN string_len;
+
+        $ntype list;
+        char *new_string, *old_string;
+
+        string_array = (AV *)SvRV($arg);
+        max = av_len(string_array);
+        list = NULL;
+
+        for ( i=0; i<=max; ++i ) {
+            elem = av_fetch( string_array, i, 0 );
+            old_string = (char *) SvPV( *elem, string_len );
+
+            new_string = malloc( string_len+1 );
+            memcpy( new_string, old_string, string_len );
+            new_string[string_len] = 0;
+
+            list = alpm_list_add( list, new_string );
+        }
+
+        $var = list;
+    }
+    else
+	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\");
+
+
+OUTPUT
+I_NEG_IS_ERROR
+    if ( $var != 0 )
+        croak( "ALPM Error: %s", alpm_strerror( pm_errno ));
+    $arg = newSViv( 1 );
+
+T_ALPM_DB
+    if ( $var == NULL )
+        croak( "ALPM DB Error: %s", alpm_strerror( pm_errno ));
+    sv_setref_pv( $arg, \"ALPM::DB\", (void *)$var );
+
+T_ALPM_PACKAGE
+    if ( $var == NULL )
+        croak( "ALPM Package Error: %s", alpm_strerror( pm_errno ));
+    sv_setref_pv( $arg, \"ALPM::Package\", (void *)$var );
+
+T_ALPM_PACKAGEFREE
+    if ( $var == NULL )
+        croak( "ALPM Package Error: %s", alpm_strerror( pm_errno ));
+    sv_setref_pv( $arg, \"ALPM::PackageFree\", (void *)$var );
+
+L_STRING_FREE
+    $arg = newRV_noinc((SV *)newAV());
+    {
+        AV *string_array = (AV *) SvRV($arg);
+        StringListFree iter;
+        alpm_list_t *list;
+        iter = $var;
+        list = (alpm_list_t *) iter;
+        while ( iter != NULL ) {
+            SV *string = newSVpv( iter->data, strlen( iter->data ) );
+            av_push( string_array, string );
+            iter = iter->next;
+        }
+        FREELIST( list );
+    }
+
+L_STRING_NOFREE
+    $arg = newRV_noinc((SV *)newAV());
+    {
+        AV *string_array = (AV *) SvRV($arg);
+        StringListFree iter;
+        iter = $var;
+        while ( iter != NULL ) {
+            SV *string = newSVpv( iter->data, strlen( iter->data ) );
+            av_push( string_array, string );
+            iter = iter->next;
+        }
+    }
+
+L_DATABASE
+    $arg = newRV_noinc( (SV *) newAV() );
+    {
+        AV *string_array = (AV *) SvRV($arg);
+        PackageListNoFree iter;
+        iter = $var;
+        while ( iter != NULL ) {
+            SV *package;
+            package = newSV(0);
+            sv_setref_pv( package, \"ALPM::Database\", (void *)iter->data );
+            av_push( string_array, package );
+            iter = iter->next;
+        }
+    }
+
+L_PACKAGE_NOFREE
+    $arg = newRV_noinc( (SV *) newAV() );
+    {
+        AV *string_array = (AV *) SvRV($arg);
+        PackageListNoFree iter;
+        iter = $var;
+        while ( iter != NULL ) {
+            SV *package;
+            package = newSV(0);
+            sv_setref_pv( package, \"ALPM::Package\", (void *)iter->data );
+            av_push( string_array, package );
+            iter = iter->next;
+        }
+    }
+
+L_PACKAGE_FREE
+    $arg = newRV_noinc( (SV *) newAV() );
+    {
+        AV *string_array = (AV *) SvRV($arg);
+        PackageListNoFree iter;
+        iter = $var;
+        while ( iter != NULL ) {
+            SV *package;
+            package = newSV(0);
+            sv_setref_pv( package, \"ALPM::Package\", (void *)iter->data );
+            av_push( string_array, package );
+            iter = iter->next;
+        }
+    }
+    if ( $var != NULL ) alpm_list_free($var);
+
+L_DEPEND
+    $arg = newRV_noinc( (SV*) newAV() );
+    {
+        AV *depend_array = (AV*) SvRV($arg);
+        DependList iter = $var;
+        while ( iter != NULL ) {
+            HV *depend;
+            SV *depend_ref, *hash_value;
+            pmdepend_t *ampl_dep;
+            pmdepmod_t depmod;
+
+            depend      = newHV();
+            depend_ref  = newRV_noinc((SV*) depend);
+            ampl_dep = (pmdepend_t *)iter->data;
+
+            hash_value  = newSV(0);
+            sv_setpv( hash_value, ampl_dep->name );
+            hv_store( depend, \"name\", 4, hash_value, 0 );
+
+            if ( ampl_dep->version != NULL ) {
+                hash_value  = newSV(0);
+                sv_setpv( hash_value, ampl_dep->version );
+                hv_store( depend, \"version\", 7, hash_value, 0 );
+            }
+
+            depmod = ampl_dep->mod;
+            if ( depmod != 1 ) {
+                hash_value  = newSV(0);
+                sv_setpv( hash_value, ( depmod == 2 ? \"==\"  :
+                                        depmod == 3 ? \">=\"  :
+                                        depmod == 4 ? \"<=\"  :
+                                        depmod == 5 ? \">\"   :
+                                        depmod == 6 ? \"<\"   :
+                                        \"ERROR\" ));
+                hv_store( depend, \"mod\", 3, hash_value, 0 );
+            }
+                
+            av_push( depend_array, depend_ref );
+            iter = iter->next;
+        }
+    }
+
+L_GROUP
+    $arg = newRV_noinc( (SV *) newAV() );
+    {
+        AV *group_array = (AV *) SvRV($arg);
+        GroupList iter;
+        iter = $var;
+        while ( iter != NULL ) {
+            SV *group;
+            group = newSV(0);
+            sv_setref_pv( group, \"ALPM::Group\", (void *)iter->data );
+            av_push( group_array, group );
+            iter = iter->next;
+        }
+    }
+
+
+T_PKGREASON
+    $arg = newSV(0);
+    sv_setpv( $arg, ( $var == 0 ? \"explicit\" :
+                      $var == 1 ? \"implicit\" :
+                      \"unknown\" ) );
+

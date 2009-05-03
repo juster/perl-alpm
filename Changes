@@ -1,0 +1,5 @@
+Revision history for Perl extension ALPM.
+
+0.01  May 03 2009
+      - First public release, uploading to CPAN
+      - Has just about everything working except syncing/transactions

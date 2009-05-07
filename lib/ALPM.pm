@@ -17,10 +17,6 @@ our $VERSION = '0.01';
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
 
-# Preloaded methods go here.
-
-# Autoload methods go after =cut, and are processed by the autosplit program.
-
 initialize();
 
 END { release() };
@@ -55,7 +51,6 @@ sub import
     croak qq{Options to ALPM's import does not appear to be a hash}
         unless ( @_ % 2 == 0 );
 
-    my %options = @_;
     $class->set_options( { @_ } );
 
     return;
@@ -77,7 +72,8 @@ sub get_opt
 
     my $result = eval { $func_ref->() };
     if ($EVAL_ERROR) {
-        # For ALPM errors, show the line number of the calling script...
+        # For ALPM errors, show the line number of the calling script, not
+        # the line number of this module...
         croak $1 if ( $EVAL_ERROR =~ /^(ALPM .*) at .*? line \d+[.]$/ );
         croak $EVAL_ERROR;
     }
@@ -103,10 +99,12 @@ sub set_opt
     # If the option is a plural, it can accept multiple arguments
     # and must take an arrayref as argument...
     $func_arg = ( $optname =~ /s$/            ?
+                  # is multivalue opt
                   ( ref $optval eq 'ARRAY'      ?
                     $optval                     :
-                    ( [ $optval, @_[ 3 .. $#_ ] ] )
+                    ( [ $optval, @_[ 3 .. $#_ ] ] ) # auto-convert args to aref
                    )                          :
+                  # is single valued opt
                   ( ! ref $optval                 ?
                     $optval                       :
                     croak qq{Singular option "$optname" only takes a scalar value}
@@ -171,7 +169,11 @@ sub register_db
     croak 'You must supply a URL for the database'
         unless ( defined $sync_url );
 
+    # Replace the literal string '$repo' with the repo's name,
+    # like in the pacman config file... bad idea maybe?
     $sync_url =~ s/\$repo/$sync_name/g;
+
+    # Set the server right away because function calls break in between...
     my $new_db = db_register_sync($sync_name);
     $new_db->_set_server($sync_url);
     return $new_db;
@@ -279,6 +281,8 @@ package or database-specific functions.
   Precond : You must set options before using register_db.
   Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
   Returns : An ALPM::DB object.
+
+=head2 load_pkgfile
 
 =head1 SEE ALSO
 

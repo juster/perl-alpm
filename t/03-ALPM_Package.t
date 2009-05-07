@@ -8,7 +8,7 @@ use Data::Dumper;
 
 BEGIN { use_ok('ALPM', root        => '/',
                        dbpath      => '/var/lib/pacman/',
-                       cachedirs   => [ '/var/cache/pacman/pkg' ],
+                       cachedirs   => '/var/cache/pacman/pkg',
                        logfile     => '/var/log/pacman.log',
                        xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' ) } ;
 

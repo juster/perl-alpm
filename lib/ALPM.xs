@@ -360,6 +360,7 @@ negative_is_error
 alpm_pkg_checkmd5sum(pkg)
     ALPM_Package pkg
 
+# TODO: implement this in perl with LWP
 #char *
 #alpm_fetch_pkgurl(url)
 #    const char *url
@@ -465,6 +466,7 @@ StringListNoFree
 alpm_pkg_get_backup(pkg)
     ALPM_Package pkg
 
+# TODO: create get_changelog() method that does all this at once, easy with perl
 # void *alpm_pkg_changelog_open(ALPM_Package pkg);
 # size_t alpm_pkg_changelog_read(void *ptr, size_t size,
 # 		const ALPM_Package pkg, const void *fp);

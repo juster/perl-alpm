@@ -1,4 +1,4 @@
-ALPM version 0.01
+ALPM version 0.02
 =================
 
 This is a perl XS module for the use of the libalpm C library.  libalpm
@@ -24,8 +24,6 @@ libalpm
 (this module was developed with libalpm included with pacman version 3.2.2)
 
 COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
 
 Copyright (C) 2009 by Justin Davis
 

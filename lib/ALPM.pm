@@ -111,6 +111,8 @@ sub set_opt
                    )
                  );
 
+    #print STDERR "DEBUG: \$method_name = $method_name  --  \$func_arg = $func_arg\n";
+
     return $func_ref->($func_arg);
 }
 
@@ -179,6 +181,27 @@ sub register_db
     return $new_db;
 }
 
+sub get_repo_db
+{
+    croak 'Not enough arguments to get_repo_dbs' if ( @_ < 2 );
+    my ($class, $repo_name) = @_;
+
+    my ($found) = grep { $_->get_name eq $repo_name } @{ALPM->get_opt('syncdbs')};
+    return $found;
+}
+
+sub load_config
+{
+    my ($class, $cfg_path) = @_;
+
+    require ALPM::LoadConfig;
+    my $loader = ALPM::LoadConfig->new;
+    eval { $loader->load_file($cfg_path) };
+
+    croak $EVAL_ERROR . "Config file parse error" if ($EVAL_ERROR);
+
+    return 1;
+}
 
 1;
 

@@ -2,12 +2,13 @@ package ALPM::DB;
 
 use ALPM;
 
+# Wrapper to keep ALPM from crashing...
 sub get_url
 {
     my $self = shift;
 
     return undef if ( $self->get_name eq 'local' );
-    return $self->get_url;
+    return $self->_get_url;
 }
 
 1;

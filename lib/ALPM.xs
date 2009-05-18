@@ -270,16 +270,6 @@ ALPM_DB
 alpm_db_register_sync(sync_name)
     const char * sync_name
 
-MODULE = ALPM   PACKAGE = ALPM::DB
-
-negative_is_error
-DESTROY(self)
-    ALPM_DB self
-  CODE:
-    alpm_db_unregister( self );
-  OUTPUT:
-    RETVAL
-
 MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX=alpm_db_
 
 negative_is_error

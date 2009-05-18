@@ -242,7 +242,7 @@ L_DATABASE
         while ( iter != NULL ) {
             SV *package;
             package = newSV(0);
-            sv_setref_pv( package, \"ALPM::Database\", (void *)iter->data );
+            sv_setref_pv( package, \"ALPM::DB\", (void *)iter->data );
             av_push( string_array, package );
             iter = iter->next;
         }

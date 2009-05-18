@@ -3,9 +3,10 @@
 use warnings;
 use strict;
 
-use Test::More tests => 15;
+use Test::More tests => 16;
 use Data::Dumper;
 use Net::Ping;
+use Time::HiRes qw(sleep);
 
 BEGIN { use_ok('ALPM'); }
 
@@ -29,8 +30,15 @@ is( ref $local->search(['perl']), 'ARRAY' );
 SKIP:
 {
     my $pinger = Net::Ping->new;
-    skip 'could not ping ftp.archlinux.org', 6
-        unless $pinger->ping('ftp.archlinux.org');
+    my $success = 0;
+    for ( 1 .. 10 ) {
+        if ( $pinger->ping('ftp.archlinux.org') ) {
+            $success = 1;
+            last;
+        }
+        sleep 0.5;
+    }
+    skip 'could not ping ftp.archlinux.org', 7 unless $success;
 
     my $name = 'core';
     my $syncdb = ALPM->register_db( $name => 'ftp://ftp.archlinux.org/$repo/os/i686' );
@@ -41,4 +49,6 @@ SKIP:
 
     ok( $syncdb->get_pkg('perl')->isa('ALPM::Package') );
     is( ref $syncdb->search(['perl']), 'ARRAY' );
+
+    is( 1, scalar @{ALPM->get_opt('syncdbs')} );
 }

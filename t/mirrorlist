@@ -1,0 +1,12 @@
+Server = ftp://locke.suu.edu/linux/dist/archlinux/$repo/os/i686
+Server = http://archlinux.unixheads.org/$repo/os/i686
+Server = ftp://ftp.gtlib.gatech.edu/pub/linux/distributions/archlinux/$repo/os/i686
+Server = ftp://mirror.cs.vt.edu/pub/ArchLinux/$repo/os/i686
+Server = http://mirrors.easynews.com/linux/archlinux/$repo/os/i686
+Server = ftp://ftp.ibiblio.org/pub/linux/distributions/archlinux/$repo/os/i686
+Server = http://archlinux.umflint.edu/mirrors/archlinux/$repo/os/i686
+Server = http://mirror.neotuli.net/arch/$repo/os/i686
+Server = http://mirror.rit.edu/archlinux/$repo/os/i686
+Server = http://mirror.umoss.org/archlinux/$repo/os/i686
+Server = http://schlunix.org/archlinux/$repo/os/i686
+Server = http://mirror.archlinux.com.ve/$repo/os/i686

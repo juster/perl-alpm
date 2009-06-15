@@ -12,7 +12,7 @@ use Carp;
 use ALPM::Package;
 use ALPM::DB;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
@@ -30,9 +30,9 @@ my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
 my %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
                          map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );
 
-####
+####----------------------------------------------------------------------
 #### CLASS FUNCTIONS
-####
+####----------------------------------------------------------------------
 
 sub import
 {
@@ -42,10 +42,20 @@ sub import
     my ($class) = shift;
 
     if ( @_ == 1) {
-        my $opts_ref = shift;
-        croak q{A single argument to ALPM's import must be a hash reference}
-            unless ( ref $opts_ref eq 'HASH' );
-        $class->set_options($opts_ref);
+        my $arg = shift;
+        if ( ! ref $arg ) {
+            $class->load_config($arg);
+        }
+        elsif ( ref $arg eq 'HASH' ) {
+            $class->set_options($arg);
+
+        }
+        else {
+            croak q{A single argument to ALPM's import must be
+a hash ref or path to a pacman.conf file};
+        }
+
+        return;
     }
 
     croak qq{Options to ALPM's import does not appear to be a hash}
@@ -56,9 +66,9 @@ sub import
     return;
 }
 
-####
+####----------------------------------------------------------------------
 #### CLASS METHODS
-####
+####----------------------------------------------------------------------
 
 sub get_opt
 {
@@ -111,8 +121,6 @@ sub set_opt
                    )
                  );
 
-    #print STDERR "DEBUG: \$method_name = $method_name  --  \$func_arg = $func_arg\n";
-
     return $func_ref->($func_arg);
 }
 
@@ -158,15 +166,11 @@ sub register_db
 {
     my $class = shift;
 
-    if ( @_ == 0 ) {
+    if ( @_ == 0 || $_[0] eq 'local' ) {
         return db_register_local();
     }
 
-    my $sync_name = shift;
-
-    return db_register_local() if ( $sync_name eq 'local' );
-
-    my $sync_url = shift;
+    my ($sync_name, $sync_url) = @_;
 
     croak 'You must supply a URL for the database'
         unless ( defined $sync_url );
@@ -226,6 +230,13 @@ ALPM - Perl OO version of libalpm, Archlinux's packaging system
              logfile     => '/var/log/pacman.log',
              xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' );
 
+  # It's easier just to load a configuration file:
+  use ALPM qw(/etc/pacman.conf);
+
+  # ...or...
+  use ALPM;
+  ALPM->load_config('/etc/pacman.conf');
+
   # Lots of different ways to get/set ALPM options...
   my $root                  = ALPM->get_opt('root');
   my ($cachedirs, $localdb) = ALPM->get_options( 'cachedirs', 'localdb' );
@@ -260,6 +271,22 @@ None.
 
 Because all alpm functions have been converted to class methods,
 classes, and object methods, nothing is exported.
+
+=head2 IMPORT OPTIONS
+
+There are a few different options you can specify after c<use ALPM>.
+These help to set configuration options for ALPM.  These options are
+global for everyone who is using the module.  You can specify either:
+
+=over
+
+=item 1. The path to a pacman.conf configuration file
+
+=item 2. A hashref of options to use for ALPM
+
+=item 3. A hash of options to use for ALPM
+
+=back
 
 =head1 OPTIONS
 
@@ -306,6 +333,14 @@ package or database-specific functions.
   Returns : An ALPM::DB object.
 
 =head2 load_pkgfile
+
+  Params  : The path to a package tarball.
+  Returns : An ALPM::Package object.
+
+=head2 load_config
+
+  Params  : The path to a pacman.conf configuration file.
+  Returns : Nothing.
 
 =head1 SEE ALSO
 

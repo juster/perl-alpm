@@ -19,8 +19,8 @@ my %_CFG_OPTS =
         NoExtract noextracts NoPassiveFtp nopassiveftp };
 
 my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
-my $SECTION_MATCH = qr/ \A \s* [[] (\w+) []] \z /xms;
-my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]+) \z /xms;
+my $SECTION_MATCH = qr/ \A \s* [[] (\w+) []] \s* \z /xms;
+my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]+) /xms;
 
 ####----------------------------------------------------------------------
 #### PRIVATE FUNCTIONS
@@ -68,7 +68,8 @@ sub _make_parser
 
             # Print the offending file and line number along with any errors...
             # (This is why we use dies with newlines, for cascading error msgs)
-            die "$EVAL_ERROR$path:${\$cfg_file->input_line_number()} $line\n" if ($EVAL_ERROR);
+            die "$EVAL_ERROR$path:${\$cfg_file->input_line_number()} $line\n"
+                if ($EVAL_ERROR);
         };
 
     return

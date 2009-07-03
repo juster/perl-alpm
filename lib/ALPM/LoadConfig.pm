@@ -192,3 +192,43 @@ sub load_file
     my $parser_ref = _make_parser( $cfg_path, $parser_hooks );
     return $parser_ref->();
 }
+
+1;
+
+__END__
+
+=head1 NAME
+
+ALPM::LoadConfig - pacman.conf config file parser
+
+=head1 DESCRIPTION
+
+This class is used internally by ALPM to parse pacman.conf config
+files.  The settings are used to set ALPM options.  You don't need to
+use this module directly.
+
+=head1 SYNOPSIS
+
+  # At startup:
+  use ALPM qw( /etc/pacman.conf );
+
+  # At runtime:
+  ALPM->load_config('/etc/pacman.conf');
+
+=head1 SEE ALSO
+
+L<ALPM>
+
+=head1 AUTHOR
+
+Justin Davis, C<< <jrcd83 at gmail dot com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by Justin Davis
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

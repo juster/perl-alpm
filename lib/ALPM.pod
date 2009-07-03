@@ -1,0 +1,242 @@
+=head1 NAME
+
+ALPM - XS module, OO wrapper of libalpm, Archlinux's packaging system
+
+=head1 SYNOPSIS
+
+  use ALPM ( root        => '/',
+             dbpath      => '/var/lib/pacman/',
+             cachedirs   => [ '/var/cache/pacman/pkg' ],
+             logfile     => '/var/log/pacman.log',
+             xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' );
+
+  # It's easier just to load a configuration file:
+  use ALPM qw(/etc/pacman.conf);
+
+  my $localdb = ALPM->local_db;
+  my $pkg     = $localdb->get_pkg('perl');
+
+  # Lots of different ways to get package attributes...
+  my $attribs_ref    = $pkg->get_attribs_ref;
+  my $name           = $pkg->get_name;
+  my ($size, $isize) = $pkg->get_attribs('size', 'isize');
+  print "$name $attribs_ref->{version} $attribs_ref->{arch} $size/$isize";
+
+  my $syncdb = ALPM->register_db( 'extra',
+                                  'ftp://ftp.archlinux.org/$repo/os/i686' );
+  my $perlpkgs = $syncdb->search(['perl']);
+  printf "%d perl packages found.\n", scalar @{$perlpkgs};
+
+=head1 DESCRIPTION
+
+Archlinux uses a package manager called pacman.  Pacman internally
+uses the alpm library for handling its database of packages.  This
+module is an attempt at creating a perlish object-oriented interface
+to the libalpm C library.
+
+=head1 EXPORT
+
+None.
+
+Because all alpm functions have been converted to class methods,
+classes, and object methods, nothing is exported.
+
+=head1 IMPORT OPTIONS
+
+There are a few different options you can specify after C<use ALPM>.
+These help to set configuration options for ALPM.  These options are
+global for everyone who is using the module.  You can specify either:
+
+=over
+
+=item 1. The path to a pacman.conf configuration file
+
+=item 2. A hash of options to use for ALPM
+
+=back
+
+=head1 OPTIONS
+
+ALPM has a number of options corresponding to the
+C<alpm_option_get_...> and C<alpm_option_set...> C functions in the
+library.  Options which take multiple values (hint: they have a plural
+name) expect an array reference as an argument.  Similarly the same
+options return multiple values as an array reference.
+
+=head2 Read-write options
+
+=over
+
+=item B<root> - root directory of entire system
+
+=item B<dbpath> - path to the ALPM/pacman database
+
+=item B<cachedirs>* - paths containing package caches
+
+=item B<logfile> - path to the pacman logfile
+
+=item B<usesyslog> - if true, log to the system log as well
+
+=item B<noupgrades>* - a list of package names to not upgrade
+
+=item B<noextracts>* - a list of package names to not extract
+
+=item B<ignorepkgs>* - a list of package names to ignore for upgrade
+
+=item B<holdpkgs>* - a list of package names to hold off upgrading
+
+=item B<ignoregrps>* - a list of groups to ignore for upgrade
+
+=item B<xfercommand> - shell command to use for downloading (ie wget)
+
+=item B<nopassiveftp>+ - if true, do not use passive ftp mode
+
+=back
+
+=head2 Read-only options
+
+=over
+
+=item B<lockfile> - path to the lockfile
+
+=item B<localdb> - the ALPM::DB object representing the local database
+
+=item B<syncdbs>* - an array-ref of sync databases as ALPM::DB objects
+
+=back
+
+=head2 TODO Unimplemented options (callbacks)
+
+=over
+
+=item B<logcb>
+
+=item B<dlcb>
+
+=item B<totaldlcb>
+
+=back
+
+  * = the option is set with (and returns) an arrayref
+  + = the option is boolean and is either 0 or 1
+
+=head1 CLASS METHODS
+
+ALPM has all its package specific and database specific functions
+inside the package and database classes as methods.  Everything else
+is accessed through class methods to ALPM.
+
+As far as I can tell you cannot run multiple instances of libalpm.
+Class methods help remind you of this.  The class method notation also
+helps to differentiate between globally affecting ALPM functions and
+package or database-specific functions.
+
+=head2 set_options
+
+  Params  : Pass set_options a hash or hashref to set many options at
+            once.
+  Returns : 1
+
+=head2 set_opt
+
+  Usage   : ALPM->set_opt( 'root', '/' );
+  Params  : An option name and new option value.
+  Returns : 1
+
+=head2 get_options
+
+  Usage   : my %alpm_opts = ALPM->get_options();
+            my ($root, $dbpath) = ALPM->get_options( 'root', 'dbpath' );
+  Params  : * When no params are given, returns a hash of all options.
+            * Otherwise, return a list of option values in the same order
+              as the parameters.
+  Notes   : Unset options are undefined.
+  Returns : A hashref or list.
+
+=head2 get_opt
+
+  Usage   : my $root = ALPM->get_opt('root');
+  Params  : An option name.
+  Returns : The given option's value or undef if it is unset.
+
+=head2 register_db
+
+  Usage   : my $localdb = ALPM->register_db;
+            my $syncdb  = ALPM->register_db( 'core' =>
+                                             'ftp://ftp.archlinux.org/$repo/os/i686' );
+  Params  : No parameters will return the local database.
+            Two parameters will register a sync database:
+            1) The name of the repository to connect to.
+            2) The URL to the repository's online files.
+               Like with pacman's mirrorlist config file, $repo will be replaced
+               with the repository name (argument 1) ... use single quotes!
+  Precond : You must set options before using register_db.
+  Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
+  Returns : An ALPM::DB object.
+
+=head2 local_db
+
+  Returns : The local system database as an ALPM::DB object.
+
+  This is what is called by register_db without arguments.
+
+=head2 get_repo_db
+
+  Usage   : my $comm_db = ALPM->get_repo_db('community');
+  Params  : The name of a repository.
+  Returns : An ALPM::DB object matching the repo name.
+
+=head2 load_pkgfile
+
+  Usage   : my $pkgfile = ALPM->load_pkgfile('perl-alpm-0.2.pkg.tar.gz');
+  Params  : The path to a package tarball.
+  Returns : An ALPM::Package object.
+
+=head2 load_config
+
+  Usage   : ALPM->load_config('/etc/pacman.conf');
+  Params  : The path to a pacman.conf configuration file.
+  Returns : 1
+
+=head1 ERRORS
+
+Global ALPM errors are thrown with C<die>.  The error messages match
+the errors that the C library provides.  These errors are prefixed
+with C<ALPM Error: >.  Errors that occur when using a ALPM::DB object
+are prefixed with C<ALPM DB Error: >.
+
+TODO: List of error messages.
+
+=head1 TROUBLESHOOTING
+
+TODO: Common error messages and how to fix them.
+
+=head1 SEE ALSO
+
+=over
+
+=item * L<ALPM::Package>, L<ALPM::DB>
+
+=item * L<http://code.toofishes.net/cgit/> - GIT repository for pacman/libalpm
+
+=item * L<http://code.toofishes.net/pacman/doc/> - libalpm doxygen docs
+
+=item * L<libalpm>(8) (pretty sparse)
+
+=item * L<pacman>(8)
+
+=back
+
+=head1 AUTHOR
+
+Justin Davis, C<< <jrcd83 at gmail dot com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by Justin Davis
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

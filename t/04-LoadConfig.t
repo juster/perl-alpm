@@ -8,7 +8,7 @@ BEGIN {
     use_ok('ALPM');
 };
 
-ok( ALPM->load_config('t/pacman.conf') );
+ok( ALPM->load_config('t/fake/etc/pacman.conf') );
 ok( my $local = ALPM->register_db );
 ok( my $dbs = ALPM->get_opt('syncdbs') );
 

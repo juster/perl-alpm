@@ -5,14 +5,40 @@ use strict;
 use warnings;
 
 require Exporter;
-#use AutoLoader qw(AUTOLOAD);
+use AutoLoader;
 use English qw(-no_match_vars);
 use Carp;
 
 use ALPM::Package;
 use ALPM::DB;
 
-our $VERSION = '0.03';
+our $VERSION   = '0.03';
+our @EXPORT    = qw();
+our @EXPORT_OK = qw();
+
+# constants are only used internally... they are ugly.
+sub AUTOLOAD {
+    # This AUTOLOAD is used to 'autoload' constants from the constant()
+    # XS function.
+
+    my $constname;
+    our $AUTOLOAD;
+    ($constname = $AUTOLOAD) =~ s/.*:://;
+    croak "&ALPM::constant not defined" if $constname eq 'constant';
+    my ($error, $val) = constant($constname);
+    if ($error) { croak $error; }
+    {
+	no strict 'refs';
+	# Fixed between 5.005_53 and 5.005_61
+#XXX	if ($] >= 5.00561) {
+#XXX	    *$AUTOLOAD = sub () { $val };
+#XXX	}
+#XXX	else {
+	    *$AUTOLOAD = sub { $val };
+#XXX	}
+    }
+    goto &$AUTOLOAD;
+}
 
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
@@ -20,6 +46,10 @@ XSLoader::load('ALPM', $VERSION);
 initialize();
 
 END { release() };
+
+####----------------------------------------------------------------------
+#### GLOBAL VARIABLES
+####----------------------------------------------------------------------
 
 # TODO: logcb dlcb totaldlcb
 my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
@@ -29,6 +59,31 @@ my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
 
 my %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
                          map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );
+
+
+### Transaction Constants ###
+my %_TRANS_TYPES = ( 'upgrade'       => PM_TRANS_TYPE_UPGRADE(),
+                     'remove'        => PM_TRANS_TYPE_REMOVE(),
+                     'removeupgrade' => PM_TRANS_TYPE_REMOVEUPGRADE(),
+                     'sync'          => PM_TRANS_TYPE_SYNC(),
+                    );
+
+my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
+                     'force'       => PM_TRANS_FLAG_FORCE(),
+                     'nosave'      => PM_TRANS_FLAG_NOSAVE(),
+                     'cascade'     => PM_TRANS_FLAG_CASCADE(),
+                     'recurse'     => PM_TRANS_FLAG_RECURSE(),
+                     'dbonly'      => PM_TRANS_FLAG_DBONLY(),
+                     'alldeps'     => PM_TRANS_FLAG_ALLDEPS(),
+                     'dlonly'      => PM_TRANS_FLAG_DOWNLOADONLY(),
+                     'noscriptlet' => PM_TRANS_FLAG_NOSCRIPTLET(),
+                     'noconflicts' => PM_TRANS_FLAG_NOCONFLICTS(),
+                     'printuris'   => PM_TRANS_FLAG_PRINTURIS(),
+                     'needed'      => PM_TRANS_FLAG_NEEDED(),
+                     'allexplicit' => PM_TRANS_FLAG_ALLEXPLICIT(),
+                     'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
+                     'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
+                    );
 
 ####----------------------------------------------------------------------
 #### CLASS FUNCTIONS
@@ -216,4 +271,43 @@ sub load_config
     return 1;
 }
 
+sub transaction
+{
+    croak 'transaction must be called as a class method' unless ( @_ );
+    my $class = shift;
+
+    croak 'arguments to transaction method must be a hash'
+        unless ( @_ % 2 == 0 );
+
+    my %trans_opts = @_;
+    my ($trans_type, $trans_flags) = (0) x 2;
+
+    # A type must be specified...
+    croak qq{unknown transaction type "$trans_type"}
+        unless exists $_TRANS_TYPES{ $trans_opts{type} };
+    $trans_type = $_TRANS_TYPES{ $trans_opts{type} };
+
+    # Parse flags if they are provided...
+    if ( exists $trans_opts{flags} ) {
+        croak qq{transaction() option 'flags' must be an arrayref}
+            unless ( ref $trans_opts{flags} ne 'ARRAY' );
+
+        for my $flag ( @{ $trans_opts{flags} } ) {
+            croak qq{unknown transaction flag "$flag"}
+                unless exists $_TRANS_FLAGS{$flag};
+            $trans_flags |= $_TRANS_FLAGS{$flag};
+        }
+    }
+
+    alpm_trans_init( $trans_type, $trans_flags );
+
+    # Return a class that will automatically release the transaction.
+    my $anon_scalar = do { my $tmp; \$tmp };
+    return bless $anon_scalar, 'ALPM::Transaction';
+}
+
+
 1;
+
+__END__
+

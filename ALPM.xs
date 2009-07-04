@@ -4,33 +4,38 @@
 
 #include "ppport.h"
 
-#include <alpm.h>
-#include <alpm_list.h>
+#include "libalpm/alpm.h"
+#include "libalpm/alpm_list.h"
+#include "libalpm/deps.h"
+#include "libalpm/group.h"
+#include "libalpm/sync.h"
+#include "libalpm/trans.h"
+
+#include "const-c.inc"
 
 /* These are missing in alpm.h */
 
 /* from deps.h */
-struct __pmdepend_t {
+/* struct __pmdepend_t {
 	pmdepmod_t mod;
 	char *name;
 	char *version;
-};
+}; */
 
 /* from group.h */
-struct __pmgrp_t {
+/* struct __pmgrp_t { */
 	/** group name */
-	char *name;
+/* 	char *name; */
 	/** list of pmpkg_t packages */
-	alpm_list_t *packages;
-};
+/* 	alpm_list_t *packages; */
+/* }; */
 
 /* from sync.h */
-struct __pmsyncpkg_t {
+/* struct __pmsyncpkg_t {
 	pmpkgreason_t newreason;
 	pmpkg_t *pkg;
 	alpm_list_t *removes;
-};
-
+}; */
 
 typedef int           negative_is_error;
 typedef pmdb_t      * ALPM_DB;
@@ -70,6 +75,8 @@ DESTROY(self)
     RETVAL
 
 MODULE = ALPM    PACKAGE = ALPM
+
+INCLUDE: const-xs.inc
 
 ALPM_PackageFree
 load_pkgfile(filename, ...)
@@ -494,3 +501,26 @@ alpm_grp_get_name(grp)
 PackageListNoFree
 alpm_grp_get_pkgs(grp)
     ALPM_Group grp
+
+MODULE=ALPM    PACKAGE=ALPM
+
+negative_is_error
+alpm_trans_init(type, flags)
+    int type
+    int flags
+  CODE:
+    RETVAL = alpm_trans_init( type, flags, NULL, NULL, NULL );
+  OUTPUT:
+    RETVAL
+
+MODULE=ALPM    PACKAGE=ALPM::Transaction
+
+negative_is_error
+DESTROY(self)
+    SV * self
+  CODE:
+    fprintf( stderr, "DEBUG Releasing the transaction\n" );
+    RETVAL = alpm_trans_release();
+  OUTPUT:
+    RETVAL
+

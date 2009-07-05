@@ -9,6 +9,7 @@ use AutoLoader;
 use English qw(-no_match_vars);
 use Carp;
 
+use ALPM::Transaction;
 use ALPM::Package;
 use ALPM::DB;
 
@@ -302,8 +303,7 @@ sub transaction
     alpm_trans_init( $trans_type, $trans_flags );
 
     # Return a class that will automatically release the transaction.
-    my $anon_scalar = do { my $tmp; \$tmp };
-    return bless $anon_scalar, 'ALPM::Transaction';
+    return ALPM::Transaction->new( %trans_opts );
 }
 
 

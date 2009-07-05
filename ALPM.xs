@@ -515,6 +515,11 @@ alpm_trans_init(type, flags)
 
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
+# This is used internally, we keep the full name
+negative_is_error
+alpm_trans_addtarget(target)
+    char * target
+
 negative_is_error
 DESTROY(self)
     SV * self
@@ -524,3 +529,72 @@ DESTROY(self)
   OUTPUT:
     RETVAL
 
+MODULE=ALPM    PACKAGE=ALPM::Transaction    PREFIX=alpm_trans_
+
+negative_is_error
+alpm_trans_commit(self)
+    SV * self
+  PREINIT:
+    alpm_list_t *errors;
+    HV *trans;
+    SV **prepared;
+  CODE:
+    trans = (HV *) SvRV(self);
+    prepared = hv_fetch( trans, "prepared", 8, 0 );
+
+    /* prepare before we commit */
+    if ( ! SvOK(*prepared) || ! SvTRUE(*prepared) ) {
+        PUSHMARK(SP);
+        XPUSHs(self);
+        PUTBACK;
+#        fprintf( stderr, "DEBUG: before call_method\n" );
+        call_method( "prepare", G_DISCARD );
+#        fprintf( stderr, "DEBUG: after call_method\n" );
+    }
+    
+    errors = NULL;
+    RETVAL = alpm_trans_commit( &errors );
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+alpm_trans_interrupt(self)
+    SV * self
+  CODE:
+    RETVAL = alpm_trans_interrupt();
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+alpm_trans_prepare(self)
+    SV * self
+  PREINIT:
+    alpm_list_t *errors;
+    HV *trans;
+    SV **prepared;
+  CODE:
+    trans = (HV *) SvRV(self);
+
+    prepared = hv_fetch( trans, "prepared", 8, 0 );
+    if ( SvOK(*prepared) && SvTRUE(*prepared) ) {
+        RETVAL = 0;
+    }   
+    else {
+        hv_store( trans, "prepared", 8, newSViv(1), 0 );
+        #fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
+
+        errors = NULL;
+        RETVAL = alpm_trans_prepare( &errors );
+    }
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+alpm_trans_sysupgrade(self)
+    SV * self
+  CODE:
+    RETVAL = alpm_trans_sysupgrade();
+  OUTPUT:
+    RETVAL
+
+# EOF

@@ -1,0 +1,14 @@
+# Contributor: Justin Davis <jrcd83@gmail.com>
+pkgname=baz
+pkgver=1.0
+pkgrel=1
+pkgdesc="Baz!"
+arch=(i686 x86_64)
+license=('GPL')
+depends=(bar)
+
+build() {
+  true;
+}
+
+# vim:set ts=2 sw=2 et:

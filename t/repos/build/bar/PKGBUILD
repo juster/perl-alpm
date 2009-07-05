@@ -1,0 +1,14 @@
+# Contributor: Justin Davis <jrcd83@gmail.com>
+pkgname=bar
+pkgver=1.0
+pkgrel=1
+pkgdesc="Bar!"
+arch=(i686 x86_64)
+depends=(foo)
+license=('GPL')
+
+build() {
+  true;
+}
+
+# vim:set ts=2 sw=2 et:

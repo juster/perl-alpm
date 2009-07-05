@@ -1,0 +1,13 @@
+# Contributor: Justin Davis <jrcd83@gmail.com>
+pkgname=foo
+pkgver=1.0
+pkgrel=1
+pkgdesc="Foo!"
+arch=(i686 x86_64)
+license=('GPL')
+
+build() {
+  true;
+}
+
+# vim:set ts=2 sw=2 et:

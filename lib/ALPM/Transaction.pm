@@ -68,14 +68,58 @@ collected, the transaction is released.
 
 =head2 add
 
-  Usage    : $trans->add( 'perl', 'perl-alpm', 'etc' );
-  Purpose  : Add package names to be affected by transaction.
-  Params   : A list of package names to be added.
-  Returns  : 1
+  Usage   : $trans->add( 'perl', 'perl-alpm', 'etc' );
+  Purpose : Add package names to be affected by transaction.
+  Params  : A list of package names to be added (or just one).
+  Comment : You cannot add packages to a prepared transaction.
+  Returns : 1
 
 =head2 prepare
 
+  Usage   : $trans->prepare;
+  Purpose : Prepares a transaction for committing.
+  Comment : commit() does this automatically if needed.
+  Returns : 1
+
 =head2 commit
+
+  Usage   : $trans->commit;
+  Purpose : Commits the transaction.
+  Returns : 1
+
+=head1 RELEASING A TRANSACTION
+
+You may have noticed there is no release method.  A transaction is
+released as soon as it goes out of scope and is garbage collected.
+For example:
+
+  sub foo
+  {
+      my $t = ALPM->transaction( type => 'sync' );
+      ... do stuffs ...
+  }
+
+  # here, $t is out of scope, garbage collected, and transaction is
+  # released
+
+In this way, with good coding practices, you should not need to
+release a transaction because it will go out of scope.  But in order to
+explicitly release a transaction, assign C<undef> to it.  For example:
+
+  my $t = ALPM->transaction( type => 'sync' );
+  $t->add('perl');
+  $t->commit;
+  $t = undef;
+
+  # Transaction is released immediately
+
+So be careful you don't keep extra copies of a transaction stored
+around or else it will not be released.  If you need extra copies
+try using C<weaken> in L<Scalar::Util>.
+
+=head1 SEE ALSO
+
+L<ALPM>
 
 =head1 AUTHOR
 

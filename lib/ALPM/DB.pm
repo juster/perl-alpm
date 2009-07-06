@@ -82,9 +82,21 @@ ALPM::DB - Class to represent a libalpm database
   Usage   : my $cache_ref = $db->get_pkg_cache;
   Returns : An arrayref of package objects in the DB cache.
 
+=head2 update
+
+  Usage   : $db->update;
+  Purpose : Updates the local copy of the database's package list.
+  Comment : This needs to create a transaction to work, so make sure
+            you don't have any active transactions.
+
+            Things may work incorrectly if the database is not updated.
+            If there is no local db copy, the package cache will be empty.
+  Returns : 1
+  TODO    : Provide different return values like alpm does.
+
 =head1 SEE ALSO
 
-L<ALPM>, L<ALPM::Package>
+L<ALPM>, L<ALPM::Package>, L<ALPM::Transaction>
 
 =head1 AUTHOR
 

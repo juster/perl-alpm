@@ -1,4 +1,4 @@
-ALPM version 0.02
+ALPM version 0.03
 =================
 
 This is a perl XS module for the use of the libalpm C library.  libalpm

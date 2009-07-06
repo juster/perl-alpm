@@ -1,5 +1,12 @@
 Revision history for Perl extension ALPM.
 
+0.03
+      - Added transaction support with ALPM::Transaction and ALPM::Ex.
+
+0.02  June 15, 2009
+      - Added ALPM::LoadConfig which is used to load pacman.conf
+        config files
+
 0.01  May 03 2009
       - First public release, uploading to CPAN
       - Has just about everything working except syncing/transactions

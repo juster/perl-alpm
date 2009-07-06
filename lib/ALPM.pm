@@ -53,7 +53,6 @@ END { release() };
 #### GLOBAL VARIABLES
 ####----------------------------------------------------------------------
 
-# TODO: logcb dlcb totaldlcb
 my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
                          qw{ root dbpath cachedirs logfile usesyslog
                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
@@ -312,10 +311,11 @@ sub transaction
         croak $@;
     }
 
-    # Return a class that will automatically release the transaction.
+    # Return an object that will automatically release the transaction
+    # when destroyed...
     my $t = ALPM::Transaction->new( %trans_opts );
     $_Transaction = $t;
-    weaken $_Transaction;
+    weaken $_Transaction; # keep track of active transactions
     return $t;
 }
 

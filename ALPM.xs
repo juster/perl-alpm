@@ -539,7 +539,7 @@ alpm_db_get_group_cache(db)
     RETVAL
 
 PackageListFree
-alpm_db_search(db, needles)
+alpm_db__search(db, needles)
     ALPM_DB        db
     StringListFree needles
 

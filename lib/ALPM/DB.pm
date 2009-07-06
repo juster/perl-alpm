@@ -25,6 +25,21 @@ sub get_url
     return $self->_get_url;
 }
 
+# Wrapper so people don't have to use arrayrefs.
+sub search
+{
+    my $self = shift;
+
+    my $results = eval { $self->_search( [ @_ ] ) };
+    if ( $@ ) {
+        die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
+        $@ =~ s/ at .*? line \d+[.]\n//;
+        croak $@;
+    }
+
+    return $results;
+}
+
 1;
 
 =head1 NAME
@@ -73,8 +88,8 @@ ALPM::DB - Class to represent a libalpm database
 
 =head2 search
 
-  Usage   : my $results_ref = $db->search([ 'foo', 'bar', ... ]);
-  Params  : An arrayref of the strings to search for.
+  Usage   : my $results_ref = $db->search( 'foo', 'bar', ... );
+  Params  : A list of strings to search for.
   Returns : An arrayref of package objects that matched the search.
 
 =head2 get_pkg_cache

@@ -24,7 +24,7 @@ ALPM - XS module, OO wrapper of libalpm, Archlinux's packaging system
 
   my $syncdb = ALPM->register_db( 'extra',
                                   'ftp://ftp.archlinux.org/$repo/os/i686' );
-  my $perlpkgs = $syncdb->search(['perl']);
+  my $perlpkgs = $syncdb->search('perl');
   printf "%d perl packages found.\n", scalar @{$perlpkgs};
 
 =head1 DESCRIPTION

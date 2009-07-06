@@ -55,9 +55,10 @@ END { release() };
 
 # TODO: logcb dlcb totaldlcb
 my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
-                         qw{ root dbpath cachedirs logcb logfile usesyslog
+                         qw{ root dbpath cachedirs logfile usesyslog
                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
-                             xfercommand nopassiveftp } );
+                             xfercommand nopassiveftp
+                             logcb dlcb totaldlcb } );
 
 my %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
                          map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );

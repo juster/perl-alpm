@@ -236,11 +236,62 @@ alpm_option_set_logcb(callback)
         alpm_option_set_logcb( cb_log_wrapper );
     }
 
-#alpm_cb_download alpm_option_get_dlcb();
-#void alpm_option_set_dlcb(alpm_cb_download cb);
-#
-#alpm_cb_totaldl alpm_option_get_totaldlcb();
-#void alpm_option_set_totaldlcb(alpm_cb_totaldl cb);
+SV *
+alpm_option_get_dlcb()
+  CODE:
+    RETVAL = ( cb_download_sub == NULL ? &PL_sv_undef : cb_download_sub );
+  OUTPUT:
+    RETVAL
+
+void
+alpm_option_set_dlcb(callback)
+    SV * callback
+  CODE:
+    if ( ! SvOK(callback) ) {
+        if ( cb_download_sub != NULL ) {
+            SvREFCNT_dec( cb_download_sub );
+            alpm_option_set_dlcb( NULL );
+        }
+    }
+    else {
+        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
+            croak( "value for dlcb option must be a code reference" );
+        }
+
+        if ( cb_download_sub != NULL ) SvREFCNT_dec( cb_download_sub );
+
+        cb_download_sub = newSVsv(callback);
+        alpm_option_set_dlcb( cb_download_wrapper );
+    }
+
+
+SV *
+alpm_option_get_totaldlcb()
+  CODE:
+    RETVAL = ( cb_totaldl_sub == NULL ? &PL_sv_undef : cb_totaldl_sub );
+  OUTPUT:
+    RETVAL
+
+void
+alpm_option_set_totaldlcb(callback)
+    SV * callback
+  CODE:
+    if ( ! SvOK(callback) ) {
+        if ( cb_totaldl_sub != NULL ) {
+            SvREFCNT_dec( cb_totaldl_sub );
+            alpm_option_set_totaldlcb( NULL );
+        }
+    }
+    else {
+        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
+            croak( "value for totaldlcb option must be a code reference" );
+        }
+
+        if ( cb_totaldl_sub != NULL ) SvREFCNT_dec( cb_totaldl_sub );
+
+        cb_totaldl_sub = newSVsv(callback);
+        alpm_option_set_totaldlcb( cb_totaldl_wrapper );
+    }
 
 const char *
 alpm_option_get_root()

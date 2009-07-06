@@ -132,10 +132,11 @@ sub load_file
     my $field_hooks =
     {
      ( map {
-         my $field_name = $_;        # these must be copied to new vars
+         my $field_name = $_;
          my $opt_name   = $_CFG_OPTS{$_};
-         $_ => ( $opt_name =~ /s$/ ? # create hash of field names to hooks
-                 sub {
+         # create hash of field names to hooks
+         $_ => ( $opt_name =~ /s$/ ? 
+                 sub { # plural options get set arrayref values
                      my $cfg_value = shift;
                      die "$field_name can only be set in the [options] section\n"
                          unless ( $current_section eq 'options' );
@@ -143,7 +144,7 @@ sub load_file
                      ALPM->set_opt( $opt_name, [ split /\s+/, $cfg_value ] );
                  }
                  :
-                 sub {
+                 sub { # singular options get scalar values
                      my $cfg_value = shift;
                      die "$field_name can only be set in the [options] section\n"
                          unless ( $current_section eq 'options' );
@@ -205,12 +206,6 @@ __END__
 
 ALPM::LoadConfig - pacman.conf config file parser
 
-=head1 DESCRIPTION
-
-This class is used internally by ALPM to parse pacman.conf config
-files.  The settings are used to set ALPM options.  You don't need to
-use this module directly.
-
 =head1 SYNOPSIS
 
   # At startup:
@@ -218,6 +213,12 @@ use this module directly.
 
   # At runtime:
   ALPM->load_config('/etc/pacman.conf');
+
+=head1 DESCRIPTION
+
+This class is used internally by ALPM to parse pacman.conf config
+files.  The settings are used to set ALPM options.  You don't need to
+use this module directly.
 
 =head1 SEE ALSO
 

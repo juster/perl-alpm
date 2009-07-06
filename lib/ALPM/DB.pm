@@ -1,6 +1,20 @@
 package ALPM::DB;
 
 use ALPM;
+use Carp qw(croak);
+
+# Wrapper to automatically create a transaction...
+sub update
+{
+    my $self = shift;
+
+    croak "unable to update database while a transaction is in process"
+        if ( ALPM->active_trans );
+
+    my $t = ALPM->transaction( type => 'sync' );
+    $self->_update(1);
+    $t = undef;
+}
 
 # Wrapper to keep ALPM from crashing...
 sub get_url

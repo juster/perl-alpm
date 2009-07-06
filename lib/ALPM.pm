@@ -7,6 +7,7 @@ use warnings;
 require Exporter;
 use AutoLoader;
 use English qw(-no_match_vars);
+use Scalar::Util qw(weaken);
 use Carp;
 
 use ALPM::Transaction;
@@ -85,6 +86,9 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
                     );
+
+# Transaction global variable
+my $_Transaction;
 
 ####----------------------------------------------------------------------
 #### CLASS FUNCTIONS
@@ -300,10 +304,23 @@ sub transaction
         }
     }
 
-    alpm_trans_init( $trans_type, $trans_flags );
+    eval { alpm_trans_init( $trans_type, $trans_flags ) };
+    if ( $@ ) {
+        die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
+        $@ =~ s/ at .*? line \d+[.]\n//;
+        croak $@;
+    }
 
     # Return a class that will automatically release the transaction.
-    return ALPM::Transaction->new( %trans_opts );
+    my $t = ALPM::Transaction->new( %trans_opts );
+    $_Transaction = $t;
+    weaken $_Transaction;
+    return $t;
+}
+
+sub active_trans
+{
+    return $_Transaction;
 }
 
 

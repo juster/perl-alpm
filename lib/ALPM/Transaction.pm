@@ -20,8 +20,8 @@ sub add
 {
     my $self = shift;
 
-    croak 'cannot add more targets to a prepared transaction'
-        if ( $self->{prepared} );
+#     croak 'ALPM Error: cannot add targets to a prepared transaction'
+#         if ( $self->{prepared} );
 
     ADD_LOOP:
     for my $pkgname ( @_ ) {
@@ -29,7 +29,15 @@ sub add
             carp 'target cannot be a reference, ignored';
             next ADD_LOOP;
         }
-        alpm_trans_addtarget($pkgname);
+
+        # Provide line numbers of calling script if an error occurred.
+        eval { alpm_trans_addtarget($pkgname); };
+        if ( $@ ) {
+            die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
+
+            $@ =~ s/ at .*? line \d+[.]\n//;
+            croak $@;
+        }
     }
 
     return 1;

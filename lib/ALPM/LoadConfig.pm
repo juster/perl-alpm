@@ -191,7 +191,10 @@ sub load_file
     _set_defaults();
 
     my $parser_ref = _make_parser( $cfg_path, $parser_hooks );
-    return $parser_ref->();
+    my $ret = $parser_ref->();
+
+    if ( $ret ) { ALPM->register_db; } # registe local db
+    return $ret;
 }
 
 1;

@@ -670,6 +670,12 @@ alpm_trans_commit(self)
     HV *trans;
     SV **prepared;
   CODE:
+    /* make sure we are called as a method */
+    if ( !( SvROK(self) && SvTYPE(self) == SVt_PVMG
+            && sv_isa( self, "ALPM::Transaction" ) ) ) {
+        croak( "commit must be called as a method to ALPM::Transaction" );
+    }
+
     trans = (HV *) SvRV(self);
     prepared = hv_fetch( trans, "prepared", 8, 0 );
 

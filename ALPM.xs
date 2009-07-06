@@ -435,7 +435,7 @@ alpm_db__set_server(db, url)
     RETVAL
 
 negative_is_error
-alpm_db_update(db, level)
+alpm_db__update(db, level)
     ALPM_DB db
     int level
   CODE:

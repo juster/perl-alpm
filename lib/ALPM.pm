@@ -55,7 +55,7 @@ END { release() };
 
 # TODO: logcb dlcb totaldlcb
 my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
-                         qw{ root dbpath cachedirs logfile usesyslog
+                         qw{ root dbpath cachedirs logcb logfile usesyslog
                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
                              xfercommand nopassiveftp } );
 
@@ -169,8 +169,8 @@ sub set_opt
                     ( [ $optval, @_[ 3 .. $#_ ] ] ) # auto-convert args to aref
                    )                          :
                   # is single valued opt
-                  ( ! ref $optval                 ?
-                    $optval                       :
+                  ( ref $optval eq '' || ref $optval eq 'CODE' ?
+                    $optval                                    :
                     croak qq{Singular option "$optname" only takes a scalar value}
                    )
                  );

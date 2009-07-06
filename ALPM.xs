@@ -52,6 +52,112 @@ typedef alpm_list_t * DatabaseList;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
 
+/* Code references to use as callbacks. */
+static SV *cb_log_sub      = NULL;
+static SV *cb_download_sub = NULL;
+static SV *cb_totaldl_sub  = NULL;
+
+/* String constants to use for log levels (instead of bitflags) */
+static const char * log_lvl_error    = "error";
+static const char * log_lvl_warning  = "warning";
+static const char * log_lvl_debug    = "debug";
+static const char * log_lvl_function = "function";
+static const char * log_lvl_unknown  = "unknown";
+
+void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
+{
+    SV *s_level, *s_message;
+    char *lvl_str;
+    int lvl_len;
+    dSP;
+
+    if ( cb_log_sub == NULL ) return;
+
+    /* convert log level bitflag to a string */
+    switch ( level ) {
+    case PM_LOG_ERROR:
+        lvl_str = (char *)log_lvl_error;
+        break;
+    case PM_LOG_WARNING:
+        lvl_str = (char *)log_lvl_warning;
+        break;
+    case PM_LOG_DEBUG:
+        lvl_str = (char *)log_lvl_debug;
+        break;
+    case PM_LOG_FUNCTION:
+        lvl_str = (char *)log_lvl_function;
+        break;
+    default:
+        lvl_str = (char *)log_lvl_unknown; 
+    }
+    lvl_len = strlen( lvl_str );
+
+    ENTER;
+    SAVETMPS;
+
+    s_level   = sv_2mortal( newSVpv( lvl_str, lvl_len ) );
+    s_message = sv_newmortal();
+    sv_vsetpvfn( s_message, format, strlen(format), &args, (SV **)NULL, 0, NULL );
+    
+    PUSHMARK(SP);
+    XPUSHs(s_level);
+    XPUSHs(s_message);
+    PUTBACK;
+
+    call_sv(cb_log_sub, G_DISCARD);
+
+    FREETMPS;
+    LEAVE;
+}
+
+void cb_download_wrapper ( const char *filename, off_t xfered, off_t total )
+{
+    SV *s_filename, *s_xfered, *s_total;
+    dSP;
+
+    if ( cb_download_sub == NULL ) return;
+
+    ENTER;
+    SAVETMPS;
+
+    s_filename  = sv_2mortal( newSVpv( filename, strlen(filename) ) );
+    s_xfered    = sv_2mortal( newSViv( xfered ) );
+    s_total     = sv_2mortal( newSViv( total ) );
+    
+    PUSHMARK(SP);
+    XPUSHs(s_filename);
+    XPUSHs(s_xfered);
+    XPUSHs(s_total);
+    PUTBACK;
+
+    call_sv(cb_download_sub, G_DISCARD);
+
+    FREETMPS;
+    LEAVE;
+}
+
+void cb_totaldl_wrapper ( off_t total )
+{
+    SV *s_total;
+    dSP;
+
+    if ( cb_totaldl_sub == NULL ) return;
+
+    ENTER;
+    SAVETMPS;
+
+    s_total = sv_2mortal( newSViv( total ) );
+    
+    PUSHMARK(SP);
+    XPUSHs(s_total);
+    PUTBACK;
+
+    call_sv( cb_totaldl_sub, G_DISCARD );
+
+    FREETMPS;
+    LEAVE;
+}
+
 MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
 
 PROTOTYPES: DISABLE
@@ -102,9 +208,34 @@ alpm_release()
 
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_option_
 
-#alpm_cb_log alpm_option_get_logcb();
-#void alpm_option_set_logcb(alpm_cb_log cb);
-#
+SV *
+alpm_option_get_logcb()
+  CODE:
+    RETVAL = ( cb_log_sub == NULL ? &PL_sv_undef : cb_log_sub );
+  OUTPUT:
+    RETVAL
+
+void
+alpm_option_set_logcb(callback)
+    SV * callback
+  CODE:
+    if ( ! SvOK(callback) ) {
+        if ( cb_log_sub != NULL ) {
+            SvREFCNT_dec( cb_log_sub );
+            alpm_option_set_logcb( NULL );
+        }
+    }
+    else {
+        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
+            croak( "value for logcb option must be a code reference" );
+        }
+
+        if ( cb_log_sub != NULL ) SvREFCNT_dec( cb_log_sub );
+
+        cb_log_sub = newSVsv(callback);
+        alpm_option_set_logcb( cb_log_wrapper );
+    }
+
 #alpm_cb_download alpm_option_get_dlcb();
 #void alpm_option_set_dlcb(alpm_cb_download cb);
 #

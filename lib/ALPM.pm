@@ -12,6 +12,7 @@ use Carp;
 
 use ALPM::Transaction;
 use ALPM::Package;
+use ALPM::PackageFree;
 use ALPM::DB;
 
 our $VERSION   = '0.03';

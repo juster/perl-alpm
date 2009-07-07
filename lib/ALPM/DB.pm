@@ -50,7 +50,7 @@ ALPM::DB - Class to represent a libalpm database
 
   ... load ALPM with options first ...
 
-  my $localdb = ALPM->register_db;
+  my $localdb = ALPM->local_db;
   my $name    = $localdb->get_name;
   my $perl    = $localdb->get_pkg('perl');
 
@@ -72,7 +72,7 @@ ALPM::DB - Class to represent a libalpm database
   Returns : The name of the repository database.
             Ex: core, extra, community, etc...
 
-=head1 get_url
+=head2 get_url
 
   Usage   : my $url = $db->get_url;
   Returns : The url of the repository, the same one the DB

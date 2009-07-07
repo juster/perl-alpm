@@ -174,9 +174,12 @@ package or database-specific functions.
   Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
   Returns : An ALPM::DB object.
 
+See L<ALPM::DB>
+
 =head2 local_db
 
   Returns : The local system database as an ALPM::DB object.
+  Precond : You must set certain options first.
 
   This is what is called by register_db without arguments.
 
@@ -186,17 +189,38 @@ package or database-specific functions.
   Params  : The name of a repository.
   Returns : An ALPM::DB object matching the repo name.
 
+See L<ALPM::DB>
+
 =head2 load_pkgfile
 
   Usage   : my $pkgfile = ALPM->load_pkgfile('perl-alpm-0.2.pkg.tar.gz');
   Params  : The path to a package tarball.
   Returns : An ALPM::Package object.
 
+See L<ALPM::Package>
+
 =head2 load_config
 
   Usage   : ALPM->load_config('/etc/pacman.conf');
   Params  : The path to a pacman.conf configuration file.
   Returns : 1
+
+=head2 transaction
+
+  Usage   : my $t = ALPM->transaction( type => 'sync',
+                                       flags => qw/ nodeps / );
+  Purpose : Initializes a transaction
+  Params  : A hash of the transaction settings
+            type  => A string, can be upgrade, remove, removeupgrade, or sync.
+            flags => A list of strings, valid flags are:
+                nodeps, force, nosave, cascade, recurse, dbonly,
+                alldeps, dlonly, noscriptlet, noconflicts, printuris,
+                needed, allexplicit, unneeded, recurseall
+  Throws  : An 'ALPM Error: ...' is thrown if a transaction is
+            already active.
+  Returns : An ALPM::Transaction object.
+
+See L<ALPM::Transaction>
 
 =head1 ERRORS
 
@@ -215,7 +239,7 @@ TODO: Common error messages and how to fix them.
 
 =over
 
-=item * L<ALPM::Package>, L<ALPM::DB>
+=item * L<ALPM::DB>, L<ALPM::Package>, L<ALPM::Transaction>
 
 =item * L<http://code.toofishes.net/cgit/> - GIT repository for pacman/libalpm
 

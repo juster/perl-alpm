@@ -119,59 +119,73 @@ functions.  They are easy to use if you only want a few attributes.
 
 =over
 
-=item get_filename
+=item * get_filename
 
-=item get_name
+=item * get_name
 
-=item get_version
+=item * get_version
 
-=item get_desc
+=item * get_desc
 
-=item get_url
+=item * get_url
 
-=item get_builddate
+=item * get_builddate
 
-=item get_installdate
+=item * get_installdate
 
-=item get_packager
+=item * get_packager
 
-=item get_md5sum
+=item * get_md5sum
 
-=item get_arch
+=item * get_arch
 
-=item get_size
+=item * get_size
 
-=item get_isize
+=item * get_isize
 
-=item get_reason
+=item * get_reason
 
-=item get_licenses
+=item * get_licenses
 
-=item get_groups
+=item * get_groups
 
-=item get_depends
+=item * get_depends
 
-=item get_optdepends
+=item * get_optdepends
 
-=item get_conflicts
+=item * get_conflicts
 
-=item get_provides
+=item * get_provides
 
-=item get_deltas
+=item * get_deltas
 
-=item get_replaces
+=item * get_replaces
 
-=item get_files
+=item * get_files
 
-=item get_backup
+=item * get_backup
 
-=item has_scriptlet
+=item * has_scriptlet
 
-=item has_force
+=item * has_force
 
-=item download_size
+=item * download_size
 
 =back
+
+Attributes with plural names return an arrayref of strings.
+
+get_depends is different because it returns an arrayref of hashrefs
+(an AoH).  The hash has the following key-value pairs:
+
+  |------+----------------------------------------|
+  | Key  | Value                                  |
+  |------+----------------------------------------|
+  | name | Package name of the dependency         |
+  | ver  | The version to compare the real one to |
+  | mod  | The modifier of the dependency         |
+  |      | ('==', '>=', '<=', '<', or '>')        |
+  |------+----------------------------------------|
 
 =head2 PERLISH METHODS
 
@@ -185,7 +199,7 @@ at once into a list or variables.
   Usage   : my $name = $pkg->get_attr('name');
   Params  : The name of the attribute.
             (use 'name' to call get_name, etc.
-             use 'scriplet' to get has_scriptlet, etc.
+             use 'scriplet' to call has_scriptlet, etc.
              'download_size' is unchanged)
   Returns : The attribute value.
 
@@ -193,7 +207,7 @@ at once into a list or variables.
 
   Usage   : my %attribs = $pkg->get_attribs();
             my ($name, $desc) = $pkg->get_attribs('name', 'desc');
-  Params  : If you specify attribute names, their values is returned as
+  Params  : If you specify attribute names, their values are returned as
             a list.  Otherwise, returns a hash of all attributes.
   Returns : Either a hash or a list.
 
@@ -201,6 +215,22 @@ at once into a list or variables.
 
   This is the same as get_attribs, but it returns a hashref or
   arrayref instead.
+
+=head1 SEE ALSO
+
+L<ALPM>, L<ALPM::DB>
+
+=head1 AUTHOR
+
+Justin Davis, C<< <jrcd83 at gmail dot com> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by Justin Davis
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.
 
 =cut
 

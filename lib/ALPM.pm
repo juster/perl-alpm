@@ -54,6 +54,9 @@ END { release() };
 #### GLOBAL VARIABLES
 ####----------------------------------------------------------------------
 
+# Transaction global variable
+our $_Transaction;
+
 my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
                          qw{ root dbpath cachedirs logfile usesyslog
                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
@@ -87,9 +90,6 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
                     );
-
-# Transaction global variable
-my $_Transaction;
 
 ####----------------------------------------------------------------------
 #### CLASS FUNCTIONS
@@ -318,11 +318,6 @@ sub transaction
     $_Transaction = $t;
     weaken $_Transaction; # keep track of active transactions
     return $t;
-}
-
-sub active_trans
-{
-    return $_Transaction;
 }
 
 

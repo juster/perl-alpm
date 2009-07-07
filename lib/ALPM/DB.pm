@@ -9,7 +9,7 @@ sub update
     my $self = shift;
 
     croak "unable to update database while a transaction is in process"
-        if ( ALPM->active_trans );
+        if ( $ALPM::_Transaction );
 
     my $t = ALPM->transaction( type => 'sync' );
     $self->_update(1);

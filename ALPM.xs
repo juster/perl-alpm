@@ -542,6 +542,10 @@ PackageListFree
 alpm_db__search(db, needles)
     ALPM_DB        db
     StringListFree needles
+  CODE:
+    RETVAL = alpm_db_search(db, needles);
+  OUTPUT:
+    RETVAL
 
 MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_
     

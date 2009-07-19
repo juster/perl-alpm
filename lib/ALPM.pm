@@ -324,6 +324,67 @@ sub transaction
     return $t;
 }
 
+####----------------------------------------------------------------------
+#### TIED HASH INTERFACE
+####----------------------------------------------------------------------
+
+my @_OPT_NAMES = sort keys %ALPM::_IS_GETOPTION;
+
+sub TIEHASH
+{
+    my $class = shift;
+    bless { 'KEY_ITER' => 0 }, $class;
+}
+
+sub DESTROY
+{
+    1;
+}
+
+sub EXISTS
+{
+    return exists $ALPM::_IS_GETOPTION{ $_[1] };
+}
+
+sub DELETE
+{
+    croak 'You cannot delete keys in this tied hash';
+}
+
+sub CLEAR
+{
+    croak 'You cannot empty this tied hash';
+}
+
+sub FETCH
+{
+    my ($self, $key) = @_;
+    return $self->get_opt( $key );
+}
+
+sub STORE
+{
+    my ($self, $key, $value) = @_;
+    return $self->set_opt( $key, $value );
+}
+
+sub FIRSTKEY
+{
+    my ($self) = @_;
+
+    $self->{KEY_ITER} = 1;
+    return $_OPT_NAMES[0];
+}
+
+sub NEXTKEY
+{
+    my ($self) = @_;
+
+    return ( $self->{KEY_ITER} < scalar @_OPT_NAMES
+             ? $_OPT_NAMES[ $self->{KEY_ITER}++ ]
+             : undef );
+}
+
 
 1;
 

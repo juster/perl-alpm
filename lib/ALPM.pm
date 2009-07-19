@@ -16,8 +16,8 @@ use ALPM::PackageFree;
 use ALPM::DB;
 
 our $VERSION   = '0.03';
-our @EXPORT    = qw();
-our @EXPORT_OK = qw();
+#our @EXPORT    = qw();
+#our @EXPORT_OK = qw($ALPM);
 
 # constants are only used internally... they are ugly.
 sub AUTOLOAD {
@@ -46,10 +46,6 @@ sub AUTOLOAD {
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
 
-initialize();
-
-END { release() };
-
 ####----------------------------------------------------------------------
 #### GLOBAL VARIABLES
 ####----------------------------------------------------------------------
@@ -57,13 +53,13 @@ END { release() };
 # Transaction global variable
 our $_Transaction;
 
-my %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
-                         qw{ root dbpath cachedirs logfile usesyslog
-                             noupgrades noextracts ignorepkgs holdpkgs ignoregrps
-                             xfercommand nopassiveftp
-                             logcb dlcb totaldlcb } );
+our %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
+                          qw{ root dbpath cachedirs logfile usesyslog
+                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
+                              xfercommand nopassiveftp
+                              logcb dlcb totaldlcb } );
 
-my %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
+our %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
                          map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );
 
 
@@ -90,6 +86,14 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
                     );
+
+####----------------------------------------------------------------------
+#### CLASS INIT
+####----------------------------------------------------------------------
+
+initialize();
+
+END { release() };
 
 ####----------------------------------------------------------------------
 #### CLASS FUNCTIONS

@@ -726,7 +726,7 @@ alpm_trans_commit(self)
     SV **prepared;
   CODE:
     /* make sure we are called as a method */
-    if ( !( SvROK(self) && SvTYPE(self) == SVt_PVMG
+    if ( !( SvROK(self) /* && SvTYPE(self) == SVt_PVMG */
             && sv_isa( self, "ALPM::Transaction" ) ) ) {
         croak( "commit must be called as a method to ALPM::Transaction" );
     }

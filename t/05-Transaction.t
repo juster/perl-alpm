@@ -14,9 +14,15 @@ sub print_log
     print STDERR join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
 }
 
+sub event_log
+{
+    my ($event) = @_;
+    print STDERR Dumper( $event );
+}
+
 ALPM->set_opt( 'logcb', \&print_log );
 
-ok( my $t = ALPM->transaction( type => 'sync' ) );
+ok( my $t = ALPM->transaction( type => 'sync', event => \&event_log ) );
 
 ok( $t->prepare );
 ok( $t->prepare );

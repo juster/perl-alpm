@@ -56,6 +56,11 @@ typedef alpm_list_t * ListAutoFree;
 static SV *cb_log_sub      = NULL;
 static SV *cb_download_sub = NULL;
 static SV *cb_totaldl_sub  = NULL;
+/* transactions */
+static SV *cb_trans_event_sub    = NULL;
+static SV *cb_trans_conv_sub     = NULL;
+static SV *cb_trans_progress_sub = NULL;
+
 
 /* String constants to use for log levels (instead of bitflags) */
 static const char * log_lvl_error    = "error";
@@ -158,9 +163,176 @@ void cb_totaldl_wrapper ( off_t total )
     LEAVE;
 }
 
-MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
+
+/* We convert all enum constants into strings.  An event is now a hash with a name,
+   status (start/done/failed/""), and arguments.  Arguments can have any name
+   in the hash they prefer.  The event hash is passed as a ref to the callback. */
+void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
+{
+    SV *s_pkg, *s_event_ref;
+    HV *h_event;
+    AV *a_args;
+    dSP;
+
+    if ( cb_trans_event_sub == NULL ) return;
+
+    ENTER;
+    SAVETMPS;
+
+    h_event = newHV();
+
+#define EVT_NAME(name) \
+    hv_store( h_event, "name", 4, sv_2mortal( newSVpv( name, 0 )), 0 );
+
+#define EVT_STATUS(name) \
+    hv_store( h_event, "status", 6, sv_2mortal( newSVpv( name, 0 )), 0 );
+
+#define EVT_PKG(key, pkgptr)                                    \
+    s_pkg = newRV_inc( newSV(0) );                              \
+    sv_setref_pv( s_pkg, "ALPM::PackageFree", (void *)pkgptr ); \
+    hv_store( h_event, key, 0, s_pkg, 0 );
+
+#define EVT_TEXT(key, text)    \
+    hv_store( h_event, key, 0, \
+              sv_2mortal( newSVpv( (char *)text, 0 )), 0 );
+
+    switch ( event ) {
+    case PM_TRANS_EVT_CHECKDEPS_START:
+        EVT_NAME("checkdeps")
+        EVT_STATUS("start")
+        break;
+    case PM_TRANS_EVT_CHECKDEPS_DONE:
+        EVT_NAME("checkdeps")
+        EVT_STATUS("done")
+        break;
+    case PM_TRANS_EVT_FILECONFLICTS_START:
+        EVT_NAME("conflicts")
+        EVT_STATUS("start")
+        break;
+	case PM_TRANS_EVT_FILECONFLICTS_DONE:
+        EVT_NAME("conflicts")
+        EVT_STATUS("done")
+        break;
+	case PM_TRANS_EVT_RESOLVEDEPS_START:
+        EVT_NAME("resolvedeps")
+        EVT_STATUS("start")
+        break;
+	case PM_TRANS_EVT_RESOLVEDEPS_DONE:
+        EVT_NAME("resolvedeps")
+        EVT_STATUS("done")
+        break;
+	case PM_TRANS_EVT_INTERCONFLICTS_START:
+        EVT_NAME("conflicts")
+        EVT_STATUS("start")
+        break;
+	case PM_TRANS_EVT_INTERCONFLICTS_DONE:
+        EVT_NAME("conflicts")
+        EVT_STATUS("done")
+        EVT_PKG("target", arg_one)
+        break;
+	case PM_TRANS_EVT_ADD_START:
+        EVT_NAME("add")
+        EVT_STATUS("start")
+        EVT_PKG("package", arg_one)
+        break;
+	case PM_TRANS_EVT_ADD_DONE:
+        EVT_NAME("add")
+        EVT_STATUS("done")
+        EVT_PKG("package", arg_one)
+        break;
+	case PM_TRANS_EVT_REMOVE_START:
+        EVT_NAME("remove")
+        EVT_STATUS("start")
+        EVT_PKG("package", arg_one)
+		break;
+	case PM_TRANS_EVT_REMOVE_DONE:
+        EVT_NAME("remove")
+        EVT_STATUS("done")
+        EVT_PKG("package", arg_one)
+		break;
+	case PM_TRANS_EVT_UPGRADE_START:
+        EVT_NAME("upgrade")
+        EVT_PKG("package", arg_one)
+		break;
+	case PM_TRANS_EVT_UPGRADE_DONE:
+        EVT_NAME("upgrade")
+        EVT_STATUS("done")
+        EVT_PKG("new", arg_one)
+        EVT_PKG("old", arg_two)
+		break;
+	case PM_TRANS_EVT_INTEGRITY_START:
+        EVT_NAME("integrity")
+        EVT_STATUS("start")
+		break;
+	case PM_TRANS_EVT_INTEGRITY_DONE:
+        EVT_NAME("integrity")
+        EVT_STATUS("done")
+		break;
+	case PM_TRANS_EVT_DELTA_INTEGRITY_START:
+        EVT_NAME("deltaintegrity")
+        EVT_STATUS("start")
+		break;
+	case PM_TRANS_EVT_DELTA_INTEGRITY_DONE:
+        EVT_NAME("deltaintegrity")
+        EVT_STATUS("done")
+		break;
+	case PM_TRANS_EVT_DELTA_PATCHES_START:
+        EVT_NAME("deltapatches")
+        EVT_STATUS("start")
+		break;
+	case PM_TRANS_EVT_DELTA_PATCHES_DONE:
+        EVT_NAME("deltapatches")
+        EVT_STATUS("done")
+        EVT_TEXT("pkgname", arg_one)
+        EVT_TEXT("patch", arg_two)
+		break;
+	case PM_TRANS_EVT_DELTA_PATCH_START:
+        EVT_NAME("deltapatch")
+        EVT_STATUS("start")
+		break;
+	case PM_TRANS_EVT_DELTA_PATCH_DONE:
+        EVT_NAME("deltapatch")
+        EVT_STATUS("done")
+		break;
+	case PM_TRANS_EVT_DELTA_PATCH_FAILED:
+        EVT_NAME("deltapatch")
+        EVT_STATUS("failed")
+        EVT_TEXT("error", arg_one)
+		break;
+	case PM_TRANS_EVT_SCRIPTLET_INFO:
+        EVT_NAME("scriplet")
+        EVT_STATUS("")
+        EVT_TEXT("text", arg_one)
+		break;
+	case PM_TRANS_EVT_PRINTURI:
+        EVT_NAME("printuri")
+        EVT_STATUS("")
+        EVT_TEXT("name", arg_one)
+		break;
+    }
+
+#undef EVT_NAME
+#undef EVT_STATUS
+#undef EVT_PKG
+#undef EVT_TEXT
+
+    s_event_ref = newRV_inc( (SV *)h_event );
+
+    PUSHMARK(SP);
+    XPUSHs(s_event_ref);
+    PUTBACK;
+
+    call_sv( cb_trans_event_sub, G_DISCARD );
+
+    FREETMPS;
+    LEAVE;
+}
+
+MODULE = ALPM    PACKAGE = ALPM
 
 PROTOTYPES: DISABLE
+
+MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
 
 void
 DESTROY(self)
@@ -691,11 +863,23 @@ alpm_grp_get_pkgs(grp)
 MODULE=ALPM    PACKAGE=ALPM
 
 negative_is_error
-alpm_trans_init(type, flags)
+alpm_trans_init(type, flags, event_sub)
     int type
     int flags
+    SV  *event_sub
+  PREINIT:
+    alpm_trans_cb_event event_func = NULL;
   CODE:
-    RETVAL = alpm_trans_init( type, flags, NULL, NULL, NULL );
+    if ( SvOK( event_sub ) ) {
+        if ( ! SvTYPE( event_sub ) == SVt_PVCV ) {
+            croak( "Callback arguments must be code references" );
+        }
+        fprintf( stderr, "DEBUG: set event callback!\n" );
+        cb_trans_event_sub = event_sub;
+        event_func = cb_trans_event_wrapper;
+    }
+
+    RETVAL = alpm_trans_init( type, flags, event_func, NULL, NULL );
   OUTPUT:
     RETVAL
 

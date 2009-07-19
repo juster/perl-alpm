@@ -309,7 +309,8 @@ sub transaction
         }
     }
 
-    eval { alpm_trans_init( $trans_type, $trans_flags ) };
+    eval { alpm_trans_init( $trans_type, $trans_flags,
+                            $trans_opts{event} ) };
     if ( $@ ) {
         die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
         $@ =~ s/ at .*? line \d+[.]\n//;

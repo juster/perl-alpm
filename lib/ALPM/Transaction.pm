@@ -12,7 +12,8 @@ sub new
 
     return bless { prepared => 0,
                    type     => $trans_opts{type},
-                   flags    => $trans_opts{flags} }, $class;
+                   flags    => $trans_opts{flags},
+                   event_cb => $trans_opts{event_cb} }, $class;
 
 }
 

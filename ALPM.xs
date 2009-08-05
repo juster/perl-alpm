@@ -4,38 +4,40 @@
 
 #include "ppport.h"
 
-#include "libalpm/alpm.h"
-#include "libalpm/alpm_list.h"
-#include "libalpm/deps.h"
-#include "libalpm/group.h"
-#include "libalpm/sync.h"
-#include "libalpm/trans.h"
+#include <alpm.h>
+
+/* #include "libalpm/alpm.h" */
+/* #include "libalpm/alpm_list.h" */
+/* #include "libalpm/deps.h" */
+/* #include "libalpm/group.h" */
+/* #include "libalpm/sync.h" */
+/* #include "libalpm/trans.h" */
 
 #include "const-c.inc"
 
 /* These are missing in alpm.h */
 
 /* from deps.h */
-/* struct __pmdepend_t {
+struct __pmdepend_t {
 	pmdepmod_t mod;
 	char *name;
 	char *version;
-}; */
+};
 
 /* from group.h */
-/* struct __pmgrp_t { */
-	/** group name */
-/* 	char *name; */
-	/** list of pmpkg_t packages */
-/* 	alpm_list_t *packages; */
-/* }; */
+struct __pmgrp_t {
+	/*group name*/
+	char *name;
+	/*list of pmpkg_t packages*/
+	alpm_list_t *packages;
+};
 
 /* from sync.h */
-/* struct __pmsyncpkg_t {
+struct __pmsyncpkg_t {
 	pmpkgreason_t newreason;
 	pmpkg_t *pkg;
 	alpm_list_t *removes;
-}; */
+};
 
 typedef int           negative_is_error;
 typedef pmdb_t      * ALPM_DB;

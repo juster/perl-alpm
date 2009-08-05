@@ -24,5 +24,4 @@ lib/ALPM/Package.pm
 lib/ALPM/PackageFree.pm
 lib/ALPM/LoadConfig.pm
 lib/ALPM/Transaction.pm
-lib/ALPM/Ex.pm
 META.yml

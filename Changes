@@ -1,7 +1,10 @@
 Revision history for Perl extension ALPM.
 
-0.03
-      - Added transaction support with ALPM::Transaction and ALPM::Ex.
+0.03  August 05, 2009
+      - Added transaction support with ALPM::Transaction.
+      - Implemented callback options to ALPM and also transaction
+        callbacks using the transaction() method.
+      - Created tied hash interface to ALPM options just for fun.
 
 0.02  June 15, 2009
       - Added ALPM::LoadConfig which is used to load pacman.conf

@@ -12,9 +12,13 @@ t/02-DB.t
 t/03-Package.t
 t/04-LoadConfig.t
 t/05-Transaction.t
+t/06-Callbacks.t
+t/07-FakeRepos.t
+t/08-Tied.t
 t/fakeroot/etc/pacman.conf
 t/fakeroot/etc/mirrorlist
 lib/ALPM.pm
+lib/ALPM.pod
 lib/ALPM/DB.pm
 lib/ALPM/Package.pm
 lib/ALPM/PackageFree.pm

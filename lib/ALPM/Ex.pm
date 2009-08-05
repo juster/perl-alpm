@@ -37,9 +37,11 @@ __END__
 
 =head1 NAME
 
-ALPM::Ex - An exception class that contains a list of conflicts.
+ALPM::Ex (UNIMPLEMENTED) An exception class that contains a list of conflicts.
 
 =head1 SYNOPSIS
+
+  # WARNING: this is not yet implemented
 
   use English qw(-no_match_vars);
 

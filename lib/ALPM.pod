@@ -13,6 +13,18 @@ ALPM - XS module, OO wrapper of libalpm, Archlinux's packaging system
   # It's easier just to load a configuration file:
   use ALPM qw(/etc/pacman.conf);
 
+  # My new favorite way to get/set options.  A tied hash.  (TMTOWTDI)
+  my %alpm;
+  tie %alpm, 'ALPM';
+  $alpm{root} = '/';
+  printf "Root Dir = %s\n", $alpm{root};
+  my ($root, $dbpath, $cachedir) = @alpm{qw/root dbpath cachedir/};
+
+  # Callback options...
+  $alpm{logcb} = sub { my ($msg, $lvl) = @_; print "[$lvl] $msg\n" };
+
+
+  # Querying databases & packages
   my $localdb = ALPM->local_db;
   my $pkg     = $localdb->get_pkg('perl');
 
@@ -26,6 +38,14 @@ ALPM - XS module, OO wrapper of libalpm, Archlinux's packaging system
                                   'ftp://ftp.archlinux.org/$repo/os/i686' );
   my $perlpkgs = $syncdb->search('perl');
   printf "%d perl packages found.\n", scalar @{$perlpkgs};
+
+
+  # Transactions
+  my $trans = ALPM->transaction( type => 'upgrade' );
+  $trans->add( 'perl', 'perl-alpm', 'pacman' );
+  #$trans->prepare;  (unnecessary, commit does it if needed)
+  $trans->commit;
+  $trans = undef; # to force releasing, not required though
 
 =head1 DESCRIPTION
 
@@ -105,6 +125,9 @@ options return multiple values as an array reference.
 
 =back
 
+  * = the option is set with (and returns) an arrayref
+  + = the option is boolean and is either 0 or 1
+
 =head2 Callback options
 
 Callbacks can only be set to code references.
@@ -128,9 +151,6 @@ The total number of bytes downloaded so far is passed to the provided
 code ref as the only argument.
 
 =back
-
-  * = the option is set with (and returns) an arrayref
-  + = the option is boolean and is either 0 or 1
 
 =head1 CLASS METHODS
 
@@ -240,7 +260,7 @@ See L<ALPM::Transaction>
 
 =head1 ERRORS
 
-Global ALPM errors are thrown with C<die>.  The error messages match
+Global ALPM errors are thrown with C<croak>.  The error messages match
 the errors that the C library provides.  These errors are prefixed
 with C<ALPM Error: >.  Errors that occur when using a ALPM::DB object
 are prefixed with C<ALPM DB Error: >.

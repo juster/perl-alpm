@@ -166,9 +166,10 @@ void cb_totaldl_wrapper ( off_t total )
 }
 
 
-/* We convert all enum constants into strings.  An event is now a hash with a name,
-   status (start/done/failed/""), and arguments.  Arguments can have any name
-   in the hash they prefer.  The event hash is passed as a ref to the callback. */
+/* We convert all enum constants into strings.  An event is now a hash
+   with a name, status (start/done/failed/""), and arguments.
+   Arguments can have any name in the hash they prefer.  The event
+   hash is passed as a ref to the callback. */
 void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 {
     SV *s_pkg, *s_event_ref;
@@ -208,11 +209,11 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
         EVT_STATUS("done")
         break;
     case PM_TRANS_EVT_FILECONFLICTS_START:
-        EVT_NAME("conflicts")
+        EVT_NAME("fileconflicts")
         EVT_STATUS("start")
         break;
 	case PM_TRANS_EVT_FILECONFLICTS_DONE:
-        EVT_NAME("conflicts")
+        EVT_NAME("fileconflicts")
         EVT_STATUS("done")
         break;
 	case PM_TRANS_EVT_RESOLVEDEPS_START:
@@ -224,11 +225,11 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
         EVT_STATUS("done")
         break;
 	case PM_TRANS_EVT_INTERCONFLICTS_START:
-        EVT_NAME("conflicts")
+        EVT_NAME("interconflicts")
         EVT_STATUS("start")
         break;
 	case PM_TRANS_EVT_INTERCONFLICTS_DONE:
-        EVT_NAME("conflicts")
+        EVT_NAME("interconflicts")
         EVT_STATUS("done")
         EVT_PKG("target", arg_one)
         break;
@@ -254,6 +255,7 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 		break;
 	case PM_TRANS_EVT_UPGRADE_START:
         EVT_NAME("upgrade")
+        EVT_STATUS("start")
         EVT_PKG("package", arg_one)
 		break;
 	case PM_TRANS_EVT_UPGRADE_DONE:
@@ -876,7 +878,7 @@ alpm_trans_init(type, flags, event_sub)
         if ( ! SvTYPE( event_sub ) == SVt_PVCV ) {
             croak( "Callback arguments must be code references" );
         }
-        fprintf( stderr, "DEBUG: set event callback!\n" );
+#       fprintf( stderr, "DEBUG: set event callback!\n" );
         cb_trans_event_sub = event_sub;
         event_func = cb_trans_event_wrapper;
     }
@@ -896,7 +898,7 @@ negative_is_error
 DESTROY(self)
     SV * self
   CODE:
-    fprintf( stderr, "DEBUG Releasing the transaction\n" );
+#   fprintf( stderr, "DEBUG Releasing the transaction\n" );
     RETVAL = alpm_trans_release();
   OUTPUT:
     RETVAL

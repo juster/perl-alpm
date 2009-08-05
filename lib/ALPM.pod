@@ -105,15 +105,27 @@ options return multiple values as an array reference.
 
 =back
 
-=head2 TODO Unimplemented options (callbacks)
+=head2 Callback options
+
+Callbacks can only be set to code references.
 
 =over
 
-=item B<logcb>
+=item B<logcb> - Generic logging
 
-=item B<dlcb>
+The log message and level are passed to the provided code ref as
+arguments.  I<level> can be: error, warning, debug, function, or
+unknown
 
-=item B<totaldlcb>
+=item B<dlcb> - Download callback
+
+The filename, bytes transfered, and bytes total are passed to the
+provided code ref as arguments.
+
+=item B<totaldlcb> - Total download callback
+
+The total number of bytes downloaded so far is passed to the provided
+code ref as the only argument.
 
 =back
 
@@ -216,6 +228,10 @@ See L<ALPM::Package>
                 nodeps, force, nosave, cascade, recurse, dbonly,
                 alldeps, dlonly, noscriptlet, noconflicts, printuris,
                 needed, allexplicit, unneeded, recurseall
+            event => A coderef, used as an event callback.
+                When an event occurs, the coderef is passed a hashref
+                representing the event.  Events are explained in
+                detail in the ALPM::Transaction document.
   Throws  : An 'ALPM Error: ...' is thrown if a transaction is
             already active.
   Returns : An ALPM::Transaction object.

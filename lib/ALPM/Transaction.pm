@@ -4,6 +4,10 @@ use warnings;
 use strict;
 use Carp qw(carp croak);
 
+
+# This is just a simple class method used to store the settings
+# used to create the transaction and associate the hashref with
+# this package.  Most of the functionality is in ALPM.xs.
 sub new
 {
     my $class = shift;
@@ -14,7 +18,6 @@ sub new
                    type     => $trans_opts{type},
                    flags    => $trans_opts{flags},
                    event_cb => $trans_opts{event_cb} }, $class;
-
 }
 
 sub add
@@ -117,6 +120,75 @@ explicitly release a transaction, assign C<undef> to it.  For example:
 So be careful you don't keep extra copies of a transaction stored
 around or else it will not be released.  If you need extra copies
 try using C<weaken> in L<Scalar::Util>.
+
+=head1 EVENT CALLBACKS
+
+The C<ALPM::transaction()> method takes an optional event key/value
+pair.  The event types and their different values are listed here
+because there are so many of them.
+
+Events are passed to the callback as a hash reference.  Every event
+type has a C<name> and a C<status> key.  The name gives the type of
+event, and status gives a string representing the status.  The
+different kinds of extra arguments depends on the type of event.
+
+All events can have one of the two statuses, 'start' or 'done' unless
+noted.
+
+=over
+
+=item B<checkdeps>
+
+=item B<fileconflicts>
+
+=item B<resolvedeps>
+
+=item B<integrity>
+
+=item B<deltaintegrity>
+
+All the above events have no special keys.
+
+=item B<interconflicts>
+
+When status is 'done' there is a key named 'target' which is an
+L<ALPM::Package> object.
+
+=item B<add>
+
+Both 'start' and 'done' events also have a key named 'package' which
+is an L<ALPM::Package> object.
+
+=item B<remove>
+
+Both 'start' and 'done' events also have a key named 'package' which
+is an L<ALPM::Package> object.
+
+=item B<upgrade>
+
+The 'start' event has a key named 'package'.  The 'done' event has the
+keys 'new' and 'old'.
+
+=item B<deltapatches>
+
+The 'done' event also has keys 'pkgname', and 'patches'.
+
+=item B<deltapatch>
+
+There is also a fail event with 'status' set to 'failed', in which case
+there is an 'error' key with an error message as its value.
+
+=item B<scriptlet>
+
+This always has 'status' set to the empty string.  There is also a
+'text' key with the scriptlet text I imagine?
+
+=item B<printuri>
+
+This always has 'status' set to the empty string.  There is also a
+'name' key with the URI I guess?
+
+=back
 
 =head1 SEE ALSO
 

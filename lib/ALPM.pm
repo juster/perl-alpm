@@ -6,8 +6,9 @@ use warnings;
 
 require Exporter;
 use AutoLoader;
-use English qw(-no_match_vars);
+
 use Scalar::Util qw(weaken);
+use English      qw(-no_match_vars);
 use Carp;
 
 use ALPM::Transaction;
@@ -46,16 +47,20 @@ sub AUTOLOAD {
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
 
+
 ####----------------------------------------------------------------------
 #### GLOBAL VARIABLES
 ####----------------------------------------------------------------------
+
 
 # Transaction global variable
 our $_Transaction;
 
 our %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
                           qw{ root dbpath cachedirs logfile usesyslog
-                              noupgrades noextracts ignorepkgs holdpkgs ignoregrps
+                              noupgrades noextracts ignorepkgs holdpkgs
+                              ignoregrps
+
                               xfercommand nopassiveftp
                               logcb dlcb totaldlcb } );
 
@@ -87,17 +92,21 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
                     );
 
+
 ####----------------------------------------------------------------------
 #### CLASS INIT
 ####----------------------------------------------------------------------
+
 
 initialize();
 
 END { release() };
 
+
 ####----------------------------------------------------------------------
 #### CLASS FUNCTIONS
 ####----------------------------------------------------------------------
+
 
 sub import
 {
@@ -125,16 +134,19 @@ END_ERROR
     return;
 }
 
+
 ####----------------------------------------------------------------------
 #### CLASS METHODS
 ####----------------------------------------------------------------------
+
 
 sub get_opt
 {
     croak 'Invalid arguments to get_opt' if ( @_ != 2 );
     my ($class, $optname) = @_;
 
-    croak qq{Unknown libalpm option "$optname"} unless ( $_IS_GETOPTION{$optname} );
+    croak qq{Unknown libalpm option "$optname"}
+        unless ( $_IS_GETOPTION{$optname} );
 
     my $method_name = "get_$optname";
     my $func_ref = $ALPM::{$method_name};
@@ -176,7 +188,9 @@ sub set_opt
                   # is single valued opt
                   ( ref $optval eq '' || ref $optval eq 'CODE' ?
                     $optval                                    :
-                    croak qq{Singular option "$optname" only takes a scalar value}
+                    croak <<"END_ERROR"
+Singular option "$optname" only takes a scalar value
+END_ERROR
                    )
                  );
 
@@ -264,7 +278,8 @@ sub get_repo_db
     croak 'Not enough arguments to get_repo_dbs' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
 
-    my ($found) = grep { $_->get_name eq $repo_name } @{ALPM->get_opt('syncdbs')};
+    my ($found) = grep { $_->get_name eq $repo_name }
+        @{ALPM->get_opt('syncdbs')};
     return $found;
 }
 
@@ -325,9 +340,11 @@ sub transaction
     return $t;
 }
 
+
 ####----------------------------------------------------------------------
 #### TIED HASH INTERFACE
 ####----------------------------------------------------------------------
+
 
 my @_OPT_NAMES = sort keys %ALPM::_IS_GETOPTION;
 

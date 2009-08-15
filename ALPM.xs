@@ -360,17 +360,15 @@ DESTROY(self)
 
 MODULE = ALPM    PACKAGE = ALPM
 
-INCLUDE: const-xs.inc
-
 ALPM_PackageFree
-load_pkgfile(filename, ...)
+alpm_pkg_load(filename, ...)
     const char *filename
   PREINIT:
     pmpkg_t *pkg;
-    unsigned short full;
+#    unsigned short full;
   CODE:
-    full = ( items > 1 ? 1 : 0 );
-    if ( alpm_pkg_load( filename, full, &pkg ) != 0 )
+#    full = ( items > 1 ? 1 : 0 );
+    if ( alpm_pkg_load( filename, 1, &pkg ) != 0 )
         croak( "ALPM Error: %s", alpm_strerror( pm_errno ));
     RETVAL = pkg;
   OUTPUT:

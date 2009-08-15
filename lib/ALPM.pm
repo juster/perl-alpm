@@ -296,6 +296,14 @@ sub load_config
     return 1;
 }
 
+sub load_pkgfile
+{
+    croak 'load_pkgfile class method must have a filename as argument'
+        unless ( @_ == 2 );
+
+    return alpm_pkg_load( $_[1] );
+}
+
 sub transaction
 {
     croak 'transaction must be called as a class method' unless ( @_ );

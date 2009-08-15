@@ -58,6 +58,7 @@ typedef alpm_list_t * ListAutoFree;
 static SV *cb_log_sub      = NULL;
 static SV *cb_download_sub = NULL;
 static SV *cb_totaldl_sub  = NULL;
+static SV *cb_fetch_sub    = NULL;
 /* transactions */
 static SV *cb_trans_event_sub    = NULL;
 static SV *cb_trans_conv_sub     = NULL;
@@ -164,6 +165,43 @@ void cb_totaldl_wrapper ( off_t total )
 
     FREETMPS;
     LEAVE;
+}
+
+int cb_fetch_wrapper ( const char *url, const char *localpath,
+                       time_t mtimeold, time_t *mtimenew )
+{
+    time_t new_time;
+    int    sub_retval_count;
+    int    retval;
+
+    dSP;
+    ENTER;
+    SAVETMPS;
+
+    PUSHMARK(SP);
+    XPUSHs( sv_2mortal( newSVpv( url, strlen(url) ) ));
+    XPUSHs( sv_2mortal( newSVpv( localpath, strlen(localpath) ) ));
+    XPUSHs( sv_2mortal( newSViv( mtimeold ) ));
+
+    sub_retval_count = call_sv( cb_fetch_sub, G_EVAL | G_SCALAR );
+    
+    SPAGAIN;
+
+    if ( sub_retval_count == 0 || SvTRUE( ERRSV )) {
+        retval = -1;
+        /* not sure if we should print the error mesage */
+    }
+    else {
+        new_time = (time_t) POPi;
+        *mtimenew = new_time;
+        retval = ( new_time == mtimeold ? 0 : 1 );
+    }
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    return retval;
 }
 
 
@@ -399,6 +437,7 @@ alpm_option_set_logcb(callback)
         if ( cb_log_sub != NULL ) {
             SvREFCNT_dec( cb_log_sub );
             alpm_option_set_logcb( NULL );
+            cb_log_sub = NULL;
         }
     }
     else {
@@ -427,6 +466,7 @@ alpm_option_set_dlcb(callback)
         if ( cb_download_sub != NULL ) {
             SvREFCNT_dec( cb_download_sub );
             alpm_option_set_dlcb( NULL );
+            cb_download_sub = NULL;
         }
     }
     else {
@@ -456,6 +496,7 @@ alpm_option_set_totaldlcb(callback)
         if ( cb_totaldl_sub != NULL ) {
             SvREFCNT_dec( cb_totaldl_sub );
             alpm_option_set_totaldlcb( NULL );
+            cb_totaldl_sub = NULL;
         }
     }
     else {
@@ -468,6 +509,36 @@ alpm_option_set_totaldlcb(callback)
         cb_totaldl_sub = newSVsv(callback);
         alpm_option_set_totaldlcb( cb_totaldl_wrapper );
     }
+
+SV *
+alpm_option_get_fetchcb()
+  CODE:
+    RETVAL = ( cb_fetch_sub == NULL ? &PL_sv_undef : cb_fetch_sub );
+  OUTPUT:
+    RETVAL
+
+void
+alpm_option_set_fetchcb(callback)
+    SV * callback
+  CODE:
+    if ( ! SvOK(callback) ) {
+        if ( cb_fetch_sub != NULL ) {
+            SvREFCNT_dec( cb_fetch_sub );
+            alpm_option_set_fetchcb( NULL );
+            cb_fetch_sub = NULL;
+        }
+    }
+    else {
+        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
+            croak( "value for fetchcb option must be a code reference" );
+        }
+
+        if ( cb_fetch_sub != NULL ) SvREFCNT_dec( cb_fetch_sub );
+
+        cb_fetch_sub = newSVsv(callback);
+        alpm_option_set_fetchcb( cb_fetch_wrapper );
+    }
+
 
 const char *
 alpm_option_get_root()
@@ -878,6 +949,9 @@ alpm_trans_init(type, flags, event_sub)
   PREINIT:
     alpm_trans_cb_event event_func = NULL;
   CODE:
+    # I'm guessing that event callbacks provided for previous transactions
+    # shouldn't come into effect for later transactions unless explicitly
+    # provided.
     if ( SvOK( event_sub ) ) {
         if ( ! SvTYPE( event_sub ) == SVt_PVCV ) {
             croak( "Callback arguments must be code references" );
@@ -885,6 +959,10 @@ alpm_trans_init(type, flags, event_sub)
 #       fprintf( stderr, "DEBUG: set event callback!\n" );
         cb_trans_event_sub = event_sub;
         event_func = cb_trans_event_wrapper;
+    }
+    else if ( cb_trans_event_sub != NULL ) {
+        SvREFCNT_dec( cb_trans_event_sub );
+        cb_trans_event_sub = NULL;
     }
 
     RETVAL = alpm_trans_init( type, flags, event_func, NULL, NULL );

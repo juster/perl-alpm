@@ -104,7 +104,8 @@ void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
 
     s_level   = sv_2mortal( newSVpv( lvl_str, lvl_len ) );
     s_message = sv_newmortal();
-    sv_vsetpvfn( s_message, format, strlen(format), &args, (SV **)NULL, 0, NULL );
+    sv_vsetpvfn( s_message, format, strlen(format), &args,
+                 (SV **)NULL, 0, NULL );
     
     PUSHMARK(SP);
     XPUSHs(s_level);
@@ -308,11 +309,10 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
         EVT_STATUS("")
         EVT_TEXT("text", arg_one)
 		break;
-	case PM_TRANS_EVT_PRINTURI:
-        EVT_NAME("printuri")
-        EVT_STATUS("")
-        EVT_TEXT("name", arg_one)
-		break;
+    case PM_TRANS_EVT_RETRIEVE_START:
+        EVT_NAME("retrieve")
+        EVT_STATUS("start")
+        break;        
     }
 
 #undef EVT_NAME
@@ -335,6 +335,8 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 MODULE = ALPM    PACKAGE = ALPM
 
 PROTOTYPES: DISABLE
+
+INCLUDE: const-xs.inc
 
 MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
 

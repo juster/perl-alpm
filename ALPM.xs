@@ -628,9 +628,9 @@ alpm_option_get_localdb()
 DatabaseList
 alpm_option_get_syncdbs()
 
-/*
- * ALPM::DB Functions
- */
+#--------------------------------------------------------------------------
+# ALPM::DB Functions
+#--------------------------------------------------------------------------
 
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
 

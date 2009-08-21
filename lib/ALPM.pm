@@ -83,11 +83,11 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'dlonly'      => PM_TRANS_FLAG_DOWNLOADONLY(),
                      'noscriptlet' => PM_TRANS_FLAG_NOSCRIPTLET(),
                      'noconflicts' => PM_TRANS_FLAG_NOCONFLICTS(),
-                     'printuris'   => PM_TRANS_FLAG_PRINTURIS(),
                      'needed'      => PM_TRANS_FLAG_NEEDED(),
                      'allexplicit' => PM_TRANS_FLAG_ALLEXPLICIT(),
                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
-                     'recurseall'  => PM_TRANS_FLAG_RECURSEALL()
+                     'recurseall'  => PM_TRANS_FLAG_RECURSEALL(),
+                     'nolock'      => PM_TRANS_FLAG_NOLOCK(),
                     );
 
 

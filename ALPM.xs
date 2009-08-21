@@ -743,7 +743,7 @@ PackageListNoFree
 alpm_db_get_pkg_cache(db)
     ALPM_DB db
   CODE:
-    RETVAL = alpm_db_getpkgcache(db);
+    RETVAL = alpm_db_get_pkgcache(db);
   OUTPUT:
     RETVAL
 
@@ -763,7 +763,7 @@ GroupList
 alpm_db_get_group_cache(db)
     ALPM_DB       db
   CODE:
-    RETVAL = alpm_db_getgrpcache(db);
+    RETVAL = alpm_db_get_grpcache(db);
   OUTPUT:
     RETVAL
 
@@ -888,6 +888,14 @@ StringListNoFree
 alpm_pkg_get_backup(pkg)
     ALPM_Package pkg
 
+StringListNoFree
+alpm_pkg_get_removes(pkg)
+    ALPM_Package pkg
+
+ALPM_DB
+alpm_pkg_get_db(pkg)
+    ALPM_Package pkg
+
 # TODO: create get_changelog() method that does all this at once, easy with perl
 # void *alpm_pkg_changelog_open(ALPM_Package pkg);
 # size_t alpm_pkg_changelog_read(void *ptr, size_t size,
@@ -916,6 +924,10 @@ alpm_grp_get_name(grp)
 PackageListNoFree
 alpm_grp_get_pkgs(grp)
     ALPM_Group grp
+
+#-----------------------------------------------------------------------------
+# TRANSACTIONS
+#-----------------------------------------------------------------------------
 
 MODULE=ALPM    PACKAGE=ALPM
 
@@ -949,7 +961,9 @@ alpm_trans_init(type, flags, event_sub)
 
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
-# This is used internally, we keep the full name
+# This is used internally, we use the full name of the function
+# (no PREFIX above)
+
 negative_is_error
 alpm_trans_addtarget(target)
     char * target
@@ -1030,10 +1044,12 @@ alpm_trans_prepare(self)
     RETVAL
 
 negative_is_error
-alpm_trans_sysupgrade(self)
+alpm_trans_sysupgrade(self, enable_downgrade)
     SV * self
+    int enable_downgrade
+    
   CODE:
-    RETVAL = alpm_trans_sysupgrade();
+    RETVAL = alpm_trans_sysupgrade( enable_downgrade );
   OUTPUT:
     RETVAL
 

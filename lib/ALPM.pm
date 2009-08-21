@@ -58,11 +58,9 @@ our $_Transaction;
 
 our %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
                           qw{ root dbpath cachedirs logfile usesyslog
-                              noupgrades noextracts ignorepkgs holdpkgs
-                              ignoregrps
+                              noupgrades noextracts ignorepkgs ignoregrps
 
-                              xfercommand nopassiveftp
-                              logcb dlcb totaldlcb } );
+                              nopassiveftp logcb dlcb totaldlcb fetchcb } );
 
 our %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
                          map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );
@@ -145,11 +143,17 @@ sub get_opt
     croak 'Invalid arguments to get_opt' if ( @_ != 2 );
     my ($class, $optname) = @_;
 
+    croak 'Option name must be provided'
+        unless defined $optname;
+
     croak qq{Unknown libalpm option "$optname"}
         unless ( $_IS_GETOPTION{$optname} );
 
     my $method_name = "get_$optname";
     my $func_ref = $ALPM::{$method_name};
+
+    die "Internal error: $method_name should be defined in ALPM.xs"
+        unless defined $func_ref;
 
     my $result = eval { $func_ref->() };
     if ($EVAL_ERROR) {
@@ -167,6 +171,9 @@ sub set_opt
     croak 'Not enough arguments to set_opt' if ( @_ < 3 );
     my ($class, $optname, $optval) = @_;
 
+    croak 'Option name must be provided'
+        unless defined $optname;
+
     $optname = lc $optname;
     unless ( $_IS_GETSETOPTION{$optname} ) {
         carp qq{Given option "$optname" is not settable or unknown};
@@ -175,6 +182,10 @@ sub set_opt
 
     my $method_name = "set_$optname";
     my $func_ref = $ALPM::{$method_name};
+
+    die "Internal error: $method_name should be defined in ALPM.xs"
+        unless defined $func_ref;
+
     my $func_arg;
 
     # If the option is a plural, it can accept multiple arguments

@@ -632,21 +632,6 @@ alpm_option_remove_ignorepkg(pkg)
     const char * pkg
 
 StringListNoFree
-alpm_option_get_holdpkgs()
-
-void
-alpm_option_add_holdpkg(pkg)
-    const char * pkg
-
-void
-alpm_option_set_holdpkgs(holdpkgs_list)
-    StringListNoFree holdpkgs_list
-
-negative_is_error
-alpm_option_remove_holdpkg(pkg)
-    const char * pkg
-
-StringListNoFree
 alpm_option_get_ignoregrps()
 
 void
@@ -660,13 +645,6 @@ alpm_option_set_ignoregrps(ignoregrps_list)
 negative_is_error
 alpm_option_remove_ignoregrp(grp)
     const char  * grp
-
-const char *
-alpm_option_get_xfercommand()
-
-void
-alpm_option_set_xfercommand(cmd)
-    const char * cmd
 
 unsigned short
 alpm_option_get_nopassiveftp()

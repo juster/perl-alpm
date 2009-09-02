@@ -149,7 +149,7 @@ sub get_opt
     croak qq{Unknown libalpm option "$optname"}
         unless ( $_IS_GETOPTION{$optname} );
 
-    my $method_name = "get_$optname";
+    my $method_name = "alpm_option_get_$optname";
     my $func_ref = $ALPM::{$method_name};
 
     die "Internal error: $method_name should be defined in ALPM.xs"
@@ -180,7 +180,7 @@ sub set_opt
         return;
     }
 
-    my $method_name = "set_$optname";
+    my $method_name = "alpm_option_set_$optname";
     my $func_ref = $ALPM::{$method_name};
 
     die "Internal error: $method_name should be defined in ALPM.xs"
@@ -258,7 +258,7 @@ sub register_db
     my $class = shift;
 
     if ( @_ == 0 || $_[0] eq 'local' ) {
-        return $class->local_db;
+        return $class->get_localdb;
     }
 
     my ($sync_name, $sync_url) = @_;
@@ -276,22 +276,43 @@ sub register_db
     return $new_db;
 }
 
-sub local_db
+sub get_localdb
 {
     my $class = shift;
     my $localdb = $class->get_opt('localdb');
+
     return $localdb if $localdb;
     return db_register_local();
 }
 
-sub get_repo_db
+sub get_syncdbs
+{
+    my $class = shift;
+    my $syncdbs = $class->get_opt('syncdbs');
+    return @$syncdbs;
+}
+
+sub get_dbs
+{
+    my $class = shift;
+    return ( $class->get_localdb, $class->get_syncdbs );
+}
+
+sub get_repodb
 {
     croak 'Not enough arguments to get_repo_dbs' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
 
-    my ($found) = grep { $_->get_name eq $repo_name }
-        @{ALPM->get_opt('syncdbs')};
+    my ($found) = grep { $_->get_name eq $repo_name } $class->get_dbs;
     return $found;
+}
+
+sub search
+{
+    my ($class, @search_strs) = @_;
+
+    return ( map { @{ $_->search( @search_strs ) } } $class->get_dbs );
+
 }
 
 sub load_config

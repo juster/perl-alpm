@@ -420,7 +420,7 @@ alpm_initialize()
 negative_is_error
 alpm_release()
 
-MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_option_
+MODULE = ALPM    PACKAGE = ALPM
 
 SV *
 alpm_option_get_logcb()
@@ -914,6 +914,10 @@ alpm_pkg_has_force(pkg)
 off_t
 alpm_pkg_download_size(newpkg)
     ALPM_Package newpkg
+
+#-----------------------------------------------------------------------------
+# PACKAGE GROUPS
+#-----------------------------------------------------------------------------
 
 MODULE=ALPM    PACKAGE=ALPM::Group    PREFIX=alpm_grp_
 

@@ -20,6 +20,7 @@ t/fakeroot/etc/mirrorlist
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm
+lib/ALPM/DB.pod
 lib/ALPM/Package.pm
 lib/ALPM/PackageFree.pm
 lib/ALPM/LoadConfig.pm

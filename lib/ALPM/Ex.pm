@@ -11,7 +11,7 @@ sub new
 
     my ($msg, $conflicts) = @_;
 
-    return bless { msg => $msg, conflicts => $errlist }, $class;
+    return bless { msg => $msg, conflicts => $conflicts }, $class;
 }
 
 sub message

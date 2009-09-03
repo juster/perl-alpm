@@ -10,4 +10,5 @@ BEGIN { use_ok('ALPM') };
 my $fail   = eval { ALPM::initialize() };
 my $errmsg = $EVAL_ERROR;
 is( $fail, undef );
-ok( $errmsg =~ /^ALPM Error: library already initialized/ );
+like( $errmsg, qr/^ALPM Error: library already initialized/,
+      'automatic initializes' );

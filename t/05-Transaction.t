@@ -3,8 +3,6 @@ use warnings;
 use strict;
 use Test::More qw(no_plan);
 
-use Data::Dumper;
-
 use ALPM qw(t/fakeroot/etc/pacman.conf);
 
 my $logstr;
@@ -15,18 +13,20 @@ sub print_log
     $logstr .=  join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
 }
 
+#use Data::Dumper;
+
 sub event_log
 {
     my ($event) = @_;
-    print STDERR Dumper( $event );
+#    print STDERR Dumper( $event );
 }
 
 ALPM->set_opt( 'logcb', \&print_log );
 
 ok( my $t = ALPM->transaction( type => 'sync', event => \&event_log ) );
 
-ok( $t->prepare );
-ok( $t->prepare );
+ok( $t->prepare, 'prepare a transaction' );
+ok( $t->prepare, 'redundant prepare is ignored' );
 
 eval { $t->add('nonexistantpackage') };
 ok( $@ =~ /ALPM Error/ );

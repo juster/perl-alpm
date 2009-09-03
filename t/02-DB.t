@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 16;
+use Test::More tests => 15;
 use Data::Dumper;
 use Net::Ping;
 use Time::HiRes qw(sleep);
@@ -13,19 +13,20 @@ BEGIN { use_ok('ALPM'); }
 ok( ALPM->set_options({ root        => '/',
                         dbpath      => '/var/lib/pacman/',
                         cachedirs   => [ '/var/cache/pacman/pkg' ],
-                        logfile     => '/var/log/pacman.log',
-                        xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' }) );
+                        logfile     => '/var/log/pacman.log', }) );
+
 
 ok( my $local = ALPM->register_db );
 
-is( $local->get_name, 'local' );
+is( $local->name, 'local' );
 
-is( $local->get_pkg('lskdfjkbadpkgname'), undef );
+is( $local->find('lskdfjkbadpkgname'), undef );
 
-ok( $local->get_pkg('perl')->isa('ALPM::Package') );
-is( ref $local->get_pkg_cache, 'ARRAY' );
-is( ref $local->get_group_cache, 'ARRAY' );
-is( ref $local->search(['perl']), 'ARRAY' );
+ok( $local->find('perl')->isa('ALPM::Package') );
+
+ok( scalar $local->packages > 1 );
+ok( scalar $local->groups > 1 );
+#is( ref $local->search('perl'), 'ARRAY' );
 
 SKIP:
 {
@@ -41,14 +42,15 @@ SKIP:
     skip 'could not ping ftp.archlinux.org', 7 unless $success;
 
     my $name = 'core';
-    my $syncdb = ALPM->register_db( $name => 'ftp://ftp.archlinux.org/$repo/os/i686' );
+    my $syncdb = ALPM->register_db( $name =>
+                                    'ftp://ftp.archlinux.org/$repo/os/i686' );
     ok( $syncdb );
-    is( $syncdb->get_name, $name );
-    is( ref $syncdb->get_pkg_cache, 'ARRAY' );
-    is( ref $syncdb->get_group_cache, 'ARRAY' );
+    is( $syncdb->name, $name );
+    ok( scalar $syncdb->packages > 1 );
+    ok( scalar $syncdb->groups > 1 );
 
-    ok( $syncdb->get_pkg('perl')->isa('ALPM::Package') );
-    is( ref $syncdb->search(['perl']), 'ARRAY' );
+    ok( $syncdb->find('perl')->isa('ALPM::Package') );
+    ok( scalar $syncdb->search('perl') > 1 );
 
-    is( 1, scalar @{ALPM->get_opt('syncdbs')} );
+    is( 1, scalar ALPM->syncdbs );
 }

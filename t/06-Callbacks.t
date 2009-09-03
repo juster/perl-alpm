@@ -17,8 +17,8 @@ sub print_log
 
 ALPM->set_opt( 'logcb', \&print_log );
 
-my $db = ALPM->get_repo_db('simpletest');
-my $foopkg = $db->get_pkg('foo');
+my $db = ALPM->repodb('simpletest');
+my $foopkg = $db->find('foo');
 
 ok( length $log_lines );
 

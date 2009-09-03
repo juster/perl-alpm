@@ -691,14 +691,19 @@ ALPM_DB
 alpm_db_register_sync(sync_name)
     const char * sync_name
 
-MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX=alpm_db_
+MODULE = ALPM   PACKAGE = ALPM::DB
 
 const char *
-alpm_db_get_name(db)
+name(db)
     ALPM_DB db
+  CODE:
+    RETVAL = alpm_db_get_name(db);
+  OUTPUT:
+    RETVAL
 
+# We have a wrapper for this because it crashes on local db.
 const char *
-alpm_db__get_url(db)
+_url(db)
     ALPM_DB db
   CODE:
     RETVAL = alpm_db_get_url(db);
@@ -706,7 +711,7 @@ alpm_db__get_url(db)
     RETVAL
 
 negative_is_error
-alpm_db__set_server(db, url)
+set_server(db, url)
     ALPM_DB db
     const char * url
   CODE:
@@ -714,8 +719,9 @@ alpm_db__set_server(db, url)
   OUTPUT:
     RETVAL
 
+# Wrapper for this checks if a transaction is active.
 negative_is_error
-alpm_db__update(db, level)
+_update(db, level)
     ALPM_DB db
     int level
   CODE:
@@ -724,7 +730,7 @@ alpm_db__update(db, level)
     RETVAL
 
 SV *
-alpm_db_get_pkg(db, name)
+find(db, name)
     ALPM_DB db
     const char *name
   PREINIT:
@@ -740,36 +746,34 @@ alpm_db_get_pkg(db, name)
     RETVAL
 
 PackageListNoFree
-alpm_db_get_pkg_cache(db)
+_get_pkg_cache(db)
     ALPM_DB db
   CODE:
     RETVAL = alpm_db_get_pkgcache(db);
   OUTPUT:
     RETVAL
 
-PackageListNoFree
-alpm_db_get_group(db, name)
-    ALPM_DB      db
-    const char   * name
-  PREINIT:
-    pmgrp_t *group;
+ALPM_Group
+find_group(db, name)
+    ALPM_DB db
+    const char * name
   CODE:
-    group = alpm_db_readgrp(db, name);
-    RETVAL = ( group == NULL ? NULL : group->packages );
+    RETVAL = alpm_db_readgrp(db, name);
   OUTPUT:
     RETVAL
   
 GroupList
-alpm_db_get_group_cache(db)
-    ALPM_DB       db
+_get_group_cache(db)
+    ALPM_DB db
   CODE:
     RETVAL = alpm_db_get_grpcache(db);
   OUTPUT:
     RETVAL
 
+# Wrapped to avoid arrayrefs (which are much easier in typemap)
 PackageListFree
-alpm_db__search(db, needles)
-    ALPM_DB        db
+_search(db, needles)
+    ALPM_DB db
     StringListFree needles
   CODE:
     RETVAL = alpm_db_search(db, needles);

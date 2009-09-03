@@ -258,7 +258,7 @@ sub register_db
     my $class = shift;
 
     if ( @_ == 0 || $_[0] eq 'local' ) {
-        return $class->get_localdb;
+        return $class->localdb;
     }
 
     my ($sync_name, $sync_url) = @_;
@@ -272,7 +272,7 @@ sub register_db
 
     # Set the server right away because function calls break in between...
     my $new_db = db_register_sync($sync_name);
-    $new_db->_set_server($sync_url);
+    $new_db->set_server($sync_url);
     return $new_db;
 }
 
@@ -303,7 +303,7 @@ sub repodb
     croak 'Not enough arguments to ALPM::repodb()' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
 
-    my ($found) = grep { $_->get_name eq $repo_name } $class->databases;
+    my ($found) = grep { $_->name eq $repo_name } $class->databases;
     return $found;
 }
 

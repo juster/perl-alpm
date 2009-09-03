@@ -315,6 +315,12 @@ sub search
 
 }
 
+sub unregister_all_dbs
+{
+    # Ignore our args since this should be called as a class method.
+    db_unregister_all();
+}
+
 sub load_config
 {
     my ($class, $cfg_path) = @_;

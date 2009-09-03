@@ -675,6 +675,9 @@ alpm_option_get_localdb()
 DatabaseList
 alpm_option_get_syncdbs()
 
+negative_is_error
+alpm_db_unregister_all()
+
 #--------------------------------------------------------------------------
 # ALPM::DB Functions
 #--------------------------------------------------------------------------
@@ -689,9 +692,6 @@ alpm_db_register_sync(sync_name)
     const char * sync_name
 
 MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX=alpm_db_
-
-negative_is_error
-alpm_db_unregister_all()
 
 const char *
 alpm_db_get_name(db)

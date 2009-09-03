@@ -276,7 +276,7 @@ sub register_db
     return $new_db;
 }
 
-sub get_localdb
+sub localdb
 {
     my $class = shift;
     my $localdb = $class->get_opt('localdb');
@@ -285,25 +285,25 @@ sub get_localdb
     return db_register_local();
 }
 
-sub get_syncdbs
+sub syncdbs
 {
     my $class = shift;
     my $syncdbs = $class->get_opt('syncdbs');
     return @$syncdbs;
 }
 
-sub get_dbs
+sub databases
 {
     my $class = shift;
-    return ( $class->get_localdb, $class->get_syncdbs );
+    return ( $class->localdb, $class->syncdbs );
 }
 
-sub get_repodb
+sub repodb
 {
-    croak 'Not enough arguments to get_repo_dbs' if ( @_ < 2 );
+    croak 'Not enough arguments to ALPM::repodb()' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
 
-    my ($found) = grep { $_->get_name eq $repo_name } $class->get_dbs;
+    my ($found) = grep { $_->get_name eq $repo_name } $class->databases;
     return $found;
 }
 
@@ -311,7 +311,7 @@ sub search
 {
     my ($class, @search_strs) = @_;
 
-    return ( map { @{ $_->search( @search_strs ) } } $class->get_dbs );
+    return ( map { @{ $_->search( @search_strs ) } } $class->databases );
 
 }
 
@@ -330,15 +330,20 @@ sub load_config
 
 sub load_pkgfile
 {
-    croak 'load_pkgfile class method must have a filename as argument'
-        unless ( @_ == 2 );
+    croak 'load_pkgfile() must have at least a filename as argument'
+        if ( @_ < 1 );
 
-    return alpm_pkg_load( $_[1] );
+    if ( eval { $_[0]->isa( __PACKAGE__ ) } ) {
+        shift @_;
+    }
+
+    my $package_path = shift;
+    return alpm_pkg_load( $package_path );
 }
 
 sub transaction
 {
-    croak 'transaction must be called as a class method' unless ( @_ );
+    croak 'transaction() must be called as a class method' unless ( @_ );
     my $class = shift;
 
     croak 'arguments to transaction method must be a hash'
@@ -366,10 +371,10 @@ sub transaction
 
     eval { alpm_trans_init( $trans_type, $trans_flags,
                             $trans_opts{event} ) };
-    if ( $@ ) {
-        die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
-        $@ =~ s/ at .*? line \d+[.]\n//;
-        croak $@;
+    if ( $EVAL_ERROR ) {
+        die "$EVAL_ERROR\n" unless ( $EVAL_ERROR =~ /\AALPM Error:/ );
+        $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;
+        croak $EVAL_ERROR;
     }
 
     # Return an object that will automatically release the transaction

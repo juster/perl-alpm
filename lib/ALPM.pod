@@ -29,20 +29,26 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
 
 
   # Querying databases & packages
-  my $localdb = ALPM->local_db;
+  my $localdb = ALPM->localdb;
   my $pkg     = $localdb->get_pkg('perl');
 
   # Lots of different ways to get package attributes...
-  my $attribs_ref    = $pkg->get_attribs_ref;
-  my $name           = $pkg->get_name;
-  my ($size, $isize) = $pkg->get_attribs('size', 'isize');
+  my $attribs_ref    = $pkg->attribs_ref;
+  my $name           = $pkg->name;
+  my ($size, $isize) = $pkg->attribs('size', 'isize');
   print "$name $attribs_ref->{version} $attribs_ref->{arch} $size/$isize";
 
   my $syncdb = ALPM->register_db( 'extra',
                                   'ftp://ftp.archlinux.org/$repo/os/i686' );
-  my $perlpkgs = $syncdb->search('perl');
-  printf "%d perl packages found.\n", scalar @{$perlpkgs};
+  my @perlpkgs = $syncdb->search('perl');
+  printf "%d perl packages found.\n", scalar @perlpkgs;
 
+  # Search all databases/repos.
+  print map { sprintf "%10s: %s %s\n", $_->db->get_name, $_->name, $_->version }
+            ALPM->search('perl');
+
+  # Find a database by name of repository.
+  my $coredb = ALPM->repodb('core');
 
   # Transactions
   my $trans = ALPM->transaction( type => 'upgrade' );
@@ -254,29 +260,29 @@ package or database-specific functions.
 
 See L<ALPM::DB>
 
-=head2 get_localdb
+=head2 localdb
 
-  Usage   : my $db = ALPM->get_localdb;
+  Usage   : my $db = ALPM->localdb;
   Returns : The local system database as an ALPM::DB object.
   Precond : You must set certain options first.
   Notes   : This is what is called by register_db without arguments.
 
-=head2 get_repodb
+=head2 repodb
 
-  Usage   : my $comm_db = ALPM->get_repodb('community');
+  Usage   : my $comm_db = ALPM->repodb('community');
   Params  : The name of a repository.
   Returns : An ALPM::DB object matching the repo name.
 
-=head2 get_syncdbs
+=head2 syncdbs
 
-  Usage   : my @dbs = ALPM->get_syncdbs;
+  Usage   : my @dbs = ALPM->syncdbs;
   Purpose : Nicer looking wrapper to ALPM->get_option('syncdbs');
   Params  : None.
   Returns : A list (not an arrayref) of sync databases.
 
-=head2 get_dbs
+=head2 databases
 
-  Usage   : my %dbs = ALPM->get_dbs;
+  Usage   : my @dbs = ALPM->databases;
   Params  : None
   Returns : A hash of 'database name' => 'database object'
             for each database that is registered.

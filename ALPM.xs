@@ -1019,15 +1019,33 @@ alpm_pkg_download_size(newpkg)
 # PACKAGE GROUPS
 #-----------------------------------------------------------------------------
 
-MODULE=ALPM    PACKAGE=ALPM::Group    PREFIX=alpm_grp_
+MODULE=ALPM    PACKAGE=ALPM::Group
 
 const char *
-alpm_grp_get_name(grp)
+name(grp)
     ALPM_Group grp
+  CODE:
+    RETVAL = alpm_grp_get_name(grp);
+  OUTPUT:
+    RETVAL
 
 PackageListNoFree
-alpm_grp_get_pkgs(grp)
+packages(grp)
     ALPM_Group grp
+  CODE:
+    RETVAL = alpm_grp_get_pkgs(grp);
+  OUTPUT:
+    RETVAL
+
+# This is copy pasted from above.  Maybe there is another way?
+PackageListNoFree
+pkgs(grp)
+    ALPM_Group grp
+  CODE:
+    RETVAL = alpm_grp_get_pkgs(grp);
+  OUTPUT:
+    RETVAL
+
 
 #-----------------------------------------------------------------------------
 # TRANSACTIONS

@@ -97,8 +97,7 @@ sub _set_defaults
     ALPM->set_options({ root        => '/',
                         dbpath      => '/var/lib/pacman/',
                         cachedirs   => [ '/var/cache/pacman/pkg' ],
-                        logfile     => '/var/log/pacman.log',
-                        xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' });
+                        logfile     => '/var/log/pacman.log', });
 }
 
 ####----------------------------------------------------------------------
@@ -194,7 +193,7 @@ sub load_file
     my $parser_ref = _make_parser( $cfg_path, $parser_hooks );
     my $ret = $parser_ref->();
 
-    if ( $ret ) { ALPM->register_db; } # registe local db
+    if ( $ret ) { ALPM->register_db; } # register local db
     return $ret;
 }
 

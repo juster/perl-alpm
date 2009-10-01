@@ -24,6 +24,13 @@ struct __pmdepend_t {
 	char *version;
 };
 
+struct __pmdepmissing_t {
+	char *target;
+	pmdepend_t *depend;
+	char *causingpkg; /* this is used in case of remove dependency error only */
+};
+typedef struct __pmdepmissing_t pmdepmissing_t;
+
 /* from group.h */
 struct __pmgrp_t {
 	/*group name*/
@@ -39,11 +46,29 @@ struct __pmsyncpkg_t {
 	alpm_list_t *removes;
 };
 
+/* from conflicts.h */
+
+struct __pmconflict_t {
+    char *package1;
+    char *package2;
+};
+typedef struct __pmconflict_t pmconflict_t;
+
+struct __pmfileconflict_t {
+    char *target;
+    pmfileconflicttype_t type;
+    char *file;
+    char *ctarget;
+};
+
 typedef int           negative_is_error;
 typedef pmdb_t      * ALPM_DB;
 typedef pmpkg_t     * ALPM_Package;
 typedef pmpkg_t     * ALPM_PackageFree;
 typedef pmgrp_t     * ALPM_Group;
+
+typedef pmdepend_t  * DependHash;
+typedef pmconflict_t * ConflictArray;
 
 typedef alpm_list_t * StringListFree;
 typedef alpm_list_t * StringListNoFree;
@@ -53,6 +78,69 @@ typedef alpm_list_t * GroupList;
 typedef alpm_list_t * DatabaseList;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
+
+/* CONVERTER FUNCTIONS ********************************************************/
+
+static SV * trans_ex_object ( SV * error_ref )
+{
+    HV *exception;
+    HV *exception_stash;
+    SV *ref;
+
+    exception = newHV();
+    hv_store( exception, "msg", 3, newSVpv( alpm_strerror( pm_errno ), 0 ), 0 );
+    hv_store( exception, "conflicts", 9, error_ref, 0 );
+
+    exception_stash = gv_stashpv( "ALPM::Ex", 0 );
+    ref             = newRV_noinc( (SV *) exception );
+    return sv_bless( ref, exception_stash );
+}
+
+static SV * _convert_depend ( const pmdepend_t * depend )
+{
+    HV *depend_hash;
+    SV *depend_ref;
+    pmdepmod_t depmod;
+
+    depend_hash = newHV();
+    depend_ref  = newRV_inc( (SV *)depend_hash );
+        
+    hv_store( depend_hash, "name", 4, newSVpv( depend->name, 0 ), 0 );
+    
+    if ( depend->version != NULL ) {
+        hv_store( depend_hash, "version", 7, newSVpv( depend->version, 0 ), 0 );
+    }
+    
+    depmod = depend->mod;
+    if ( depmod != 1 ) {
+        hv_store( depend_hash, "mod", 3,
+                  newSVpv( ( depmod == 2 ? "==" :
+                             depmod == 3 ? ">=" :
+                             depmod == 4 ? "<=" :
+                             depmod == 5 ? ">"  :
+                             depmod == 6 ? "<"  :
+                             "ERROR" ), 0 ),
+                  0 );
+    }
+
+    return depend_ref;
+}
+
+static SV * _convert_depmissing ( const pmdepmissing_t * depmiss )
+{
+    HV *depmiss_hash;
+
+    depmiss_hash = newHV();
+    hv_store( depmiss_hash, "target", 6,
+              newSVpv( depmiss->target, 0 ), 0 );
+    hv_store( depmiss_hash, "cause", 5,
+              newSVpv( depmiss->causingpkg, 0 ), 0 );
+    hv_store( depmiss_hash, "depend", 6,
+              _convert_depend( depmiss->depend ), 0 );
+    return newRV_inc( (SV *)depmiss_hash );
+}
+
+/* CALLBACKS ******************************************************************/
 
 /* Code references to use as callbacks. */
 static SV *cb_log_sub      = NULL;
@@ -1122,18 +1210,40 @@ alpm_trans_commit(self)
     trans = (HV *) SvRV(self);
     prepared = hv_fetch( trans, "prepared", 8, 0 );
 
+    fprintf( stderr, "DEBUG: prepared = %d\n", SvIV(*prepared) );
+
     /* prepare before we commit */
     if ( ! SvOK(*prepared) || ! SvTRUE(*prepared) ) {
         PUSHMARK(SP);
         XPUSHs(self);
         PUTBACK;
-#        fprintf( stderr, "DEBUG: before call_method\n" );
+        fprintf( stderr, "DEBUG: before call_method\n" );
         call_method( "prepare", G_DISCARD );
-#        fprintf( stderr, "DEBUG: after call_method\n" );
+        fprintf( stderr, "DEBUG: after call_method\n" );
     }
     
     errors = NULL;
     RETVAL = alpm_trans_commit( &errors );
+
+    if ( RETVAL == -1 ) {
+        error_list = newAV();
+        fprintf( stderr, "DEBUG: error is %s\n", alpm_strerror( pm_errno ));
+        switch ( pm_errno ) {
+        case PM_ERR_UNSATISFIED_DEPS:
+            for ( ; errors ; errors = errors->next ) {
+                av_push( error_list,
+                         _convert_depmissing( (pmdepmissing_t *)
+                                              errors->data ));
+
+            }
+            break;
+        }
+
+        sv_setsv( ERRSV, trans_ex_object( newRV_noinc( (SV *)error_list )));
+        croak( Nullch );
+        fprintf( stderr, "DEBUG: commit shouldn't get here?\n" );
+        RETVAL = 0;
+    }
   OUTPUT:
     RETVAL
 

@@ -291,38 +291,8 @@ L_DEPEND
         AV *depend_array = (AV*) SvRV($arg);
         DependList iter = $var;
         while ( iter != NULL ) {
-            HV *depend;
-            SV *depend_ref, *hash_value;
-            pmdepend_t *ampl_dep;
-            pmdepmod_t depmod;
-
-            depend      = newHV();
-            depend_ref  = newRV_noinc((SV*) depend);
-            ampl_dep = (pmdepend_t *)iter->data;
-
-            hash_value  = newSV(0);
-            sv_setpv( hash_value, ampl_dep->name );
-            hv_store( depend, \"name\", 4, hash_value, 0 );
-
-            if ( ampl_dep->version != NULL ) {
-                hash_value  = newSV(0);
-                sv_setpv( hash_value, ampl_dep->version );
-                hv_store( depend, \"version\", 7, hash_value, 0 );
-            }
-
-            depmod = ampl_dep->mod;
-            if ( depmod != 1 ) {
-                hash_value  = newSV(0);
-                sv_setpv( hash_value, ( depmod == 2 ? \"==\"  :
-                                        depmod == 3 ? \">=\"  :
-                                        depmod == 4 ? \"<=\"  :
-                                        depmod == 5 ? \">\"   :
-                                        depmod == 6 ? \"<\"   :
-                                        \"ERROR\" ));
-                hv_store( depend, \"mod\", 3, hash_value, 0 );
-            }
-                
-            av_push( depend_array, depend_ref );
+            av_push( depend_array,
+                     _convert_depend( (pmdepend_t *)iter->data ) );
             iter = iter->next;
         }
     }

@@ -318,9 +318,9 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
     hv_store( h_event, "status", 6, sv_2mortal( newSVpv( name, 0 )), 0 );
 
 #define EVT_PKG(key, pkgptr)                                    \
-    s_pkg = newRV_inc( newSV(0) );                              \
-    sv_setref_pv( s_pkg, "ALPM::PackageFree", (void *)pkgptr ); \
-    hv_store( h_event, key, 0, s_pkg, 0 );
+    s_pkg = newRV_noinc( newSV(0) );                            \
+    sv_setref_pv( s_pkg, "ALPM::Package", (void *)pkgptr );     \
+    hv_store( h_event, key, strlen(key), s_pkg, 0 );
 
 #define EVT_TEXT(key, text)    \
     hv_store( h_event, key, 0, \

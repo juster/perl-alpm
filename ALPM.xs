@@ -533,10 +533,13 @@ alpm_option_set_logcb(callback)
             croak( "value for logcb option must be a code reference" );
         }
 
-        if ( cb_log_sub != NULL ) SvREFCNT_dec( cb_log_sub );
-
-        cb_log_sub = newSVsv(callback);
-        alpm_option_set_logcb( cb_log_wrapper );
+        if ( cb_log_sub ) {
+            SvSetSV( cb_log_sub, callback );
+        }
+        else {
+            cb_log_sub = newSVsv(callback);
+            alpm_option_set_logcb( cb_log_wrapper );
+        }
     }
 
 SV *
@@ -562,10 +565,13 @@ alpm_option_set_dlcb(callback)
             croak( "value for dlcb option must be a code reference" );
         }
 
-        if ( cb_download_sub != NULL ) SvREFCNT_dec( cb_download_sub );
-
-        cb_download_sub = newSVsv(callback);
-        alpm_option_set_dlcb( cb_download_wrapper );
+        if ( cb_download_sub ) {
+            SvSetSV( cb_download_sub, callback );
+        }
+        else {
+            cb_download_sub = newSVsv(callback);
+            alpm_option_set_dlcb( cb_download_wrapper );
+        }
     }
 
 
@@ -592,10 +598,13 @@ alpm_option_set_totaldlcb(callback)
             croak( "value for totaldlcb option must be a code reference" );
         }
 
-        if ( cb_totaldl_sub != NULL ) SvREFCNT_dec( cb_totaldl_sub );
-
-        cb_totaldl_sub = newSVsv(callback);
-        alpm_option_set_totaldlcb( cb_totaldl_wrapper );
+        if ( cb_totaldl_sub ) {
+            SvSetSV( cb_totaldl_sub, callback );
+        }
+        else {
+            cb_totaldl_sub = newSVsv(callback);
+            alpm_option_set_totaldlcb( cb_totaldl_wrapper );
+        }
     }
 
 SV *
@@ -621,10 +630,13 @@ alpm_option_set_fetchcb(callback)
             croak( "value for fetchcb option must be a code reference" );
         }
 
-        if ( cb_fetch_sub != NULL ) SvREFCNT_dec( cb_fetch_sub );
-
-        cb_fetch_sub = newSVsv(callback);
-        alpm_option_set_fetchcb( cb_fetch_wrapper );
+        if ( cb_fetch_sub ) {
+            SvSetSV( cb_fetch_sub, callback );
+        }
+        else {
+            cb_fetch_sub = newSVsv(callback);
+            alpm_option_set_fetchcb( cb_fetch_wrapper );
+        }
     }
 
 
@@ -1157,14 +1169,21 @@ alpm_trans_init(type, flags, event_sub)
     # shouldn't come into effect for later transactions unless explicitly
     # provided.
     if ( SvOK( event_sub ) ) {
-        if ( ! SvTYPE( event_sub ) == SVt_PVCV ) {
+        if ( SvTYPE( SvRV( event_sub ) ) != SVt_PVCV ) {
             croak( "Callback arguments must be code references" );
         }
-#       fprintf( stderr, "DEBUG: set event callback!\n" );
-        cb_trans_event_sub = event_sub;
+        fprintf( stderr, "DEBUG: set event callback!\n" );
+        if ( cb_trans_event_sub ) {
+            SvSetSV( cb_trans_event_sub, event_sub );
+        }
+        else {
+            cb_trans_event_sub = newSVsv( event_sub );
+        }
         event_func = cb_trans_event_wrapper;
     }
     else if ( cb_trans_event_sub != NULL ) {
+        # If no event callback was provided for this new transaction,
+        # and an event callback is active, then remove the old callback.
         SvREFCNT_dec( cb_trans_event_sub );
         cb_trans_event_sub = NULL;
     }

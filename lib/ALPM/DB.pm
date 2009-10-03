@@ -14,7 +14,7 @@ sub update
 
     my $t = ALPM->transaction( type => 'sync' );
     $self->_update(1);
-    $t = undef;
+    return 1;
 }
 
 # Wrapper to keep ALPM from crashing...

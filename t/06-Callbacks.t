@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use Test::More qw(no_plan);
-use ALPM qw(t/fakeroot/etc/pacman.conf);
+use ALPM qw(t/test.conf);
 use Data::Dumper;
 use Cwd;
 

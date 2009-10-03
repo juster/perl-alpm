@@ -32,7 +32,7 @@ SKIP:
 {
     my $pinger = Net::Ping->new;
     my $success = 0;
-    for ( 1 .. 10 ) {
+    for ( 1 .. 5 ) {
         if ( $pinger->ping('ftp.archlinux.org') ) {
             $success = 1;
             last;

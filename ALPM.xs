@@ -81,22 +81,7 @@ typedef alpm_list_t * ListAutoFree;
 
 /* CONVERTER FUNCTIONS ********************************************************/
 
-static SV * trans_ex_object ( SV * error_ref )
-{
-    HV *exception;
-    HV *exception_stash;
-    SV *ref;
-
-    exception = newHV();
-    hv_store( exception, "msg", 3, newSVpv( alpm_strerror( pm_errno ), 0 ), 0 );
-    hv_store( exception, "conflicts", 9, error_ref, 0 );
-
-    exception_stash = gv_stashpv( "ALPM::Ex", 0 );
-    ref             = newRV_noinc( (SV *) exception );
-    return sv_bless( ref, exception_stash );
-}
-
-static SV * _convert_depend ( const pmdepend_t * depend )
+static SV * convert_depend ( const pmdepend_t * depend )
 {
     HV *depend_hash;
     SV *depend_ref;
@@ -126,7 +111,7 @@ static SV * _convert_depend ( const pmdepend_t * depend )
     return depend_ref;
 }
 
-static SV * _convert_depmissing ( const pmdepmissing_t * depmiss )
+static SV * convert_depmissing ( const pmdepmissing_t * depmiss )
 {
     HV *depmiss_hash;
 
@@ -136,8 +121,76 @@ static SV * _convert_depmissing ( const pmdepmissing_t * depmiss )
     hv_store( depmiss_hash, "cause", 5,
               newSVpv( depmiss->causingpkg, 0 ), 0 );
     hv_store( depmiss_hash, "depend", 6,
-              _convert_depend( depmiss->depend ), 0 );
+              convert_depend( depmiss->depend ), 0 );
     return newRV_inc( (SV *)depmiss_hash );
+}
+
+static SV * convert_conflict ( const pmconflict_t * conflict )
+{
+    AV *conflict_list;
+
+    conflict_list = newAV();
+    av_push( conflict_list, newSVpv( conflict->package1, 0 ) );
+    av_push( conflict_list, newSVpv( conflict->package2, 0 ) );
+    return newRV_inc( (SV *)conflict_list );
+}
+
+static SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
+{
+    HV *conflict_hash;
+
+    conflict_hash = newHV();
+    hv_store( conflict_hash, "type", 4,
+              newSVpv( ( fileconflict->type == PM_FILECONFLICT_TARGET ?
+                         "target" :
+                         fileconflict->type == PM_FILECONFLICT_FILESYSTEM ?
+                         "filesystem" : "ERROR" ), 0 ), 0);
+    hv_store( conflict_hash, "target", 6, newSVpv( fileconflict->target, 0 ),
+              0 );
+    hv_store( conflict_hash, "file", 4, newSVpv( fileconflict->file, 0 ),
+              0 );
+    hv_store( conflict_hash, "ctarget", 7, newSVpv( fileconflict->ctarget, 0 ),
+              0 );
+
+    return newRV_inc( (SV *)conflict_hash );
+}
+
+static SV * trans_ex_object ( alpm_list_t * error )
+{
+    HV *exception;
+    HV *exception_stash;
+    AV *error_list;
+    SV *ref;
+
+    exception = newHV();
+    hv_store( exception, "msg", 3,
+              newSVpv( alpm_strerror( pm_errno ), 0 ), 0 );
+
+    /* First convert the error list returned by the transaction
+       into an array reference.  Also store the type. */
+
+#define MAPLIST( type )                                                \
+    hv_store( exception, "type", 4, newSVpv( #type, 0 ), 0 );          \
+    for ( ; error ; error = error->next ) {                            \
+        av_push( error_list,                                           \
+                 convert_ ## type (( pm ## type ## _t *) error->data ) ); \
+    }                                                                  \
+    break;                                                             \
+
+    error_list = newAV();
+    switch ( pm_errno ) {
+        case PM_ERR_UNSATISFIED_DEPS:  MAPLIST( depmissing )
+        case PM_ERR_CONFLICTING_DEPS:  MAPLIST( conflict )
+        case PM_ERR_FILE_CONFLICTS:    MAPLIST( fileconflict )
+    }
+
+#undef MAPLIST
+    
+    hv_store( exception, "errors", 6, newRV_noinc( (SV *)error_list ),
+              0 );
+    exception_stash = gv_stashpv( "ALPM::Ex", 0 );
+    ref             = newRV_noinc( (SV *) exception );
+    return sv_bless( ref, exception_stash );
 }
 
 /* CALLBACKS ******************************************************************/
@@ -452,7 +505,11 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
     XPUSHs(s_event_ref);
     PUTBACK;
 
+    /* fprintf( stderr, "DEBUG: trans event callback start\n" ); */
+
     call_sv( cb_trans_event_sub, G_DISCARD );
+
+    /* fprintf( stderr, "DEBUG: trans event callback stop\n" ); */
 
     FREETMPS;
     LEAVE;
@@ -1172,7 +1229,7 @@ alpm_trans_init(type, flags, event_sub)
         if ( SvTYPE( SvRV( event_sub ) ) != SVt_PVCV ) {
             croak( "Callback arguments must be code references" );
         }
-        fprintf( stderr, "DEBUG: set event callback!\n" );
+        /*fprintf( stderr, "DEBUG: set event callback!\n" );*/
         if ( cb_trans_event_sub ) {
             SvSetSV( cb_trans_event_sub, event_sub );
         }
@@ -1229,39 +1286,32 @@ alpm_trans_commit(self)
     trans = (HV *) SvRV(self);
     prepared = hv_fetch( trans, "prepared", 8, 0 );
 
-    fprintf( stderr, "DEBUG: prepared = %d\n", SvIV(*prepared) );
+    /*fprintf( stderr, "DEBUG: prepared = %d\n", SvIV(*prepared) );*/
 
     /* prepare before we commit */
     if ( ! SvOK(*prepared) || ! SvTRUE(*prepared) ) {
         PUSHMARK(SP);
         XPUSHs(self);
         PUTBACK;
-        fprintf( stderr, "DEBUG: before call_method\n" );
+        /*fprintf( stderr, "DEBUG: before call_method\n" );*/
         call_method( "prepare", G_DISCARD );
-        fprintf( stderr, "DEBUG: after call_method\n" );
+        /*fprintf( stderr, "DEBUG: after call_method\n" );*/
     }
     
     errors = NULL;
     RETVAL = alpm_trans_commit( &errors );
 
     if ( RETVAL == -1 ) {
-        error_list = newAV();
         fprintf( stderr, "DEBUG: error is %s\n", alpm_strerror( pm_errno ));
         switch ( pm_errno ) {
         case PM_ERR_UNSATISFIED_DEPS:
-            for ( ; errors ; errors = errors->next ) {
-                av_push( error_list,
-                         _convert_depmissing( (pmdepmissing_t *)
-                                              errors->data ));
-
-            }
-            break;
+        case PM_ERR_CONFLICTING_DEPS:
+        case PM_ERR_FILE_CONFLICTS:
+            sv_setsv( ERRSV, trans_ex_object( errors ));
+            croak( Nullch );
+            fprintf( stderr, "DEBUG: commit shouldn't get here?\n" );
+            RETVAL = 0;
         }
-
-        sv_setsv( ERRSV, trans_ex_object( newRV_noinc( (SV *)error_list )));
-        croak( Nullch );
-        fprintf( stderr, "DEBUG: commit shouldn't get here?\n" );
-        RETVAL = 0;
     }
   OUTPUT:
     RETVAL
@@ -1287,13 +1337,13 @@ alpm_trans_prepare(self)
     prepared = hv_fetch( trans, "prepared", 8, 0 );
     if ( SvOK(*prepared) && SvTRUE(*prepared) ) {
         RETVAL = 0;
-    }   
+    }
     else {
         hv_store( trans, "prepared", 8, newSViv(1), 0 );
-        #fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
-
+        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
         errors = NULL;
         RETVAL = alpm_trans_prepare( &errors );
+        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );
     }
   OUTPUT:
     RETVAL

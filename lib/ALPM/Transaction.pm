@@ -14,18 +14,19 @@ sub new
 
     my %trans_opts = @_;
 
-    return bless { prepared => 0,
-                   type     => $trans_opts{type},
-                   flags    => $trans_opts{flags},
-                   event_cb => $trans_opts{event_cb} }, $class;
+    bless { prepared => 0,
+            type     => $trans_opts{type},
+            flags    => $trans_opts{flags},
+            event    => $trans_opts{event} }, $class;
 }
 
 sub add
 {
     my $self = shift;
 
-#     croak 'ALPM Error: cannot add targets to a prepared transaction'
-#         if ( $self->{prepared} );
+    # Transaction state gets messed up if we don't catch this...
+    croak 'ALPM Error: cannot add to a prepared transaction'
+        if ( $self->{prepared} );
 
     ADD_LOOP:
     for my $pkgname ( @_ ) {

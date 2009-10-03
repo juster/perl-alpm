@@ -9,9 +9,9 @@ sub new
 {
     my $class = shift;
 
-    my ($msg, $conflicts) = @_;
+    my ($msg, $errors) = @_;
 
-    return bless { msg => $msg, conflicts => $conflicts }, $class;
+    return bless { msg => $msg, errors => $errors }, $class;
 }
 
 sub message
@@ -20,14 +20,15 @@ sub message
     return $self->{msg};
 }
 
-sub conflicts
+sub errors
 {
     my $self = shift;
-    return @{$self->{conflicts}};
+    return @{$self->{errors}};
 }
 
 sub caught
 {
+    local $@;
     return eval { $@->isa( 'ALPM::Ex' ) };
 }
 

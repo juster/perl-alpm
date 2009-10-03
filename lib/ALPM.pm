@@ -297,6 +297,7 @@ sub databases
     my $class = shift;
     return ( $class->localdb, $class->syncdbs );
 }
+*dbs = \&databases;
 
 sub repodb
 {
@@ -306,13 +307,13 @@ sub repodb
     my ($found) = grep { $_->name eq $repo_name } $class->databases;
     return $found;
 }
+*db = \&repodb;
 
 sub search
 {
     my ($class, @search_strs) = @_;
 
-    return ( map { @{ $_->search( @search_strs ) } } $class->databases );
-
+    return ( map { $_->search( @search_strs ) } $class->databases );
 }
 
 sub unregister_all_dbs

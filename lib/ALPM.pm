@@ -276,6 +276,8 @@ sub register_db
     return $new_db;
 }
 
+*register = \&register_db;
+
 sub localdb
 {
     my $class = shift;

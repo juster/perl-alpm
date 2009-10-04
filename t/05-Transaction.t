@@ -60,7 +60,7 @@ like( $@, qr/^ALPM Error: cannot add to a prepared transaction/,
 ok( $t->commit, 'commit the transaction' );
 ok( length $logstr  > 0 );
 
-check_events( qw/integrity fileconflicts upgrade/ );
+check_events( qw/integrity fileconflicts add/ );
 
 $t = undef;
 

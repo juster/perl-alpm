@@ -216,7 +216,7 @@ static const char * log_lvl_unknown  = "unknown";
 void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
 {
     SV *s_level, *s_message;
-    char *lvl_str;
+    char *lvl_str, buffer[256];
     int lvl_len;
     dSP;
 
@@ -245,9 +245,15 @@ void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
     SAVETMPS;
 
     s_level   = sv_2mortal( newSVpv( lvl_str, lvl_len ) );
+
+    /*fprintf( stderr, "DEBUG: format = %s\n", format );*/
+
     s_message = sv_newmortal();
-    sv_vsetpvfn( s_message, format, strlen(format), &args,
-                 (SV **)NULL, 0, NULL );
+    vsnprintf( buffer, 255, format, args );
+    sv_setpv( s_message, buffer );
+    /* The following gets screwed up by j's: %jd or %ji, etc... */
+    /*sv_vsetpvfn( s_message, format, strlen(format), &args,
+                 (SV **)NULL, 0, NULL );*/
     
     PUSHMARK(SP);
     XPUSHs(s_level);

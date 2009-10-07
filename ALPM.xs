@@ -351,6 +351,7 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
     return retval;
 }
 
+/* TRANSACTION CALLBACKS *****************************************************/
 
 /* We convert all enum constants into strings.  An event is now a hash
    with a name, status (start/done/failed/""), and arguments.
@@ -519,6 +520,86 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 
     FREETMPS;
     LEAVE;
+}
+
+void cb_trans_conv_wrapper ( pmtransconv_t type,
+                             void *arg_one, void *arg_two, void *arg_three,
+                             int *result )
+{
+    HV *h_event;
+    SV *s_pkg;
+    dSP;
+
+    if ( cb_trans_event_sub == NULL ) return;
+
+    ENTER;
+    SAVETMPS;
+
+    h_event = newHV();
+
+#define EVT_PKG(key, pkgptr)                                    \
+    do {                                                        \
+        s_pkg = newRV_noinc( newSV(0) );                        \
+        sv_setref_pv( s_pkg, "ALPM::Package", (void *)pkgptr ); \
+        hv_store( h_event, key, strlen(key), s_pkg, 0 );        \
+    } while (0)
+
+#define EVT_TEXT(key, text)                                     \
+    do {                                                        \
+        hv_store( h_event, key, strlen(key),                    \
+                  sv_2mortal( newSVpv( (char *)text, 0 )), 0 ); \
+    } while (0)
+
+#define EVT_NAME( NAME ) EVT_TEXT("name", NAME)
+
+    hv_store( h_event, "id", 2, newSViv(type), 0 );
+    
+    switch ( type ) {
+    case PM_TRANS_CONV_INSTALL_IGNOREPKG:
+        EVT_NAME( "install_ignore" );
+        EVT_PKG ( "package", arg_one );
+        break;
+    case PM_TRANS_CONV_REPLACE_PKG:
+        EVT_NAME( "replace_package" );
+        EVT_PKG ( "old", arg_one );
+        EVT_PKG ( "new", arg_two );
+        EVT_TEXT( "db",  arg_three  );
+        break;
+    case PM_TRANS_CONV_CONFLICT_PKG:
+        EVT_NAME( "package_conflict" );
+        EVT_TEXT( "package", arg_one );
+        EVT_TEXT( "removable", arg_two );
+        break;
+    case PM_TRANS_CONV_CORRUPTED_PKG:
+        EVT_NAME( "corrupted_file" );
+        EVT_TEXT( "filename", arg_one );
+        break;
+    }
+
+#undef EVENT
+#undef EVT_NAME
+#undef EVT_PKG
+#undef EVT_TEXT
+
+    PUSHMARK(SP);
+    XPUSHs( newRV_inc( (SV *)h_event ));
+    PUTBACK;
+
+    fprintf( stderr, "DEBUG: trans conv callback start\n" );
+
+    call_sv( cb_trans_conv_sub, G_SCALAR );
+
+    fprintf( stderr, "DEBUG: trans conv callback stop\n" );
+
+    SPAGAIN;
+
+    *result = POPi;
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    return;
 }
 
 MODULE = ALPM    PACKAGE = ALPM
@@ -1221,12 +1302,14 @@ pkgs(grp)
 MODULE=ALPM    PACKAGE=ALPM
 
 negative_is_error
-alpm_trans_init(type, flags, event_sub)
+alpm_trans_init(type, flags, event_sub, conv_sub)
     int type
     int flags
     SV  *event_sub
+    SV  *conv_sub
   PREINIT:
     alpm_trans_cb_event event_func = NULL;
+    alpm_trans_cb_conv  conv_func = NULL;
   CODE:
     # I'm guessing that event callbacks provided for previous transactions
     # shouldn't come into effect for later transactions unless explicitly
@@ -1251,7 +1334,29 @@ alpm_trans_init(type, flags, event_sub)
         cb_trans_event_sub = NULL;
     }
 
-    RETVAL = alpm_trans_init( type, flags, event_func, NULL, NULL );
+    /* Copy/pasted from above.  TODO: make a macro somewhere? */
+    if ( SvOK( conv_sub ) ) {
+        fprintf( stderr, "DEBUG: settings conv_sub callback\n" );
+        if ( SvTYPE( SvRV( conv_sub ) ) != SVt_PVCV ) {
+            croak( "Callback arguments must be code references" );
+        }
+        /*fprintf( stderr, "DEBUG: set conv callback!\n" );*/
+        if ( cb_trans_conv_sub ) {
+            sv_setsv( cb_trans_conv_sub, conv_sub );
+        }
+        else {
+            cb_trans_conv_sub = newSVsv( conv_sub );
+        }
+        conv_func = cb_trans_conv_wrapper;
+    }
+    else if ( cb_trans_conv_sub != NULL ) {
+        # If no event callback was provided for this new transaction,
+        # and an event callback is active, then remove the old callback.
+        SvREFCNT_dec( cb_trans_conv_sub );
+        cb_trans_conv_sub = NULL;
+    }
+
+    RETVAL = alpm_trans_init( type, flags, event_func, conv_func, NULL );
   OUTPUT:
     RETVAL
 
@@ -1346,19 +1451,20 @@ alpm_trans_prepare(self)
     }
     else {
         hv_store( trans, "prepared", 8, newSViv(1), 0 );
-        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
+        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );*/
         errors = NULL;
         RETVAL = alpm_trans_prepare( &errors );
-        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );
+        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );*/
     }
   OUTPUT:
     RETVAL
 
+MODULE=ALPM    PACKAGE=ALPM    PREFIX=alpm_trans_
+
 negative_is_error
-alpm_trans_sysupgrade(self, enable_downgrade)
-    SV * self
+alpm_trans_sysupgrade(class, enable_downgrade)
+    SV * class
     int enable_downgrade
-    
   CODE:
     RETVAL = alpm_trans_sysupgrade( enable_downgrade );
   OUTPUT:

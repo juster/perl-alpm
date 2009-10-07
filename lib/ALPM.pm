@@ -386,10 +386,7 @@ END_ERR
                                   @{$trans_opts{flags}} );
         }
 
-        my $trans_obj = ALPM::Transaction::SysUpgrade->
-            new( %trans_opts );
-        $trans_obj->{enable_downgrade} = $enable_downgrade;
-        return $trans_obj;
+        return ALPM::Transaction::SysUpgrade->new( $enable_downgrade );
     }
 
     $trans_type = $_TRANS_TYPES{ $trans_opts{type} }

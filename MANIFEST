@@ -15,8 +15,6 @@ t/05-Transaction.t
 t/06-Callbacks.t
 t/07-FakeRepos.t
 t/08-Tied.t
-t/fakeroot/etc/pacman.conf
-t/fakeroot/etc/mirrorlist
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm
@@ -25,4 +23,5 @@ lib/ALPM/Package.pm
 lib/ALPM/PackageFree.pm
 lib/ALPM/LoadConfig.pm
 lib/ALPM/Transaction.pm
+lib/ALPM/Transaction/SysUpgrade.pm
 META.yml

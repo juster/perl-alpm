@@ -1381,6 +1381,33 @@ DESTROY(self)
 MODULE=ALPM    PACKAGE=ALPM::Transaction    PREFIX=alpm_trans_
 
 negative_is_error
+alpm_trans_prepare(self)
+    SV * self
+  PREINIT:
+    alpm_list_t *errors;
+    HV *trans;
+    STRLEN type_len;
+    char *type_str;
+    SV **prepared, **type;
+  CODE:
+    trans = (HV *) SvRV(self);
+
+    prepared = hv_fetch( trans, "prepared", 8, 0 );
+    if ( SvOK(*prepared) && SvTRUE(*prepared) ) {
+        RETVAL = 0;
+    }
+    else {
+        hv_store( trans, "prepared", 8, newSViv(1), 0 );
+
+        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );*/
+        errors = NULL;
+        RETVAL = alpm_trans_prepare( &errors );
+        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );*/
+    }
+  OUTPUT:
+    RETVAL
+
+negative_is_error
 alpm_trans_commit(self)
     SV * self
   PREINIT:
@@ -1435,35 +1462,13 @@ alpm_trans_interrupt(self)
   OUTPUT:
     RETVAL
 
-negative_is_error
-alpm_trans_prepare(self)
-    SV * self
-  PREINIT:
-    alpm_list_t *errors;
-    HV *trans;
-    SV **prepared;
-  CODE:
-    trans = (HV *) SvRV(self);
+MODULE=ALPM  PACKAGE=ALPM::Transaction::SysUpgrade  PREFIX=alpm_trans
 
-    prepared = hv_fetch( trans, "prepared", 8, 0 );
-    if ( SvOK(*prepared) && SvTRUE(*prepared) ) {
-        RETVAL = 0;
-    }
-    else {
-        hv_store( trans, "prepared", 8, newSViv(1), 0 );
-        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );*/
-        errors = NULL;
-        RETVAL = alpm_trans_prepare( &errors );
-        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );*/
-    }
-  OUTPUT:
-    RETVAL
-
-MODULE=ALPM    PACKAGE=ALPM    PREFIX=alpm_trans_
+# In the PREFIX above, We keep the underscore so the function call is
+# _sysupgrade (to denote a private function).
 
 negative_is_error
-alpm_trans_sysupgrade(class, enable_downgrade)
-    SV * class
+alpm_trans_sysupgrade(enable_downgrade)
     int enable_downgrade
   CODE:
     RETVAL = alpm_trans_sysupgrade( enable_downgrade );

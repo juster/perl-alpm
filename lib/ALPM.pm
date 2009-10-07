@@ -1,6 +1,6 @@
 package ALPM;
 
-use 5.010000;
+#use 5.010000;
 use strict;
 use warnings;
 
@@ -9,9 +9,10 @@ use AutoLoader;
 
 use Scalar::Util qw(weaken);
 use English      qw(-no_match_vars);
-use Carp;
+use Carp         qw(carp croak confess);
 
 use ALPM::Transaction;
+use ALPM::Transaction::SysUpgrade;
 use ALPM::Package;
 use ALPM::PackageFree;
 use ALPM::DB;
@@ -362,14 +363,42 @@ sub transaction
     my ($trans_type, $trans_flags) = (0) x 2;
 
     # A type must be specified...
-    croak qq{unknown transaction type "$trans_type"}
-        unless exists $_TRANS_TYPES{ $trans_opts{type} };
-    $trans_type = $_TRANS_TYPES{ $trans_opts{type} };
+    croak q{you must specify a 'type' in the hash arguments}
+        unless $trans_opts{type};
+
+    # Transactions of type sysupgrade use the alpm_trans_sysupgrade() func.
+    # We try to hide this difference with the same interface as normal
+    # transactions.
+    if ( $trans_opts{type} eq 'sysupgrade' ) {
+        my $enable_downgrade;
+
+        if ( exists $trans_opts{flags} ) {
+            croak q{transaction() option 'flags' must be an arrayref}
+                unless ( ref $trans_opts{flags} ne 'ARRAY' );
+
+            croak <<"END_ERR" if grep { !/^downgrade$/ } @{$trans_opts{flags}};
+Invalid transaction flags: @{$trans_opts{flags}}
+Only flag 'downgrade' is available for transactions of type 'sysupgrade'
+END_ERR
+
+            $enable_downgrade = ( 1 ==
+                                  grep { $_ eq 'downgrade' }
+                                  @{$trans_opts{flags}} );
+        }
+
+        my $trans_obj = ALPM::Transaction::SysUpgrade->
+            new( %trans_opts );
+        $trans_obj->{enable_downgrade} = $enable_downgrade;
+        return $trans_obj;
+    }
+
+    $trans_type = $_TRANS_TYPES{ $trans_opts{type} }
+        or croak qq{unknown transaction type "$trans_type"};
 
     # Parse flags if they are provided...
     if ( exists $trans_opts{flags} ) {
         croak qq{transaction() option 'flags' must be an arrayref}
-            unless ( ref $trans_opts{flags} ne 'ARRAY' );
+            if ( ref $trans_opts{flags} ne 'ARRAY' );
 
         for my $flag ( @{ $trans_opts{flags} } ) {
             croak qq{unknown transaction flag "$flag"}
@@ -379,18 +408,19 @@ sub transaction
     }
 
     eval { alpm_trans_init( $trans_type, $trans_flags,
-                            $trans_opts{event} ) };
+                            $trans_opts{event},
+                            $trans_opts{conv} ) };
     if ( $EVAL_ERROR ) {
         die "$EVAL_ERROR\n" unless ( $EVAL_ERROR =~ /\AALPM Error:/ );
         $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;
         croak $EVAL_ERROR;
     }
 
-    # Return an object that will automatically release the transaction
+    # Create an object that will automatically release the transaction
     # when destroyed...
     my $t = ALPM::Transaction->new( %trans_opts );
-    $_Transaction = $t;
-    weaken $_Transaction; # keep track of active transactions
+    $_Transaction = $t;   # keep track of active transactions
+    weaken $_Transaction;
     return $t;
 }
 

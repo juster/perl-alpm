@@ -4,7 +4,7 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
 
 =head1 VERSION
 
-0.04
+0.04 -- compatible with pacman 3.3.0's alpm
 
 =head1 SYNOPSIS
 
@@ -27,7 +27,6 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
   # Callback options...
   $alpm{logcb} = sub { my ($msg, $lvl) = @_; print "[$lvl] $msg\n" };
 
-
   # Querying databases & packages
   my $localdb = ALPM->localdb;
   my $pkg     = $localdb->get_pkg('perl');
@@ -38,8 +37,8 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
   my ($size, $isize) = $pkg->attribs('size', 'isize');
   print "$name $attribs_ref->{version} $attribs_ref->{arch} $size/$isize";
 
-  my $syncdb = ALPM->register_db( 'extra',
-                                  'ftp://ftp.archlinux.org/$repo/os/i686' );
+  my $syncdb   = ALPM->register( 'extra',
+                                 'ftp://ftp.archlinux.org/$repo/os/i686' );
   my @perlpkgs = $syncdb->search('perl');
   printf "%d perl packages found.\n", scalar @perlpkgs;
 
@@ -48,14 +47,14 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
             ALPM->search('perl');
 
   # Find a database by name of repository.
-  my $coredb = ALPM->repodb('core');
+  my $coredb = ALPM->db('core');
 
   # Transactions
-  my $trans = ALPM->transaction( type => 'upgrade' );
+  my $trans = ALPM->transaction( type => 'sync' );
   $trans->add( 'perl', 'perl-alpm', 'pacman' );
-  #$trans->prepare;  (unnecessary, commit does it if needed)
+  #$trans->prepare; # unnecessary, commit calls prepare if needed
   $trans->commit;
-  $trans = undef; # to force releasing, not required though
+  undef $trans;     # to force releasing, now!
 
 =head1 DESCRIPTION
 
@@ -190,7 +189,7 @@ Callbacks can only be set to code references.
 
 The log message and level are passed to the provided code ref as
 arguments.  I<level> can be: error, warning, debug, function, or
-unknown
+unknown.
 
 =item B<dlcb> - Download callback
 
@@ -258,6 +257,9 @@ package or database-specific functions.
   Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
   Returns : An ALPM::DB object.
 
+You can also use the method C<register> which is a shorter alias for
+C<register_db>.
+
 See L<ALPM::DB>
 
 =head2 localdb
@@ -267,12 +269,6 @@ See L<ALPM::DB>
   Precond : You must set certain options first.
   Notes   : This is what is called by register_db without arguments.
 
-=head2 repodb
-
-  Usage   : my $comm_db = ALPM->repodb('community');
-  Params  : The name of a repository.
-  Returns : An ALPM::DB object matching the repo name.
-
 =head2 syncdbs
 
   Usage   : my @dbs = ALPM->syncdbs;
@@ -280,12 +276,23 @@ See L<ALPM::DB>
   Params  : None.
   Returns : A list (not an arrayref) of sync databases.
 
-=head2 databases
+=head2 db
 
-  Usage   : my @dbs = ALPM->databases;
+  Usage   : my $comm_db = ALPM->db('community');
+            my $comm_db = ALPM->repodb('community');
+  Params  : The name of a repository.
+  Returns : An ALPM::DB object matching the repo name.
+
+This is a shorter alias for the method C<repodb>.
+
+=head2 dbs
+
+  Usage   : my @dbs = ALPM->dbs;
+            my @dbs = ALPM->databases;
   Params  : None
-  Returns : A hash of 'database name' => 'database object'
-            for each database that is registered.
+  Returns : A list of each database that is registered.
+
+This is a shorter alias for the method C<databases>.
 
 See L<ALPM::DB>
 
@@ -307,8 +314,11 @@ See L<ALPM::Package>
 
 =head2 transaction
 
-  Usage   : my $t = ALPM->transaction( type => 'sync',
-                                       flags => [ qw/ nodeps / ] );
+  Usage   : my $t = ALPM->transaction( type     => 'sync',
+                                       flags    => 'nodeps force',
+                                       event    => sub { ... },
+                                       conv     => sub { ... },
+                                       progress => sub { ... } );
   Purpose : Initializes a transaction
   Params  : A hash of the transaction settings
   Throws  : An 'ALPM Error: ...' is thrown if a transaction is
@@ -337,7 +347,7 @@ Transactions have many named parameters, passed as a hash.
 
 =back
 
-=item flags - An arrayref of strings, valid flags are:
+=item flags - A string of flags, each separated by whitespace.
 
 =over 4
 
@@ -376,8 +386,12 @@ Transactions have many named parameters, passed as a hash.
 =item event - A coderef, used as an event callback.
 
 When an event occurs, the coderef is passed a hashref
-representing the event.  Events are explained in
+representing the event.  Events are explained in greater
 detail in the L<ALPM::Transaction> document.
+
+=item conv - A coderef, used as a conversation callback.
+
+=item progress - A coderef, used a progress callback.
 
 =back
 
@@ -403,8 +417,6 @@ TODO: Common error messages and how to fix them.
 =item * L<http://code.toofishes.net/cgit/> - GIT repository for pacman/libalpm
 
 =item * L<http://code.toofishes.net/pacman/doc/> - libalpm doxygen docs
-
-=item * L<libalpm>(8) (pretty sparse)
 
 =item * L<pacman>(8)
 

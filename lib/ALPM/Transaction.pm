@@ -59,7 +59,7 @@ ALPM::Transaction - An object wrapper for transaction functions.
 =head1 SYNOPSIS
 
   my $t = ALPM->transaction( type  => 'upgrade',
-                             flags => qw/ nodeps force / );
+                             flags => 'nodeps force' );
   $t->add( qw/ perl perl-alpm / );
   $t->commit;
 

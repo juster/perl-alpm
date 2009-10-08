@@ -205,7 +205,6 @@ static SV *cb_trans_event_sub    = NULL;
 static SV *cb_trans_conv_sub     = NULL;
 static SV *cb_trans_progress_sub = NULL;
 
-
 /* String constants to use for log levels (instead of bitflags) */
 static const char * log_lvl_error    = "error";
 static const char * log_lvl_warning  = "warning";
@@ -530,7 +529,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
     SV *s_pkg;
     dSP;
 
-    if ( cb_trans_event_sub == NULL ) return;
+    if ( cb_trans_conv_sub == NULL ) return;
 
     ENTER;
     SAVETMPS;
@@ -601,6 +600,98 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 
     return;
 }
+
+void cb_trans_progress_wrapper( pmtransprog_t type,
+                                const char * desc,
+                                int item_progress,
+                                int total_count, int total_pos )
+{
+    HV *h_event;
+    dSP;
+
+    if ( cb_trans_progress_sub == NULL ) return;
+
+    ENTER;
+    SAVETMPS;
+
+    h_event = newHV();
+
+#define EVT_TEXT(key, text)                                     \
+    do {                                                        \
+        hv_store( h_event, key, strlen(key),                    \
+                  sv_2mortal( newSVpv( (char *)text, 0 )), 0 ); \
+    } while (0)
+
+#define EVT_NAME( NAME ) EVT_TEXT("name", NAME); break;
+
+#define EVT_INT(KEY, INT)                          \
+    do {                                           \
+        hv_store( h_event, KEY, strlen(KEY),       \
+                  sv_2mortal( newSViv(INT) ), 0 ); \
+    } while (0)
+
+    switch( type ) {
+    case PM_TRANS_PROGRESS_ADD_START:       EVT_NAME( "add"       );
+    case PM_TRANS_PROGRESS_UPGRADE_START:   EVT_NAME( "upgrade"   );
+    case PM_TRANS_PROGRESS_REMOVE_START:    EVT_NAME( "remove"    );
+    case PM_TRANS_PROGRESS_CONFLICTS_START: EVT_NAME( "conflicts" );
+    }
+
+    EVT_INT ( "id",          type );
+    EVT_TEXT( "desc",        desc );
+    EVT_INT ( "item",        item_progress );
+    EVT_INT ( "total_count", total_count );
+    EVT_INT ( "total_pos",   total_pos );
+
+#undef EVT_INT
+#undef EVT_NAME
+
+    PUSHMARK(SP);
+    XPUSHs( newRV_inc( (SV *)h_event ));
+    PUTBACK;
+
+    fprintf( stderr, "DEBUG: trans progress callback start\n" );
+
+    call_sv( cb_trans_progress_sub, G_SCALAR );
+
+    fprintf( stderr, "DEBUG: trans progress callback stop\n" );
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    return;
+}
+
+/* This macro is used inside alpm_trans_init.
+   CB_NAME is one of the transaction callback types (event, conv, progress).
+
+   * [CB_NAME]_sub is the argument to the trans_init XSUB.
+   * [CB_NAME]_func is a variable to hold the function pointer to pass
+     to the real C ALPM function.
+   * cb_trans_[CB_NAME]_wrapper is the name of the C wrapper function which
+     calls the perl sub stored in the global variable:
+   * cb_trans_[CB_NAME]_sub.
+*/
+#define UPDATE_TRANS_CALLBACK( CB_NAME )                                \
+    if ( SvOK( CB_NAME ## _sub ) ) {                                    \
+        if ( SvTYPE( SvRV( CB_NAME ## _sub ) ) != SVt_PVCV ) {          \
+            croak( "Callback arguments must be code references" );      \
+        }                                                               \
+        if ( cb_trans_ ## CB_NAME ## _sub ) {                           \
+            sv_setsv( cb_trans_ ## CB_NAME ## _sub, CB_NAME ## _sub );   \
+        }                                                               \
+        else {                                                          \
+            cb_trans_ ## CB_NAME ## _sub = newSVsv( CB_NAME ## _sub );  \
+        }                                                               \
+        CB_NAME ## _func = cb_trans_ ## CB_NAME ## _wrapper;            \
+    }                                                                   \
+    else if ( cb_trans_ ## CB_NAME ## _sub != NULL ) {                  \
+        /* If no event callback was provided for this new transaction,  \
+           and an event callback is active, then remove the old callback. */ \
+        SvREFCNT_dec( cb_trans_ ## CB_NAME ## _sub );                   \
+        cb_trans_ ## CB_NAME ## _sub = NULL;                            \
+    }
 
 MODULE = ALPM    PACKAGE = ALPM
 
@@ -1302,61 +1393,35 @@ pkgs(grp)
 MODULE=ALPM    PACKAGE=ALPM
 
 negative_is_error
-alpm_trans_init(type, flags, event_sub, conv_sub)
+alpm_trans_init(type, flags, event_sub, conv_sub, progress_sub)
     int type
     int flags
     SV  *event_sub
     SV  *conv_sub
+    SV  *progress_sub
   PREINIT:
-    alpm_trans_cb_event event_func = NULL;
-    alpm_trans_cb_conv  conv_func = NULL;
+    alpm_trans_cb_event     event_func = NULL;
+    alpm_trans_cb_conv      conv_func  = NULL;
+    alpm_trans_cb_progress  progress_func  = NULL;
   CODE:
-    # I'm guessing that event callbacks provided for previous transactions
-    # shouldn't come into effect for later transactions unless explicitly
-    # provided.
-    if ( SvOK( event_sub ) ) {
-        if ( SvTYPE( SvRV( event_sub ) ) != SVt_PVCV ) {
-            croak( "Callback arguments must be code references" );
-        }
-        /*fprintf( stderr, "DEBUG: set event callback!\n" );*/
-        if ( cb_trans_event_sub ) {
-            SvSetSV( cb_trans_event_sub, event_sub );
-        }
-        else {
-            cb_trans_event_sub = newSVsv( event_sub );
-        }
-        event_func = cb_trans_event_wrapper;
-    }
-    else if ( cb_trans_event_sub != NULL ) {
-        # If no event callback was provided for this new transaction,
-        # and an event callback is active, then remove the old callback.
-        SvREFCNT_dec( cb_trans_event_sub );
-        cb_trans_event_sub = NULL;
-    }
+    /* I'm guessing that event callbacks provided for previous transactions
+       shouldn't come into effect for later transactions unless explicitly
+       provided. */
 
-    /* Copy/pasted from above.  TODO: make a macro somewhere? */
-    if ( SvOK( conv_sub ) ) {
-        fprintf( stderr, "DEBUG: settings conv_sub callback\n" );
-        if ( SvTYPE( SvRV( conv_sub ) ) != SVt_PVCV ) {
-            croak( "Callback arguments must be code references" );
-        }
-        /*fprintf( stderr, "DEBUG: set conv callback!\n" );*/
-        if ( cb_trans_conv_sub ) {
-            sv_setsv( cb_trans_conv_sub, conv_sub );
-        }
-        else {
-            cb_trans_conv_sub = newSVsv( conv_sub );
-        }
-        conv_func = cb_trans_conv_wrapper;
-    }
-    else if ( cb_trans_conv_sub != NULL ) {
-        # If no event callback was provided for this new transaction,
-        # and an event callback is active, then remove the old callback.
-        SvREFCNT_dec( cb_trans_conv_sub );
-        cb_trans_conv_sub = NULL;
-    }
+    UPDATE_TRANS_CALLBACK( event )
+    UPDATE_TRANS_CALLBACK( conv )
+    UPDATE_TRANS_CALLBACK( progress )
 
-    RETVAL = alpm_trans_init( type, flags, event_func, conv_func, NULL );
+    RETVAL = alpm_trans_init( type, flags,
+                              event_func, conv_func, progress_func );
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+alpm_trans_sysupgrade(enable_downgrade)
+    int enable_downgrade
+  CODE:
+    RETVAL = alpm_trans_sysupgrade( enable_downgrade );
   OUTPUT:
     RETVAL
 
@@ -1399,10 +1464,11 @@ alpm_trans_prepare(self)
     else {
         hv_store( trans, "prepared", 8, newSViv(1), 0 );
 
-        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );*/
+#        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
         errors = NULL;
         RETVAL = alpm_trans_prepare( &errors );
-        /*fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );*/
+#        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );
+        if( errors ) alpm_list_free( errors );
     }
   OUTPUT:
     RETVAL
@@ -1431,9 +1497,9 @@ alpm_trans_commit(self)
         PUSHMARK(SP);
         XPUSHs(self);
         PUTBACK;
-        /*fprintf( stderr, "DEBUG: before call_method\n" );*/
+#        fprintf( stderr, "DEBUG: before call_method\n" );
         call_method( "prepare", G_DISCARD );
-        /*fprintf( stderr, "DEBUG: after call_method\n" );*/
+#        fprintf( stderr, "DEBUG: after call_method\n" );
     }
     
     errors = NULL;
@@ -1441,6 +1507,7 @@ alpm_trans_commit(self)
 
     if ( RETVAL == -1 ) {
         fprintf( stderr, "DEBUG: error is %s\n", alpm_strerror( pm_errno ));
+
         switch ( pm_errno ) {
         case PM_ERR_UNSATISFIED_DEPS:
         case PM_ERR_CONFLICTING_DEPS:
@@ -1450,6 +1517,8 @@ alpm_trans_commit(self)
             fprintf( stderr, "DEBUG: commit shouldn't get here?\n" );
             RETVAL = 0;
         }
+
+        if ( errors ) alpm_list_free( errors );
     }
   OUTPUT:
     RETVAL
@@ -1462,17 +1531,14 @@ alpm_trans_interrupt(self)
   OUTPUT:
     RETVAL
 
-MODULE=ALPM  PACKAGE=ALPM::Transaction::SysUpgrade  PREFIX=alpm_trans
-
-# In the PREFIX above, We keep the underscore so the function call is
-# _sysupgrade (to denote a private function).
-
 negative_is_error
-alpm_trans_sysupgrade(enable_downgrade)
+alpm_trans_sysupgrade(self, enable_downgrade)
+    SV * self
     int enable_downgrade
   CODE:
     RETVAL = alpm_trans_sysupgrade( enable_downgrade );
   OUTPUT:
     RETVAL
+
 
 # EOF

@@ -12,7 +12,6 @@ use English      qw(-no_match_vars);
 use Carp         qw(carp croak confess);
 
 use ALPM::Transaction;
-use ALPM::Transaction::SysUpgrade;
 use ALPM::Package;
 use ALPM::PackageFree;
 use ALPM::DB;
@@ -360,7 +359,8 @@ sub transaction
         unless ( @_ % 2 == 0 );
 
     my %trans_opts = @_;
-    my ($trans_type, $trans_flags) = (0) x 2;
+    my ($trans_type, $trans_flags, $enable_downgrade) = (0) x 3;
+    my $sysupgrade;
 
     # A type must be specified...
     croak q{you must specify a 'type' in the hash arguments}
@@ -370,23 +370,17 @@ sub transaction
     # We try to hide this difference with the same interface as normal
     # transactions.
     if ( $trans_opts{type} eq 'sysupgrade' ) {
-        my $enable_downgrade;
+        $sysupgrade = 1;
+        $trans_opts{type} = 'sync';
 
-        if ( exists $trans_opts{flags} ) {
-            croak q{transaction() option 'flags' must be an arrayref}
-                unless ( ref $trans_opts{flags} ne 'ARRAY' );
-
-            croak <<"END_ERR" if grep { !/^downgrade$/ } @{$trans_opts{flags}};
-Invalid transaction flags: @{$trans_opts{flags}}
-Only flag 'downgrade' is available for transactions of type 'sysupgrade'
-END_ERR
-
-            $enable_downgrade = ( 1 ==
-                                  grep { $_ eq 'downgrade' }
-                                  @{$trans_opts{flags}} );
+        if ( eval { @{$trans_opts{flags}} } ) {
+            my @pruned_flags = grep { !/^(?:enable_)?downgrade$/ }
+                @{$trans_opts{flags}};
+            if ( scalar @pruned_flags != scalar @{$trans_opts{flags}} ) {
+                $enable_downgrade = 1;
+                $trans_opts{flags} = \@pruned_flags;
+            }
         }
-
-        return ALPM::Transaction::SysUpgrade->new( $enable_downgrade );
     }
 
     $trans_type = $_TRANS_TYPES{ $trans_opts{type} }
@@ -404,9 +398,13 @@ END_ERR
         }
     }
 
-    eval { alpm_trans_init( $trans_type, $trans_flags,
-                            $trans_opts{event},
-                            $trans_opts{conv} ) };
+    eval {
+        alpm_trans_init( $trans_type, $trans_flags,
+                         $trans_opts{event},
+                         $trans_opts{conv},
+                         $trans_opts{progress});
+        alpm_trans_sysupgrade( $enable_downgrade ) if ( $sysupgrade );
+    };
     if ( $EVAL_ERROR ) {
         die "$EVAL_ERROR\n" unless ( $EVAL_ERROR =~ /\AALPM Error:/ );
         $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;

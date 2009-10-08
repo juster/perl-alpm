@@ -74,9 +74,23 @@ check_conv( "install_ignore" );
 $trans->commit;
 undef $trans;
 
-$trans = ALPM->transaction( type => 'sync',
-                            conv => \&conv_log );
+sub dump_log
+{
+    my $event = shift;
+    print STDERR Dumper( $event ), "\n";
+
+}
+
+$alpm_opt{ignorepkgs} = [ ];
+
+$trans = ALPM->transaction( type     => 'sync',
+                            event    => \&dump_log,
+                            conv     => \&dump_log,
+                            progress => \&dump_log );
+
 $trans->add( 'replacebaz' );
-check_conv( "replace_package" );
+$trans->prepare;
 $trans->commit;
+#check_conv( "replace_package" );
+
 undef $trans;

@@ -373,12 +373,12 @@ sub transaction
         $sysupgrade = 1;
         $trans_opts{type} = 'sync';
 
-        if ( eval { @{$trans_opts{flags}} } ) {
-            my @pruned_flags = grep { !/^(?:enable_)?downgrade$/ }
-                @{$trans_opts{flags}};
-            if ( scalar @pruned_flags != scalar @{$trans_opts{flags}} ) {
+        if ( exists $trans_opts{flags} ) {
+            my @orig_flags = split /\s+/, $trans_opts{flags};
+            my @pruned_flags = grep { !/^(?:enable_)?downgrade$/ } @orig_flags;
+            if ( scalar @pruned_flags != scalar @orig_flags ) {
                 $enable_downgrade = 1;
-                $trans_opts{flags} = \@pruned_flags;
+                $trans_opts{flags} = join ' ', @pruned_flags;
             }
         }
     }
@@ -388,10 +388,7 @@ sub transaction
 
     # Parse flags if they are provided...
     if ( exists $trans_opts{flags} ) {
-        croak qq{transaction() option 'flags' must be an arrayref}
-            if ( ref $trans_opts{flags} ne 'ARRAY' );
-
-        for my $flag ( @{ $trans_opts{flags} } ) {
+        for my $flag ( split /\s+/, $trans_opts{flags} ) {
             croak qq{unknown transaction flag "$flag"}
                 unless exists $_TRANS_FLAGS{$flag};
             $trans_flags |= $_TRANS_FLAGS{$flag};

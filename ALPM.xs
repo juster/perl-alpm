@@ -368,13 +368,13 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
     ENTER;
     SAVETMPS;
 
-    h_event = newHV();
+    h_event = (HV*) sv_2mortal( (SV*) newHV() );
 
 #define EVT_NAME(name) \
-    hv_store( h_event, "name", 4, sv_2mortal( newSVpv( name, 0 )), 0 );
+    hv_store( h_event, "name", 4, newSVpv( name, 0 ), 0 );
 
 #define EVT_STATUS(name) \
-    hv_store( h_event, "status", 6, sv_2mortal( newSVpv( name, 0 )), 0 );
+    hv_store( h_event, "status", 6, newSVpv( name, 0 ), 0 );
 
 #define EVT_PKG(key, pkgptr)                                    \
     s_pkg = newRV_noinc( newSV(0) );                            \
@@ -383,7 +383,7 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 
 #define EVT_TEXT(key, text)    \
     hv_store( h_event, key, 0, \
-              sv_2mortal( newSVpv( (char *)text, 0 )), 0 );
+              newSVpv( (char *)text, 0 ), 0 );
 
     switch ( event ) {
     case PM_TRANS_EVT_CHECKDEPS_START:
@@ -505,7 +505,7 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 #undef EVT_PKG
 #undef EVT_TEXT
 
-    s_event_ref = newRV_inc( (SV *)h_event );
+    s_event_ref = newRV_noinc( (SV *)h_event );
 
     PUSHMARK(SP);
     XPUSHs(s_event_ref);
@@ -519,6 +519,8 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
 
     FREETMPS;
     LEAVE;
+
+    return;
 }
 
 void cb_trans_conv_wrapper ( pmtransconv_t type,
@@ -534,7 +536,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
     ENTER;
     SAVETMPS;
 
-    h_event = newHV();
+    h_event = (HV*) sv_2mortal( (SV*) newHV() );
 
 #define EVT_PKG(key, pkgptr)                                    \
     do {                                                        \
@@ -546,7 +548,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 #define EVT_TEXT(key, text)                                     \
     do {                                                        \
         hv_store( h_event, key, strlen(key),                    \
-                  sv_2mortal( newSVpv( (char *)text, 0 )), 0 ); \
+                  newSVpv( (char *)text, 0 ), 0 ); \
     } while (0)
 
 #define EVT_NAME( NAME ) EVT_TEXT("name", NAME)
@@ -581,7 +583,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 #undef EVT_TEXT
 
     PUSHMARK(SP);
-    XPUSHs( newRV_inc( (SV *)h_event ));
+    XPUSHs( newRV_noinc( (SV *)h_event ));
     PUTBACK;
 
     fprintf( stderr, "DEBUG: trans conv callback start\n" );
@@ -614,12 +616,12 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
     ENTER;
     SAVETMPS;
 
-    h_event = newHV();
+    h_event = (HV*) sv_2mortal( (SV*) newHV() );
 
-#define EVT_TEXT(key, text)                                     \
-    do {                                                        \
-        hv_store( h_event, key, strlen(key),                    \
-                  sv_2mortal( newSVpv( (char *)text, 0 )), 0 ); \
+#define EVT_TEXT(key, text)                        \
+    do {                                           \
+        hv_store( h_event, key, strlen(key),       \
+                  newSVpv( (char *)text, 0 ), 0 ); \
     } while (0)
 
 #define EVT_NAME( NAME ) EVT_TEXT("name", NAME); break;
@@ -627,7 +629,7 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
 #define EVT_INT(KEY, INT)                          \
     do {                                           \
         hv_store( h_event, KEY, strlen(KEY),       \
-                  sv_2mortal( newSViv(INT) ), 0 ); \
+                  newSViv(INT), 0 );               \
     } while (0)
 
     switch( type ) {
@@ -647,7 +649,7 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
 #undef EVT_NAME
 
     PUSHMARK(SP);
-    XPUSHs( newRV_inc( (SV *)h_event ));
+    XPUSHs( newRV_noinc( (SV *)h_event ));
     PUTBACK;
 
     fprintf( stderr, "DEBUG: trans progress callback start\n" );

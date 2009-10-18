@@ -385,13 +385,19 @@ Transactions have many named parameters, passed as a hash.
 
 =item event - A coderef, used as an event callback.
 
-When an event occurs, the coderef is passed a hashref
-representing the event.  Events are explained in greater
-detail in the L<ALPM::Transaction> document.
+When an event occurs, the coderef is passed a hashref representing the
+event.
+
+Events are explained in greater detail in the L<ALPM::Transaction>
+document.
 
 =item conv - A coderef, used as a conversation callback.
 
-=item progress - A coderef, used a progress callback.
+This callback is called when a question should be asked to the user.
+It is passed a hashref representing the question.  The callback
+returns 1 or 0 to answer yes or no.
+
+=item progress - A coderef, used as a progress callback.
 
 =back
 

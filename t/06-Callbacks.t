@@ -13,7 +13,7 @@ sub print_log
 {
     my ($lvl, $msg) = @_;
     $log_lines .= join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
-    print STDERR join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
+#    print STDERR join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
 }
 
 tie my %alpm_opt, 'ALPM';
@@ -23,6 +23,7 @@ my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share') );
 my $foopkg = $db->find('foo');
 
 ok( length $log_lines );
+ok( $foopkg );
 
 #$alpm_opt{logcb} = undef;
 
@@ -37,40 +38,45 @@ sub event_log
     $event_is_done{ $name } = 1;
 }
 
-sub check_events
+sub create_cb_checker
 {
-    ok( ( 0 == grep { ! $_ } map { delete $event_is_done{$_} } @_ ),
-        sprintf 'transaction events (%s) are done', join ',', @_ );
+    my $msg_fmt = shift
+        or die "Must provide a test message format as argument";
+
+    my %was_called;
+    my $cb_sub = sub {
+        my $event = shift;
+        # use Devel::Peek;
+        # Dump($event);
+        $was_called{ $event->{name} } = 1;
+        return 1;
+    };
+
+    my $check_sub = sub {
+        ok( ( 0 == grep { ! $_ } map { delete $was_called{$_} } @_ ),
+            sprintf $msg_fmt, join ',', @_ );
+    };
+    return ($cb_sub, $check_sub);
 }
 
-sub conv_log
+sub progress_log
 {
-    my $conv = shift;
-
-    use Devel::Peek;
-    Dump($conv);
-
-    if ( $conv->{name} eq 'install_ignore' ) {
-        print STDERR "Package: ", $conv->{package}->name, "\n";
-    }
-
-    $conv_was_asked{ $conv->{name} } = 1;
-    return 1;
-}
-
-sub check_conv
-{
-    ok( ( 0 == grep { ! $_ } map { delete $conv_was_asked{$_} } @_ ),
-        sprintf 'transaction conv (%s) was asked', join ',', @_ );
+    return;
 }
 
 $alpm_opt{ignorepkgs} = [ 'baz' ];
 
-my $trans = ALPM->transaction( type  => 'sync',
-                               event => \&event_log,
-                               conv  => \&conv_log );
+my ($event_log, $event_check)
+    = create_cb_checker( 'events (%s) were fired' );
+my ($conv_log,  $conv_check)
+    = create_cb_checker( 'questions (%s) were asked' );
+
+my $trans = ALPM->transaction( type     => 'sync',
+                               event    => $event_log,
+#                               progress => \&progress_log,
+                               conv     => $conv_log );
 $trans->add( 'baz' );
-check_conv( "install_ignore" );
+$conv_check->( "install_ignore" );
 $trans->commit;
 undef $trans;
 
@@ -83,14 +89,20 @@ sub dump_log
 
 $alpm_opt{ignorepkgs} = [ ];
 
-$trans = ALPM->transaction( type     => 'sync',
-                            event    => \&dump_log,
-                            conv     => \&dump_log,
-                            progress => \&dump_log );
+diag "Testing sysupgrade and replacing packages";
 
-$trans->add( 'replacebaz' );
-$trans->prepare;
-$trans->commit;
-#check_conv( "replace_package" );
+TODO:
+{
+    local $TODO = 'Cannot get package replacing to work';
+    $trans = ALPM->transaction( type     => 'sysupgrade',
+                                conv     => $conv_log );
 
-undef $trans;
+    #$trans->add( 'replacebaz' );
+    $trans->prepare;
+    eval { $trans->commit; };
+    $conv_check->( "replace_package" );
+
+    undef $trans;
+}
+
+

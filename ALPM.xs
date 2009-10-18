@@ -652,11 +652,11 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
     XPUSHs( newRV_noinc( (SV *)h_event ));
     PUTBACK;
 
-    fprintf( stderr, "DEBUG: trans progress callback start\n" );
+    /* fprintf( stderr, "DEBUG: trans progress callback start\n" ); */
 
     call_sv( cb_trans_progress_sub, G_SCALAR );
 
-    fprintf( stderr, "DEBUG: trans progress callback stop\n" );
+    /* fprintf( stderr, "DEBUG: trans progress callback stop\n" ); */
 
     PUTBACK;
     FREETMPS;

@@ -33,7 +33,7 @@ sub check_events
         sprintf 'transaction events (%s) are done', join ',', @_ );
 }
 
-ALPM->set_opt( 'logcb', \&print_log );
+#ALPM->set_opt( 'logcb', \&print_log );
 
 ok( ALPM->register_db( 'simpletest',
                        'file://' . rel2abs( 't/repos/share' )) );
@@ -58,7 +58,7 @@ like( $@, qr/^ALPM Error: cannot add to a prepared transaction/,
       'add fails after preparing transaction' );
 
 ok( $t->commit, 'commit the transaction' );
-ok( length $logstr  > 0 );
+#ok( length $logstr  > 0 );
 
 check_events( qw/integrity fileconflicts add/ );
 

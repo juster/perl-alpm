@@ -27,17 +27,6 @@ ok( $foopkg );
 
 #$alpm_opt{logcb} = undef;
 
-my (%event_is_done, %conv_was_asked);
-
-sub event_log
-{
-    my ($event) = @_;
-
-    return unless ( $event->{status} eq 'done' );
-    my $name = $event->{name};
-    $event_is_done{ $name } = 1;
-}
-
 sub create_cb_checker
 {
     my $msg_fmt = shift
@@ -46,8 +35,6 @@ sub create_cb_checker
     my %was_called;
     my $cb_sub = sub {
         my $event = shift;
-        # use Devel::Peek;
-        # Dump($event);
         $was_called{ $event->{name} } = 1;
         return 1;
     };
@@ -59,25 +46,23 @@ sub create_cb_checker
     return ($cb_sub, $check_sub);
 }
 
-sub progress_log
-{
-    return;
-}
-
 $alpm_opt{ignorepkgs} = [ 'baz' ];
 
 my ($event_log, $event_check)
     = create_cb_checker( 'events (%s) were fired' );
 my ($conv_log,  $conv_check)
     = create_cb_checker( 'questions (%s) were asked' );
+my ($progress_log, $progress_check)
+    = create_cb_checker( 'progress (%s) was reported' );
 
 my $trans = ALPM->transaction( type     => 'sync',
                                event    => $event_log,
-#                               progress => \&progress_log,
+                               progress => $progress_log,
                                conv     => $conv_log );
 $trans->add( 'baz' );
-$conv_check->( "install_ignore" );
+$conv_check->( 'install_ignore' );
 $trans->commit;
+$progress_check->( 'add' );
 undef $trans;
 
 sub dump_log
@@ -96,13 +81,9 @@ TODO:
     local $TODO = 'Cannot get package replacing to work';
     $trans = ALPM->transaction( type     => 'sysupgrade',
                                 conv     => $conv_log );
-
-    #$trans->add( 'replacebaz' );
     $trans->prepare;
     eval { $trans->commit; };
     $conv_check->( "replace_package" );
 
     undef $trans;
 }
-
-

@@ -94,7 +94,7 @@ ok( create_repos(), 'create test package repository' );
 
 create_conf();
 ok( ALPM->load_config( 't/test.conf' ), 'load our generated config' );
-ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
+#ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
 ok( my $db = ALPM->register_db( 'simpletest',
                                 'file://' . rel2abs( $REPOS_SHARE )) );
 is( $db->name, 'simpletest' );

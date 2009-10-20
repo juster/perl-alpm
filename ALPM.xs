@@ -317,30 +317,42 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
                        time_t mtimeold, time_t *mtimenew )
 {
     time_t new_time;
-    int    sub_retval_count;
+    int    count;
+    SV     *result;
     int    retval;
-
     dSP;
+
+    if ( cb_fetch_sub == NULL ) return -1;
+
     ENTER;
     SAVETMPS;
 
     PUSHMARK(SP);
-    XPUSHs( sv_2mortal( newSVpv( url, strlen(url) ) ));
-    XPUSHs( sv_2mortal( newSVpv( localpath, strlen(localpath) ) ));
-    XPUSHs( sv_2mortal( newSViv( mtimeold ) ));
+    XPUSHs( sv_2mortal( newSVpv( url, strlen(url) )));
+    XPUSHs( sv_2mortal( newSVpv( localpath, strlen(localpath) )));
+    XPUSHs( sv_2mortal( newSViv( mtimeold )));
+    PUTBACK;
 
-    sub_retval_count = call_sv( cb_fetch_sub, G_EVAL | G_SCALAR );
-    
+    count = call_sv( cb_fetch_sub, G_EVAL | G_SCALAR );
+
     SPAGAIN;
 
-    if ( sub_retval_count == 0 || SvTRUE( ERRSV )) {
+    result = POPs;
+
+    if ( ! SvTRUE( result ) || SvTRUE( ERRSV ) ) {
+        if ( SvTRUE( ERRSV )) warn( SvPV_nolen( ERRSV ));
+
         retval = -1;
-        /* not sure if we should print the error mesage */
     }
     else {
-        new_time = (time_t) POPi;
-        *mtimenew = new_time;
-        retval = ( new_time == mtimeold ? 0 : 1 );
+        new_time = (time_t) SvIV( result );
+        if ( mtimeold && new_time == mtimeold ) {
+            retval = 1;
+        }
+        else {
+            if ( mtimenew != NULL ) *mtimenew = new_time;
+            retval = 0;
+        }
     }
 
     PUTBACK;
@@ -586,11 +598,11 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
     XPUSHs( newRV_noinc( (SV *)h_event ));
     PUTBACK;
 
-    fprintf( stderr, "DEBUG: trans conv callback start\n" );
+    /* fprintf( stderr, "DEBUG: trans conv callback start\n" ); */
 
     call_sv( cb_trans_conv_sub, G_SCALAR );
 
-    fprintf( stderr, "DEBUG: trans conv callback stop\n" );
+    /* fprintf( stderr, "DEBUG: trans conv callback stop\n" ); */
 
     SPAGAIN;
 
@@ -771,7 +783,7 @@ alpm_option_set_logcb(callback)
         }
 
         if ( cb_log_sub ) {
-            SvSetSV( cb_log_sub, callback );
+            sv_setsv( cb_log_sub, callback );
         }
         else {
             cb_log_sub = newSVsv(callback);
@@ -803,7 +815,7 @@ alpm_option_set_dlcb(callback)
         }
 
         if ( cb_download_sub ) {
-            SvSetSV( cb_download_sub, callback );
+            sv_setsv( cb_download_sub, callback );
         }
         else {
             cb_download_sub = newSVsv(callback);
@@ -836,7 +848,7 @@ alpm_option_set_totaldlcb(callback)
         }
 
         if ( cb_totaldl_sub ) {
-            SvSetSV( cb_totaldl_sub, callback );
+            sv_setsv( cb_totaldl_sub, callback );
         }
         else {
             cb_totaldl_sub = newSVsv(callback);
@@ -868,7 +880,7 @@ alpm_option_set_fetchcb(callback)
         }
 
         if ( cb_fetch_sub ) {
-            SvSetSV( cb_fetch_sub, callback );
+            sv_setsv( cb_fetch_sub, callback );
         }
         else {
             cb_fetch_sub = newSVsv(callback);

@@ -3,9 +3,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 27;
-
-#use Data::Dumper;
+use Test::More tests => 28;
 
 BEGIN { use_ok('ALPM', root        => '/',
                        dbpath      => '/var/lib/pacman/',
@@ -31,6 +29,8 @@ for my $methodname (@methnames) {
     my $result = $method_ref->($pkg);
     ok $result;
 }
+
+ok defined $pkg->changelog;
 
 my $attribs_ref = $pkg->attribs_ref;
 ok( $attribs_ref );

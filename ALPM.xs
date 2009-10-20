@@ -1397,12 +1397,32 @@ alpm_pkg_db(pkg)
   OUTPUT:
     RETVAL
 
-# TODO: create get_changelog() method that does all this at once, easy with perl
-# void *alpm_pkg_changelog_open(ALPM_Package pkg);
-# size_t alpm_pkg_changelog_read(void *ptr, size_t size,
-# 		const ALPM_Package pkg, const void *fp);
-# int alpm_pkg_changelog_feof(const ALPM_Package pkg, void *fp);
-# int alpm_pkg_changelog_close(const ALPM_Package pkg, void *fp);
+SV *
+alpm_pkg_changelog(pkg)
+    ALPM_Package pkg
+  PREINIT:
+    void *fp;
+    char buffer[128];
+    size_t bytes_read;
+    SV *changelog_txt;
+  CODE:
+    changelog_txt = newSVpv( "", 0 );
+    RETVAL = changelog_txt;
+
+    fp = alpm_pkg_changelog_open( pkg );
+    if ( fp ) {
+        while ( 1 ) {
+            bytes_read = alpm_pkg_changelog_read( (void *)buffer, 128,
+                                                  pkg, fp );
+            /* fprintf( stderr, "DEBUG: read %d bytes of changelog\n", */
+            /*          bytes_read ); */
+            if ( bytes_read == 0 ) break;
+            sv_catpvn( changelog_txt, buffer, bytes_read );
+        }
+        alpm_pkg_changelog_close( pkg, fp );
+    }
+  OUTPUT:
+    RETVAL
 
 unsigned short
 alpm_pkg_has_scriptlet(pkg)

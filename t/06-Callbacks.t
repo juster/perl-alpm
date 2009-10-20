@@ -1,31 +1,26 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More qw(no_plan);
+use Test::More tests => 6;
 use ALPM qw(t/test.conf);
 use Data::Dumper;
 use File::Spec::Functions qw(rel2abs);
+use File::stat qw(stat);
+use File::Copy qw(copy);
+use File::Basename;
 use Cwd;
 
-my $log_lines = '';
-
-sub print_log
-{
-    my ($lvl, $msg) = @_;
-    $log_lines .= join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
-#    print STDERR join q{ }, 'LOG', sprintf('[%s]', $lvl), $msg;
-}
-
+my $log_lines = q{};
 tie my %alpm_opt, 'ALPM';
-$alpm_opt{logcb} = \&print_log;
+$alpm_opt{logcb} = sub { $log_lines .= $_[1] };
 
 my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share') );
 my $foopkg = $db->find('foo');
 
-ok( length $log_lines );
+ok( length $log_lines > 0 );
 ok( $foopkg );
 
-#$alpm_opt{logcb} = undef;
+$alpm_opt{logcb} = undef;
 
 sub create_cb_checker
 {
@@ -48,6 +43,24 @@ sub create_cb_checker
 
 $alpm_opt{ignorepkgs} = [ 'baz' ];
 
+use Data::Dumper;
+sub dump_cb {
+    print STDERR Dumper(\@_);
+}
+
+my ($total_bytes, $bytes_count);
+
+$alpm_opt{dlcb} = sub {
+    my ($fname, $trans, $total) = @_;
+    $bytes_count += $total if ( $trans == $total );
+};
+
+$alpm_opt{totaldlcb} = sub {
+    $total_bytes = $_[0] if ( $_[0] > 0 );
+};
+
+#$alpm_opt{logcb} = sub { printf STDERR "[%8s] %s", @_ };
+
 my ($event_log, $event_check)
     = create_cb_checker( 'events (%s) were fired' );
 my ($conv_log,  $conv_check)
@@ -65,12 +78,11 @@ $trans->commit;
 $progress_check->( 'add' );
 undef $trans;
 
-sub dump_log
-{
-    my $event = shift;
-    print STDERR Dumper( $event ), "\n";
+ok( $total_bytes == $bytes_count,
+    'Total download callback and download callbacks add up' );
 
-}
+undef $alpm_opt{dlcb};
+undef $alpm_opt{totaldlcb};
 
 $alpm_opt{ignorepkgs} = [ ];
 
@@ -78,6 +90,7 @@ diag "Testing sysupgrade and replacing packages";
 
 TODO:
 {
+    local $alpm_opt{logcb} = sub { printf STDERR "[%8s] %s", @_ };
     local $TODO = 'Cannot get package replacing to work';
     $trans = ALPM->transaction( type     => 'sysupgrade',
                                 conv     => $conv_log );
@@ -87,3 +100,17 @@ TODO:
 
     undef $trans;
 }
+
+# my $copied_files;
+# $alpm_opt{fetchcb} = sub {
+#     my ($fqp, $destdir) = @_;
+#     my $destfqp = $destdir . basename( $fqp );
+#     copy( $fqp, $destfqp ) or die "failed to copy $fqp: $!";
+#     $copied_files = 1;
+#     return stat($destfqp)->mtime;
+# };
+
+# ok( $copied_files, 'Fetch callback worked' );
+
+
+

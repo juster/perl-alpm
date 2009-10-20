@@ -345,6 +345,8 @@ Transactions have many named parameters, passed as a hash.
 
 =item * sync
 
+=item * sysupgrade
+
 =back
 
 =item flags - A string of flags, each separated by whitespace.
@@ -388,9 +390,6 @@ Transactions have many named parameters, passed as a hash.
 When an event occurs, the coderef is passed a hashref representing the
 event.
 
-Events are explained in greater detail in the L<ALPM::Transaction>
-document.
-
 =item conv - A coderef, used as a conversation callback.
 
 This callback is called when a question should be asked to the user.
@@ -399,7 +398,13 @@ returns 1 or 0 to answer yes or no.
 
 =item progress - A coderef, used as a progress callback.
 
+This callback is called to report on the progress of the operations
+of the transaction.
+
 =back
+
+Callbacks are explained in greater detail in the L<ALPM::Transaction>
+document.
 
 =head1 ERRORS
 

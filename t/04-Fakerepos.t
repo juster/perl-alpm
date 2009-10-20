@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More qw(no_plan);
+use Test::More tests => 5;
 
 use Data::Dumper;
 
@@ -30,6 +30,9 @@ RootDir  = $TEST_ROOT
 DBPath   = $TEST_ROOT/db/
 CacheDir = $TEST_ROOT/cache/
 LogFile  = $TEST_ROOT/test.log
+
+[simpletest]
+Server   = file://$REPOS_SHARE
 #EOF
 
 END_CONF
@@ -53,7 +56,7 @@ sub create_repos
     chdir $REPOS_BUILD;
     for my $pkgdir ( grep { !/[.]{1,2}/ && -d } readdir BUILDDIR ) {
         chdir $pkgdir;
-        system 'makepkg -fR >/dev/null 2>&1'
+        system 'makepkg -fd >/dev/null 2>&1'
             and die "error for makepkg in $pkgdir: $?";
         chdir '..';
     }
@@ -86,17 +89,23 @@ sub clean_root
     return 1;
 }
 
+SKIP:
+{
+    skip 'simpletest repository is already created', 1
+        if ( -e "$REPOS_SHARE/simpletest.db.tar.gz" );
+    diag( "creating test repository" );
+    ok( create_repos(), 'create test package repository' );
+}
+
 diag( "initializing our test rootdir" );
 ok( clean_root(), 'remake fake root dir' );
-
-diag( "creating test repository" );
-ok( create_repos(), 'create test package repository' );
 
 create_conf();
 ok( ALPM->load_config( 't/test.conf' ), 'load our generated config' );
 #ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
-ok( my $db = ALPM->register_db( 'simpletest',
-                                'file://' . rel2abs( $REPOS_SHARE )) );
+# ok( my $db = ALPM->register_db( 'simpletest',
+#                                 'file://' . rel2abs( $REPOS_SHARE )) );
+my $db = ALPM->db('simpletest');
 is( $db->name, 'simpletest' );
 ok( $db->update );
 

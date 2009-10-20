@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More qw(no_plan);
+use Test::More tests => 9;
 
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
@@ -35,8 +35,8 @@ sub check_events
 
 #ALPM->set_opt( 'logcb', \&print_log );
 
-ok( ALPM->register_db( 'simpletest',
-                       'file://' . rel2abs( 't/repos/share' )) );
+# ok( ALPM->register_db( 'simpletest',
+#                        'file://' . rel2abs( 't/repos/share' )) );
 
 ok( my $t = ALPM->transaction( type => 'sync', event => \&event_log ),
    'create a sync transaction' );

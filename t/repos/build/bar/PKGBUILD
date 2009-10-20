@@ -8,7 +8,8 @@ depends=(foo)
 license=('GPL')
 
 build() {
-  true;
+  mkdir -p "$pkgdir/usr/foo/bar"
+  echo "FILE CONFLICT!" > "$pkgdir/usr/foo/bar/bar"
 }
 
 # vim:set ts=2 sw=2 et:

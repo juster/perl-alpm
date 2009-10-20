@@ -3,7 +3,7 @@ package ALPM::Ex;
 use warnings;
 use strict;
 
-use overload q{""} => \&message;
+use overload q{""} => \&stringify;
 
 sub new
 {
@@ -14,10 +14,10 @@ sub new
     return bless { msg => $msg, errors => $errors }, $class;
 }
 
-sub message
+sub stringify
 {
     my $self = shift;
-    return $self->{msg};
+    return "ALPM Transaction Error: $self->{msg}\n";
 }
 
 sub errors

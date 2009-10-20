@@ -4,10 +4,10 @@ use warnings;
 use strict;
 use Carp qw(carp croak);
 
-
 # This is just a simple class method used to store the settings
 # used to create the transaction and associate the hashref with
 # this package.  Most of the functionality is in ALPM.xs.
+
 sub new
 {
     my $class = shift;
@@ -59,7 +59,11 @@ ALPM::Transaction - An object wrapper for transaction functions.
 =head1 SYNOPSIS
 
   my $t = ALPM->transaction( type  => 'upgrade',
-                             flags => 'nodeps force' );
+                             flags => 'nodeps force',
+                             event => sub { ... },
+                             conv  => sub { ... },
+                             progress => sub { ... },
+                            );
   $t->add( qw/ perl perl-alpm / );
   $t->commit;
 
@@ -191,13 +195,103 @@ This always has 'status' set to the empty string.  There is also a
 
 =back
 
+=head1 CONVERSATION CALLBACKS
+
+The conversation callback lets ALPM ask questions to the user.  The
+question is passed as a hash reference.  The callback returns 1 to
+answer yes, 0 to answer no. Each key of the hashref is described
+below.
+
+=over 4
+
+=item B<id>
+
+The integer value of the callback type.  It is one of these constants,
+which are exported from ALPM as functions by request:
+
+=over 4
+
+=item PM_TRANS_CONV_INSTALL_IGNOREPKG
+
+=item PM_TRANS_CONV_REPLACE_PKG
+
+=item PM_TRANS_CONV_CONFLICT_PKG
+
+=item PM_TRANS_CONV_CORRUPTED_PKG
+
+=back
+
+=item B<name>
+
+Ids are converted to string names.  Each decides what other arguments
+are provided in the hash reference.
+
+=back
+
+The following table shows what arguments are given for each named
+conversation event as well as the purpose of each named event.
+Arguments are simply additional keys in the hash ref.
+
+  |------------------+---------------------------------------------------|
+  | Name             | Description                                       |
+  |------------------+---------------------------------------------------|
+  | install_ignore   | Should the package be installed, and not ignored? |
+  | - package        | The package in question, an ALPM::Package object. |
+  |------------------+---------------------------------------------------|
+  | replace_package  | Should the old package be replaced by another?    |
+  | - old            | The old package, an ALPM::Package object.         |
+  | - new            | The new package, an ALPM::Package object.         |
+  | - db             | The name of the database's repository.            |
+  |------------------+---------------------------------------------------|
+  | package_conflict | Should the conflicting package be removed?        |
+  | - package        | The name of the package being conflicted.         |
+  | - removable      | The name of the removable package.                |
+  |------------------+---------------------------------------------------|
+  | corrupted_file   | Should the corrupted package file be deleted?     |
+  | - filename       | The name of the corrupted package file.           |
+  |------------------+---------------------------------------------------|
+
+=back
+
+=head1 PROGRESS CALLBACKS
+
+Progress of the transaction can be reported to a progress callback.
+Progress is reported as a hash reference, again.  The keys are
+described in the following table:
+
+  |-------------+------------------------------------------------------|
+  | Name        | Description                                          |
+  |-------------+------------------------------------------------------|
+  | id          | The numeric ID of the progress type.  Can be one of: |
+  |             | - PM_TRANS_PROGRESS_ADD_START                        |
+  |             | - PM_TRANS_PROGRESS_UPGRADE_START                    |
+  |             | - PM_TRANS_PROGRESS_REMOVE_START                     |
+  |             | - PM_TRANS_PROGRESS_CONFLICTS_START                  |
+  |-------------+------------------------------------------------------|
+  | name        | The string conversion of the numeric ID:             |
+  |             | - add                                                |
+  |             | - upgrade                                            |
+  |             | - remove                                             |
+  |             | - conflicts                                          |
+  |-------------+------------------------------------------------------|
+  | desc        | A string for extra description of the callback.      |
+  |             | For example, the name of the package being added.    |
+  |-------------+------------------------------------------------------|
+  | item        | The percentage of progress for the individual item.  |
+  |             | Like a package, for example.                         |
+  |-------------+------------------------------------------------------|
+  | total_count | The number of items being processed in total.        |
+  |-------------+------------------------------------------------------|
+  | total_pos   | The item's position in the total count above.        |
+  |-------------+------------------------------------------------------|
+
 =head1 SEE ALSO
 
 L<ALPM>
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 at gmail dot com> >>
+Justin Davis, C<< <jrcd83 gmail> >>
 
 =head1 COPYRIGHT AND LICENSE
 

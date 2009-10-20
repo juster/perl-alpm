@@ -15,6 +15,7 @@ t/05-Transaction.t
 t/06-Callbacks.t
 t/07-FakeRepos.t
 t/08-Tied.t
+t/repos/build/share/simpletest.db.tar.gz
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm

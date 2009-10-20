@@ -7,7 +7,8 @@ arch=(i686 x86_64)
 license=('GPL')
 
 build() {
-  true;
+  mkdir -p "$pkgdir/usr/foo"
+  echo "FOO!" > "$pkgdir/usr/foo/foo"
 }
 
 # vim:set ts=2 sw=2 et:

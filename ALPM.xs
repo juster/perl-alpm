@@ -155,42 +155,90 @@ static SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
     return newRV_inc( (SV *)conflict_hash );
 }
 
-static SV * trans_ex_object ( alpm_list_t * error )
+/* Copy/pasted from ALPM's conflict.c */
+void free_fileconflict_errors ( pmfileconflict_t *conflict )
 {
-    HV *exception;
-    HV *exception_stash;
+	if ( strlen( conflict->ctarget ) > 0 ) {
+		free(conflict->ctarget);
+	}
+	free(conflict->file);
+	free(conflict->target);
+	free(conflict);
+}
+
+/* Copy/pasted from ALPM's deps.c */
+void free_depmissing_errors ( pmdepmissing_t *miss )
+{
+	free(miss->depend->name);
+	free(miss->depend->version);
+	free(miss->depend);
+
+	free(miss->target);
+	free(miss->causingpkg);
+	free(miss);
+}
+
+/* Copy/pasted from ALPM's conflict.c */
+void free_conflict_errors ( pmconflict_t *conflict )
+{
+	free(conflict->package2);
+	free(conflict->package1);
+	free(conflict);
+}
+
+static SV * convert_trans_errors ( alpm_list_t * errors )
+{
+    HV *error_hash;
+    /*HV *exception_stash;*/
     AV *error_list;
+    alpm_list_t *iter;
     SV *ref;
 
-    exception = newHV();
-    hv_store( exception, "msg", 3,
+    error_hash = newHV();
+    error_list = newAV();
+
+    hv_store( error_hash, "msg", 3,
               newSVpv( alpm_strerror( pm_errno ), 0 ), 0 );
 
     /* First convert the error list returned by the transaction
        into an array reference.  Also store the type. */
 
-#define MAPLIST( type )                                                \
-    hv_store( exception, "type", 4, newSVpv( #type, 0 ), 0 );          \
-    for ( ; error ; error = error->next ) {                            \
-        av_push( error_list,                                           \
-                 convert_ ## type (( pm ## type ## _t *) error->data ) ); \
-    }                                                                  \
-    break;                                                             \
+#define MAPLIST( TYPE )                                                 \
+    hv_store( error_hash, "type", 4, newSVpv( #TYPE, 0 ), 0 );          \
+    for ( iter = errors ; iter ; iter = iter->next ) {                  \
+        av_push( error_list,                                            \
+                 convert_ ## TYPE ((pm ## TYPE ## _t *) iter->data ));  \
+    }                                                                   \
+    alpm_list_free_inner( errors,                                       \
+                          (alpm_list_fn_free)                           \
+                          free_ ## TYPE ## _errors );                   \
+    alpm_list_free( errors );                                           \
+    break
 
-    error_list = newAV();
+    /* fprintf( stderr, "Entering switch statement\n" ); */
+
     switch ( pm_errno ) {
-        case PM_ERR_UNSATISFIED_DEPS:  MAPLIST( depmissing )
-        case PM_ERR_CONFLICTING_DEPS:  MAPLIST( conflict )
-        case PM_ERR_FILE_CONFLICTS:    MAPLIST( fileconflict )
+    case PM_ERR_FILE_CONFLICTS:    MAPLIST( fileconflict );
+    case PM_ERR_UNSATISFIED_DEPS:  MAPLIST( depmissing );
+    case PM_ERR_CONFLICTING_DEPS:  MAPLIST( conflict );
+    default:
+        SvREFCNT_dec( (SV *)error_hash );
+        SvREFCNT_dec( (SV *)error_list );
+        return NULL;
     }
+
+    /* fprintf( stderr, "Left switch statement\n" ); */
 
 #undef MAPLIST
     
-    hv_store( exception, "errors", 6, newRV_noinc( (SV *)error_list ),
+    hv_store( error_hash, "list", 4, newRV_noinc( (SV *)error_list ),
               0 );
-    exception_stash = gv_stashpv( "ALPM::Ex", 0 );
-    ref             = newRV_noinc( (SV *) exception );
-    return sv_bless( ref, exception_stash );
+    /* error_hash_stash = gv_stashpv( "ALPM::Ex", 0 ); */
+
+    ref = newRV_noinc( (SV *)error_hash );
+    /* ref = sv_bless( ref, error_hash_stash ); */
+    /* fprintf( stderr, "DEBUG: returning\n" ); */
+    return ref;
 }
 
 /* CALLBACKS ******************************************************************/
@@ -1465,9 +1513,7 @@ alpm_trans_prepare(self)
   PREINIT:
     alpm_list_t *errors;
     HV *trans;
-    STRLEN type_len;
-    char *type_str;
-    SV **prepared, **type;
+    SV *trans_error, **prepared;
   CODE:
     trans = (HV *) SvRV(self);
 
@@ -1476,13 +1522,32 @@ alpm_trans_prepare(self)
         RETVAL = 0;
     }
     else {
-        hv_store( trans, "prepared", 8, newSViv(1), 0 );
+        /* fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" ); */
 
-#        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare\n" );
         errors = NULL;
         RETVAL = alpm_trans_prepare( &errors );
-#        fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" );
-        if( errors ) alpm_list_free( errors );
+
+        if ( RETVAL == -1 ) {
+            trans_error = convert_trans_errors( errors );
+            if ( trans_error ) {
+                hv_store( trans, "error", 5, trans_error, 0 );
+
+                croak( "ALPM Transaction Error: %s", alpm_strerror( pm_errno ));
+                fprintf( stderr, "ERROR: prepare shouldn't get here?\n" );
+                RETVAL = 0;
+            }
+
+            /* If we don't catch all the kinds of errors we'll get memory
+               leaks inside the list!  Yay! */
+            if ( errors ) {
+                fprintf( stderr,
+                         "ERROR: unknown prepare error caused memory leak "
+                         "at %s line %d\n", __FILE__, __LINE__ );
+            }
+        }
+        else hv_store( trans, "prepared", 8, newSViv(1), 0 );
+
+        /* fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" ); */
     }
   OUTPUT:
     RETVAL
@@ -1493,7 +1558,7 @@ alpm_trans_commit(self)
   PREINIT:
     alpm_list_t *errors;
     HV *trans;
-    SV **prepared;
+    SV *trans_error, **prepared;
   CODE:
     /* make sure we are called as a method */
     if ( !( SvROK(self) /* && SvTYPE(self) == SVt_PVMG */
@@ -1511,28 +1576,27 @@ alpm_trans_commit(self)
         PUSHMARK(SP);
         XPUSHs(self);
         PUTBACK;
-#        fprintf( stderr, "DEBUG: before call_method\n" );
         call_method( "prepare", G_DISCARD );
-#        fprintf( stderr, "DEBUG: after call_method\n" );
     }
     
     errors = NULL;
     RETVAL = alpm_trans_commit( &errors );
 
     if ( RETVAL == -1 ) {
-        fprintf( stderr, "DEBUG: error is %s\n", alpm_strerror( pm_errno ));
-
-        switch ( pm_errno ) {
-        case PM_ERR_UNSATISFIED_DEPS:
-        case PM_ERR_CONFLICTING_DEPS:
-        case PM_ERR_FILE_CONFLICTS:
-            sv_setsv( ERRSV, trans_ex_object( errors ));
-            croak( Nullch );
-            fprintf( stderr, "DEBUG: commit shouldn't get here?\n" );
+        trans_error = convert_trans_errors( errors );
+        if ( trans_error ) {
+            hv_store( trans, "error", 5, trans_error, 0 );
+            croak( "ALPM Transaction Error: %s", alpm_strerror( pm_errno ));
+            fprintf( stderr, "ERROR: commit shouldn't get here?\n" );
             RETVAL = 0;
         }
 
-        if ( errors ) alpm_list_free( errors );
+        if ( errors ) {
+            fprintf( stderr,
+                     "ERROR: unknown commit error caused memory leak "
+                     "at %s line %d\n",
+                     __FILE__, __LINE__ );
+        }
     }
   OUTPUT:
     RETVAL

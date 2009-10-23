@@ -49,6 +49,8 @@ sub packages
     return @{ $self->_get_pkg_cache() };
 }
 
+*pkgs = \&packages;
+
 sub groups
 {
     my $self = shift;

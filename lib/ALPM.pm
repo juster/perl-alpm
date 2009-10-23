@@ -191,22 +191,32 @@ sub set_opt
 
     # If the option is a plural, it can accept multiple arguments
     # and must take an arrayref as argument...
-    $func_arg = ( $optname =~ /s$/            ?
-                  # is multivalue opt
-                  ( ref $optval eq 'ARRAY'      ?
-                    $optval                     :
-                    ( [ $optval, @_[ 3 .. $#_ ] ] ) # auto-convert args to aref
-                   )                          :
-                  # is single valued opt
-                  ( ref $optval eq '' || ref $optval eq 'CODE' ?
-                    $optval                                    :
-                    croak <<"END_ERROR"
-Singular option "$optname" only takes a scalar value
-END_ERROR
-                   )
-                 );
+    if ( ( substr $optname, -1 ) eq 's'  ) {
+        $func_arg = ( ! defined $optval
+                      ? [ ] # XSUB must have an array ref
+                      : ref $optval eq 'ARRAY'
+                      ? $optval
+                      # auto-convert args to aref
+                      : ( [ $optval, @_[ 3 .. $#_ ] ] ));
+    }
+    else {
+        $func_arg = $optval;
+    }
 
-    return $func_ref->($func_arg);
+    # I think the XSUB checks this for us.
+    #
+    # else {
+    #     # is single valued opt
+    #     croak qq{Singular option "$optname" only takes a scalar value}
+    #         unless ( ! ref $optval || ref $optval eq 'CODE' );
+    # }
+
+    eval { $func_ref->($func_arg) };
+
+    if ( $EVAL_ERROR ) {
+        $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;
+        croak $EVAL_ERROR;
+    }
 }
 
 sub get_options
@@ -248,7 +258,11 @@ sub set_options
     }
 
     for my $optname ( keys %options ) {
-        $class->set_opt( $optname, $options{$optname} );
+        eval { $class->set_opt( $optname, $options{$optname} ) };
+        if ( $EVAL_ERROR ) {
+            $EVAL_ERROR =~ s/ at .*? line \d+\n//;
+            croak "$EVAL_ERROR (for $optname)";
+        }
     }
 
     return 1;
@@ -443,7 +457,8 @@ sub EXISTS
 
 sub DELETE
 {
-    croak 'You cannot delete keys in this tied hash';
+    my ($self, $key) = @_;
+    $self->set_opt( $key, undef );
 }
 
 sub CLEAR

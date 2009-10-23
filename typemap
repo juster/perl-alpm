@@ -211,33 +211,11 @@ T_ALPM_GROUP
 
 
 L_STRING_FREE
-    $arg = newRV_noinc((SV *)newAV());
-    {
-        AV *string_array = (AV *) SvRV($arg);
-        StringListFree iter;
-        alpm_list_t *list;
-        iter = $var;
-        list = (alpm_list_t *) iter;
-        while ( iter != NULL ) {
-            SV *string = newSVpv( iter->data, strlen( iter->data ) );
-            av_push( string_array, string );
-            iter = iter->next;
-        }
-        FREELIST( list );
-    }
+    $arg = convert_stringlist( (alpm_list_t *)$var );
+    FREELIST( $var );
 
 L_STRING_NOFREE
-    $arg = newRV_noinc((SV *)newAV());
-    {
-        AV *string_array = (AV *) SvRV($arg);
-        StringListFree iter;
-        iter = $var;
-        while ( iter != NULL ) {
-            SV *string = newSVpv( iter->data, strlen( iter->data ) );
-            av_push( string_array, string );
-            iter = iter->next;
-        }
-    }
+    $arg = convert_stringlist( (alpm_list_t *)$var );
 
 L_DATABASE
     $arg = newRV_noinc( (SV *) newAV() );

@@ -79,7 +79,20 @@ typedef alpm_list_t * DatabaseList;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
 
-/* CONVERTER FUNCTIONS ********************************************************/
+/* CONVERTER FUNCTIONS ******************************************************/
+
+/* These all convert C data structures to their Perl counterparts */
+
+static SV * convert_stringlist ( alpm_list_t * string_list )
+{
+    AV *string_array = newAV();
+    alpm_list_t *iter;
+    for ( iter = string_list; iter; iter = iter->next ) {
+        SV *string = newSVpv( iter->data, strlen( iter->data ) );
+        av_push( string_array, string );
+    }
+    return newRV_noinc( (SV *)string_array );
+}
 
 static SV * convert_depend ( const pmdepend_t * depend )
 {
@@ -155,6 +168,11 @@ static SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
     return newRV_inc( (SV *)conflict_hash );
 }
 
+void free_stringlist_errors ( char *string )
+{
+    free(string);
+}
+
 /* Copy/pasted from ALPM's conflict.c */
 void free_fileconflict_errors ( pmfileconflict_t *conflict )
 {
@@ -215,12 +233,21 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
     alpm_list_free( errors );                                           \
     break
 
+#define convert_invalid_delta(STR) newSVpv( STR, 0 )
+#define pminvalid_delta_t char
+#define free_invalid_delta_errors free
+#define convert_invalid_package(STR) newSVpv( STR, 0 )
+#define pminvalid_package_t char
+#define free_invalid_package_errors free
+
     /* fprintf( stderr, "Entering switch statement\n" ); */
 
     switch ( pm_errno ) {
     case PM_ERR_FILE_CONFLICTS:    MAPLIST( fileconflict );
     case PM_ERR_UNSATISFIED_DEPS:  MAPLIST( depmissing );
     case PM_ERR_CONFLICTING_DEPS:  MAPLIST( conflict );
+    case PM_ERR_DLT_INVALID:       MAPLIST( invalid_delta );
+    case PM_ERR_PKG_INVALID:       MAPLIST( invalid_package );
     default:
         SvREFCNT_dec( (SV *)error_hash );
         SvREFCNT_dec( (SV *)error_list );
@@ -230,6 +257,12 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
     /* fprintf( stderr, "Left switch statement\n" ); */
 
 #undef MAPLIST
+#undef convert_invalid_delta
+#undef pminvalid_delta_t
+#undef free_invalid_delta_errors
+#undef convert_invalid_package
+#undef pminvalid_package_t
+#undef free_invalid_package_errors
     
     hv_store( error_hash, "list", 4, newRV_noinc( (SV *)error_list ),
               0 );

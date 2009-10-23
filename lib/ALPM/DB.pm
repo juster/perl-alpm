@@ -13,7 +13,11 @@ sub update
         if ( $ALPM::_Transaction );
 
     my $t = ALPM->transaction( type => 'sync' );
-    $self->_update(1);
+    eval { $self->_update(1) };
+    if ( $EVAL_ERROR ) {
+        $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;
+        croak $EVAL_ERROR;
+    }
     return 1;
 }
 

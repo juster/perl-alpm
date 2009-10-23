@@ -31,40 +31,58 @@ DBPath   = $TEST_ROOT/db/
 CacheDir = $TEST_ROOT/cache/
 LogFile  = $TEST_ROOT/test.log
 
-[simpletest]
-Server   = file://$REPOS_SHARE
-#EOF
-
 END_CONF
+
+#     for my $repo ( @repos ) {
+#         print $conf_file <<"END_REPO";
+# [$repo]
+# Server   = file://$REPOS_SHARE/$repo
+
+# END_REPO
+#     }
+
     close $conf_file;
 }
 
-sub find_and_add
+sub create_adder
 {
-    return unless /[.]pkg[.]tar[.]gz$/;
-    system 'repo-add', "$REPOS_SHARE/simpletest.db.tar.gz", $File::Find::name
-        and die "error $? with repo-add in $REPOS_SHARE";
-    copy( $_, "$REPOS_SHARE/$_" );
+    my ($repo_name) = @_;
+
+    my $reposhare = "$REPOS_SHARE/$repo_name";
+
+    return sub {
+        return unless /[.]pkg[.]tar[.]gz$/;
+        system 'repo-add', "$reposhare/$repo_name.db.tar.gz",
+            $File::Find::name
+                and die "error $? with repo-add in $REPOS_SHARE";
+        copy( $_, "$reposhare/$_" );
+    }
 }
 
 sub create_repos
 {
-    chdir $start_dir;
     opendir BUILDDIR, $REPOS_BUILD
         or die "couldn't opendir on $REPOS_BUILD: $!";
 
     chdir $REPOS_BUILD;
-    for my $pkgdir ( grep { !/[.]{1,2}/ && -d } readdir BUILDDIR ) {
-        chdir $pkgdir;
-        system 'makepkg -fd >/dev/null 2>&1'
-            and die "error for makepkg in $pkgdir: $?";
-        chdir '..';
+    my @repos = grep { !/[.]{1,2}/ && -d $_ } readdir BUILDDIR;
+    for my $repodir ( @repos ) {
+        opendir REPODIR, "$REPOS_BUILD/$repodir"
+            or die "couldn't opendir on $REPOS_BUILD/$repodir";
+        chdir "$REPOS_BUILD/$repodir";
+        for my $pkgdir ( grep { !/[.]{1,2}/ && -d $_ } readdir REPODIR ) {
+            chdir "$REPOS_BUILD/$repodir/$pkgdir";
+            printf STDERR "DEBUG: cwd = %s\n", cwd();
+            system 'makepkg -fd >/dev/null 2>&1'
+                and die "error for makepkg in $pkgdir: $?";
+        }
+        closedir REPODIR;
+
+        mkpath( "$REPOS_SHARE/$repodir" );
+        find( create_adder( $repodir ), "$REPOS_BUILD/$repodir" );
     }
 
-    rmtree( $REPOS_SHARE, { keep_root => 1 } );
-    find( \&find_and_add, $REPOS_BUILD );
-
-    return 1;
+    return @repos;
 }
 
 # Don't need this since I got DB::update() to work.
@@ -91,23 +109,28 @@ sub clean_root
 
 SKIP:
 {
-    skip 'simpletest repository is already created', 1
-        if ( -e "$REPOS_SHARE/simpletest.db.tar.gz" );
-    diag( "creating test repository" );
-    ok( create_repos(), 'create test package repository' );
+    skip 'test repositories are already created', 1
+        if ( -e "$REPOS_SHARE" );
+    diag( "creating test repositories" );
+    my @repos = create_repos();
+    ok( @repos, 'create test package repository' );
+
+    diag( "created @repos test repositories" );
+
+    create_conf( );
 }
 
 diag( "initializing our test rootdir" );
 ok( clean_root(), 'remake fake root dir' );
 
-create_conf();
 ok( ALPM->load_config( 't/test.conf' ), 'load our generated config' );
 #ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
-# ok( my $db = ALPM->register_db( 'simpletest',
-#                                 'file://' . rel2abs( $REPOS_SHARE )) );
-my $db = ALPM->db('simpletest');
-is( $db->name, 'simpletest' );
-ok( $db->update );
 
+for my $reponame ( 'simpletest', 'upgradetest' ) {
+    ok( my $db = ALPM->register_db( $reponame,
+                           sprintf( 'file://%s/%s', rel2abs( $REPOS_SHARE ),
+                                    $reponame )) );
+    $db->update;
+}
 
 

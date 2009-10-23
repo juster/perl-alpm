@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
@@ -35,8 +35,8 @@ sub check_events
 
 #ALPM->set_opt( 'logcb', \&print_log );
 
-# ok( ALPM->register_db( 'simpletest',
-#                        'file://' . rel2abs( 't/repos/share' )) );
+ok( ALPM->register_db( 'simpletest',
+                       'file://' . rel2abs( 't/repos/share/simpletest' )) );
 
 ok( my $t = ALPM->transaction( type => 'sync', event => \&event_log ),
    'create a sync transaction' );
@@ -58,7 +58,6 @@ like( $@, qr/^ALPM Error: cannot add to a prepared transaction/,
       'add fails after preparing transaction' );
 
 ok( $t->commit, 'commit the transaction' );
-#ok( length $logstr  > 0 );
 
 check_events( qw/integrity fileconflicts add/ );
 

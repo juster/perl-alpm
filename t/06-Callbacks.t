@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 11;
 use ALPM qw(t/test.conf);
 use Data::Dumper;
 use File::Spec::Functions qw(rel2abs);
@@ -14,7 +14,7 @@ my $log_lines = q{};
 tie my %alpm_opt, 'ALPM';
 $alpm_opt{logcb} = sub { $log_lines .= $_[1] };
 
-my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share') );
+my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest') );
 my $foopkg = $db->find('foo');
 
 ok( length $log_lines > 0 );
@@ -59,8 +59,6 @@ $alpm_opt{totaldlcb} = sub {
     $total_bytes = $_[0] if ( $_[0] > 0 );
 };
 
-#$alpm_opt{logcb} = sub { printf STDERR "[%8s] %s", @_ };
-
 my ($event_log, $event_check)
     = create_cb_checker( 'events (%s) were fired' );
 my ($conv_log,  $conv_check)
@@ -81,36 +79,41 @@ undef $trans;
 ok( $total_bytes == $bytes_count,
     'Total download callback and download callbacks add up' );
 
-undef $alpm_opt{dlcb};
-undef $alpm_opt{totaldlcb};
-
-$alpm_opt{ignorepkgs} = [ ];
+delete $alpm_opt{dlcb};
+delete $alpm_opt{totaldlcb};
+delete $alpm_opt{ignorepkgs};
 
 diag "Testing sysupgrade and replacing packages";
 
-TODO:
-{
-    local $alpm_opt{logcb} = sub { printf STDERR "[%8s] %s", @_ };
-    local $TODO = 'Cannot get package replacing to work';
-    $trans = ALPM->transaction( type     => 'sysupgrade',
-                                conv     => $conv_log );
-    $trans->prepare;
-    eval { $trans->commit; };
-    $conv_check->( "replace_package" );
+# Sysupgrade, replacement, fetch callback ####################################
 
-    undef $trans;
-}
+#$alpm_opt{logcb} = sub { printf STDERR '[%8s] %s', @_ };
 
-# my $copied_files;
-# $alpm_opt{fetchcb} = sub {
-#     my ($fqp, $destdir) = @_;
-#     my $destfqp = $destdir . basename( $fqp );
-#     copy( $fqp, $destfqp ) or die "failed to copy $fqp: $!";
-#     $copied_files = 1;
-#     return stat($destfqp)->mtime;
-# };
+my $copied_files;
+$alpm_opt{fetchcb} = sub {
+    my ($fqp, $destdir) = @_;
+    my $destfqp = $destdir . basename( $fqp );
+    copy( $fqp, $destfqp ) or die "failed to copy $fqp: $!";
+    $copied_files = 1;
+    return stat($destfqp)->mtime;
+};
 
-# ok( $copied_files, 'Fetch callback worked' );
+
+ok( ALPM->unregister_all_dbs );
+ok( ALPM->register( 'local' ) );
+
+ok( $db = ALPM->register( 'upgradetest',
+                          rel2abs( 't/repos/share/upgradetest' )) );
+ok( $db->update );
+
+$trans = ALPM->transaction( type => 'sysupgrade',
+                            conv => $conv_log );
+eval { $trans->commit };
+$conv_check->( "replace_package" );
+
+undef $trans;
+
+ok( $copied_files, 'Fetch callback worked' );
 
 
 

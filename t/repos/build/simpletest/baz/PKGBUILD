@@ -2,14 +2,14 @@
 pkgname=baz
 pkgver=1.0
 pkgrel=1
-pkgdesc="Baz!"
+pkgdesc="Baz"
 arch=(i686 x86_64)
 license=('GPL')
 depends=(bar)
 
 build() {
   mkdir -p "$pkgdir/usr/foo/bar"
-  echo "FILE CONFLICT!" > "$pkgdir/usr/foo/bar/baz"
+  echo "baz bang boom!" > "$pkgdir/usr/foo/bar/baz"
 }
 
 # vim:set ts=2 sw=2 et:

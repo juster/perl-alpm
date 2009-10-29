@@ -77,8 +77,6 @@ ALPM::Package - Class representing an alpm package
   my $name = $perlpkg->name();
   print "$name rocks!\n";
 
-  print $perlpkg->attr('name'), " rocks!\n";
-
   my %attrs = $perlpkg->attribs();
   print "$attrs{name} rocks!\n";
 
@@ -88,14 +86,13 @@ ALPM::Package - Class representing an alpm package
   # Dependencies are given as array of hashrefs:
   print "$name depends on:\n";
   for my $dep ( @{ $perlpkg->depends() } ) {
-      print "\t$dep->{name} $dep->{mod} $dep->{ver}\n";
+      my @words = @{$dep}{'name', 'mod', 'ver'};
+      print "  @words\n";
   }
 
   # Others lists are arrayrefs of scalars:
   print "$name owns files:\n";
-  for my $file ( @{ $perlpkg->files() } ) {
-      print "\t$file\n";
-  }
+  print "  $_\n" foreach ( @{ $perlpkg->files } );
 
 =head1 DESCRIPTION
 
@@ -172,6 +169,8 @@ can't really I<set> anything so you should know it's a get anyways.
 
 =item * download_size
 
+=item * changelog
+
 =back
 
 Attributes with plural names return an arrayref of strings.
@@ -190,14 +189,9 @@ depends is different because it returns an arrayref of hashrefs
 
 =head2 PERLISH METHODS
 
-There are also more perlish ways to get attributes.  C<attr> is useful
-if you have the name of the attribute in a scalar.  C<attribs> is useful
-if you want to get all attributes at once in a hash, or many attributes
+There are also more ways to get attributes.  C<attribs> is useful if
+you want to get all attributes at once in a hash, or many attributes
 at once into a list or variables.
-
-=head2 attr
-
-
 
 =head2 attribs
 
@@ -218,7 +212,7 @@ L<ALPM>, L<ALPM::DB>
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 at gmail dot com> >>
+Justin Davis, C<< <jrcd83 at gmail> >>
 
 =head1 COPYRIGHT AND LICENSE
 

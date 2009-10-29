@@ -25,7 +25,7 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
   my ($root, $dbpath, $cachedir) = @alpm{qw/root dbpath cachedir/};
 
   # Callback options...
-  $alpm{logcb} = sub { my ($msg, $lvl) = @_; print "[$lvl] $msg\n" };
+  $alpm{logcb} = sub { my ($lvl, $msg) = @_; print "[$lvl] $msg\n" };
 
   # Querying databases & packages
   my $localdb = ALPM->localdb;
@@ -410,14 +410,23 @@ document.
 
 Global ALPM errors are thrown with C<croak>.  The error messages match
 the errors that the C library provides.  These errors are prefixed
-with C<ALPM Error: >.  Errors that occur when using a ALPM::DB object
-are prefixed with C<ALPM DB Error: >.
+with C<ALPM Error:>.  Errors that occur when using a ALPM::DB object
+are prefixed with C<ALPM DB Error:>.
 
-TODO: List of error messages.
+Transaction errors are prefixed with C<ALPM Transaction Error:>.
+These are described fully at L<ALPM::Transaction>.
 
 =head1 TROUBLESHOOTING
 
-TODO: Common error messages and how to fix them.
+TODO: Common error messages and how to fix them?
+
+=head1 TODO
+
+Unimplemented functions:
+
+  alpm_depcmp, alpm_checkdeps, alpm_deptest, alpm_dep_compute_string,
+  alpm_trans_interrupt, alpm_checkconflicts, alpm_compute_md5sum,
+  alpm_sync_newversion, alpm_delta_... functions
 
 =head1 SEE ALSO
 
@@ -435,7 +444,7 @@ TODO: Common error messages and how to fix them.
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 gmail> >>
+Justin Davis, C<< <jrcd83 at gmail> >>
 
 =head1 COPYRIGHT AND LICENSE
 

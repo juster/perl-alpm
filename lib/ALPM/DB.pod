@@ -21,7 +21,7 @@ ALPM::DB - Class to represent a libalpm database
       print join( q{ }, $pkg->attribs('name', 'version') ), "\n";
   }
 
-  my @cache = $syncdb->packages;
+  my @cache = $syncdb->pkgs;
 
 =head1 METHODS
 
@@ -45,6 +45,14 @@ ALPM::DB - Class to represent a libalpm database
   Returns : An ALPM::Package object if the package is found.
             undef if the package with that name is not found.
 
+=head2 find_group
+
+  Usage   : my $group = $db->find_group( $group_name );
+  Returns : An ALPM::Group object if it is found or undef.
+            ALPM::Group objects have two accessors:
+            $group->name - the name of the group
+            $group->pkgs - A list of package objects in the group
+
 =head2 search
 
   Usage   : my @results = $db->search( 'foo', 'bar', 'baz' );
@@ -56,13 +64,31 @@ ALPM::DB - Class to represent a libalpm database
   Usage   : my @pkgs = $db->packages;
   Params  : None
   Returns : An array of all packages in the DB.
-  Notes   : This is a wrapper for the next function.
-            It is easier to use and look at.
+  Notes   : This is a wrapper for the C<get_pkg_cache> method.
+            It is easier if you want a list.
+
+=head2 groups
+
+  Usage   : my @groups = $db->groups;
+  Returns : An array of all groups in the DB.
+
+=head2 pkgs
+
+This is an alias for the C<packages> method.
+
+  Usage   : my @pkgs = $db->pkgs;
 
 =head2 get_pkg_cache
 
-  Usage   : my $cache_ref = $db->get_pkg_cache;
-  Returns : An arrayref of package objects in the DB cache.
+  Usage    : my $cache_ref = $db->get_pkg_cache;
+  Comments : Resembles the alpm_db_get_pkgcache function.
+  Returns  : An arrayref of package objects in the DB cache.
+
+=head2 pkgs_ref
+
+This is an alias for the C<get_pkg_cache> method.
+
+  Usage   : my $pkgs_ref = $db->pkgs_ref;
 
 =head2 update
 
@@ -82,7 +108,7 @@ L<ALPM>, L<ALPM::Package>, L<ALPM::Transaction>
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 at gmail dot com> >>
+Justin Davis, C<< <jrcd83 at gmail> >>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -65,7 +65,19 @@ ALPM::Transaction - An object wrapper for transaction functions.
                              progress => sub { ... },
                             );
   $t->add( qw/ perl perl-alpm / );
-  $t->commit;
+  eval { $t->commit };
+  if ( $EVAL_ERROR ) {
+      given ( $t->{error}{type} ) {
+          when ( 'fileconflict' ) {
+              for my $path ( @{ $t->{error}{list} } ) {
+                  say "Conflicting Path: $path";
+              }
+          }
+          when ( 'invalid_package' ) {
+              say "Corrupt Package: $_" foreach ( @{ $t->{error}{list} } );
+          }
+      }
+  }
 
 =head1 DESCRIPTION
 
@@ -113,11 +125,14 @@ For example:
 
 In this way, with good coding practices, you should not need to
 release a transaction because it will go out of scope.  But in order to
-explicitly release a transaction, assign C<undef> to it.  For example:
+explicitly release a transaction undefine it.  For example:
 
   my $t = ALPM->transaction( type => 'sync' );
   $t->add('perl');
   $t->commit;
+  undef $t;
+
+  # or
   $t = undef;
 
   # Transaction is released immediately
@@ -284,6 +299,56 @@ described in the following table:
   |-------------+------------------------------------------------------|
   | total_pos   | The item's position in the total count above.        |
   |-------------+------------------------------------------------------|
+
+=head1 ERRORS
+
+Transaction errors are croaked and can be examined with the C<$@> or
+C<$EVAL_ERROR> variable like other ALPM errors.  They are prefixed
+with B<ALPM Transaction Error:>.  Errors can happen when preparing or
+commiting.
+
+Extra information is available for ALPM transaction errors.  When an
+error occurs the transaction object that was used will have a new hash
+key called I<error>, containing a hash reference.
+
+The I<error> hash reference has the keys I<msg>, I<list>, and I<type>.
+I<msg> is the same as the string in C<$@>, without the B<ALPM
+Transaction Error:> prefix.  The array ref in I<list> is different
+depending on each type.  Each I<type> and its associated I<msg> and
+I<list> are described in the following table.
+
+  |-----------------+------------------------------------------------------|
+  | Type            | Description                                          |
+  |-----------------+------------------------------------------------------|
+  | fileconflict    | More than one package has a file with the same path. |
+  | - msg           | 'conflicting files'                                  |
+  | - list          | An arrayref of hashes representing the conflict:     |
+  | -- target       | The package which caused the conflict.               |
+  | -- type         | 'filesystem' or 'target'                             |
+  | -- file         | The path of the conflicting file.                    |
+  | -- ctarget      | Empty string ('') ?                                  |
+  |-----------------+------------------------------------------------------|
+  | depmissing      | A dependency could not be satisfied (missing?).      |
+  | - msg           | 'could not satisfy dependencies'                     |
+  | - list          | An arrayref of hashes represending the dep:          |
+  | -- target       | The depended on package name.                        |
+  | -- cause        | The package name of who depends on target.           |
+  | -- depend       | A hashref, same as dependencies of package objects.  |
+  |-----------------+------------------------------------------------------|
+  | depconflict     | A package which explicitly conflicts with another    |
+  |                 | (in the PKGBUILD) cannot be installed.               |
+  | - msg           | 'conflicting dependencies'                           |
+  | - list          | An arrayref of arrayrefs (AoA).                      |
+  |                 | Each element of the list is a pair of conflicts.     |
+  |-----------------+------------------------------------------------------|
+  | invalid_delta   | (UNTESTED) A delta is corrupted?                     |
+  | - msg           | ?                                                    |
+  | - list          | An arrayref of corrupted delta names.                |
+  |-----------------+------------------------------------------------------|
+  | invalid_package | A package is corrupted (or invalid?).                |
+  | - msg           | 'invalid or corrupted package'                       |
+  | - list          | An arrayref of package filenames.                    |
+  |-----------------+------------------------------------------------------|
 
 =head1 SEE ALSO
 

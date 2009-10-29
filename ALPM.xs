@@ -1484,22 +1484,12 @@ name(grp)
     RETVAL
 
 PackageListNoFree
-packages(grp)
+_get_pkgs(grp)
     ALPM_Group grp
   CODE:
     RETVAL = alpm_grp_get_pkgs(grp);
   OUTPUT:
     RETVAL
-
-# This is copy pasted from above.  Maybe there is another way?
-PackageListNoFree
-pkgs(grp)
-    ALPM_Group grp
-  CODE:
-    RETVAL = alpm_grp_get_pkgs(grp);
-  OUTPUT:
-    RETVAL
-
 
 #-----------------------------------------------------------------------------
 # TRANSACTIONS

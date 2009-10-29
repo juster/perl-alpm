@@ -1,5 +1,8 @@
 package ALPM::DB;
 
+use warnings;
+use strict;
+
 use ALPM;
 use Carp qw(croak);
 use English qw(-no_match_vars);

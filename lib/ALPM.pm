@@ -191,7 +191,7 @@ sub set_opt
 
     # If the option is a plural, it can accept multiple arguments
     # and must take an arrayref as argument...
-    if ( ( substr $optname, -1 ) eq 's'  ) {
+    if ( substr( $optname, -1 ) eq 's'  ) {
         $func_arg = ( ! defined $optval
                       ? [ ] # XSUB must have an array ref
                       : ref $optval eq 'ARRAY'

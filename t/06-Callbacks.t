@@ -98,7 +98,6 @@ $alpm_opt{fetchcb} = sub {
     return stat($destfqp)->mtime;
 };
 
-
 ok( ALPM->unregister_all_dbs );
 ok( ALPM->register( 'local' ) );
 
@@ -109,7 +108,7 @@ ok( $db->update );
 $trans = ALPM->transaction( type => 'sysupgrade',
                             conv => $conv_log );
 eval { $trans->commit };
-$conv_check->( "replace_package" );
+$conv_check->( 'replace_package' );
 
 undef $trans;
 

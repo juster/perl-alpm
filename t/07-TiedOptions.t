@@ -2,17 +2,13 @@
 
 use warnings;
 use strict;
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 use ALPM;
 
 my %alpm;
 tie %alpm, 'ALPM';
-#ok( my %alpm = ALPM::Tied->new );
 ok( $alpm{root} = '/' );
-
-#use Data::Dumper;
-#print STDERR Dumper(\%alpm), "\n";
 
 is( $alpm{root}, ALPM->get_opt('root') );
 
@@ -21,4 +17,8 @@ is( scalar keys %alpm, scalar keys %options );
 
 eval { %alpm = () };
 ok( $@ =~ /You cannot empty this tied hash/ );
+
+diag 'A warning should show about an unitialized value';
+eval { delete $alpm{root} };
+ok( $@, q{cannot delete a string option's tied hash key} );
 

@@ -221,7 +221,7 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
     /* First convert the error list returned by the transaction
        into an array reference.  Also store the type. */
 
-#define MAPLIST( TYPE )                                                 \
+#define MAPERRLIST( TYPE )                                              \
     hv_store( error_hash, "type", 4, newSVpv( #TYPE, 0 ), 0 );          \
     for ( iter = errors ; iter ; iter = iter->next ) {                  \
         av_push( error_list,                                            \
@@ -243,11 +243,11 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
     /* fprintf( stderr, "Entering switch statement\n" ); */
 
     switch ( pm_errno ) {
-    case PM_ERR_FILE_CONFLICTS:    MAPLIST( fileconflict );
-    case PM_ERR_UNSATISFIED_DEPS:  MAPLIST( depmissing );
-    case PM_ERR_CONFLICTING_DEPS:  MAPLIST( conflict );
-    case PM_ERR_DLT_INVALID:       MAPLIST( invalid_delta );
-    case PM_ERR_PKG_INVALID:       MAPLIST( invalid_package );
+    case PM_ERR_FILE_CONFLICTS:    MAPERRLIST( fileconflict );
+    case PM_ERR_UNSATISFIED_DEPS:  MAPERRLIST( depmissing );
+    case PM_ERR_CONFLICTING_DEPS:  MAPERRLIST( conflict );
+    case PM_ERR_DLT_INVALID:       MAPERRLIST( invalid_delta );
+    case PM_ERR_PKG_INVALID:       MAPERRLIST( invalid_package );
     default:
         SvREFCNT_dec( (SV *)error_hash );
         SvREFCNT_dec( (SV *)error_list );

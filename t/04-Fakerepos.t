@@ -107,6 +107,24 @@ sub clean_root
     return 1;
 }
 
+sub corrupt_package
+{
+    my $arch = `uname -m`;
+    chomp $arch;
+
+    my $fqp = rel2abs( "$REPOS_SHARE" )
+        . "/simpletest/corruptme-1.0-1-$arch.pkg.tar.gz";
+
+    unlink $fqp or die "failed to unlink file whilst corrupting: $!";
+
+    open my $pkg_file, '>', $fqp
+        or die "failed to open file whilst corrupting: $!";
+    print $pkg_file "HAHA PWNED!\n";
+    close $pkg_file;
+
+    return;
+}
+
 SKIP:
 {
     skip 'test repositories are already created', 1
@@ -117,7 +135,8 @@ SKIP:
 
     diag( "created @repos test repositories" );
 
-    create_conf( );
+    corrupt_package();
+    create_conf();
 }
 
 diag( "initializing our test rootdir" );

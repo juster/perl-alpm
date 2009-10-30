@@ -46,7 +46,7 @@ ok( $@ =~ /^ALPM Transaction Error:/
 is $t->{error}{type}, 'depmissing';
 ($error) = @{$t->{error}{list}};
 is scalar @{$t->{error}{list}}, 1;
-diag $t->{error}{msg};
+is $t->{error}{msg}, 'could not satisfy dependencies';
 
 is $error->{target}, 'bar';
 is $error->{depend}{name}, 'foo';

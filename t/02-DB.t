@@ -28,6 +28,8 @@ ok( scalar $local->packages > 1 );
 ok( scalar $local->groups > 1 );
 #is( ref $local->search('perl'), 'ARRAY' );
 
+diag 'testing with ftp.archlinux.org repository';
+
 SKIP:
 {
     my $pinger = Net::Ping->new;

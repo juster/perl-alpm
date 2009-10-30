@@ -83,8 +83,6 @@ delete $alpm_opt{dlcb};
 delete $alpm_opt{totaldlcb};
 delete $alpm_opt{ignorepkgs};
 
-diag "Testing sysupgrade and replacing packages";
-
 # Sysupgrade, replacement, fetch callback ####################################
 
 #$alpm_opt{logcb} = sub { printf STDERR '[%8s] %s', @_ };

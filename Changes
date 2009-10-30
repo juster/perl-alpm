@@ -1,5 +1,11 @@
 Revision history for Perl extension ALPM.
 
+0.04  October 29, 2009
+      - Fixed many bugs, better test coverage, updated docs.
+      - Finished transactions with support for transaction errors
+        and callbacks.
+      - Converted to libalpm bundled with pacman 3.3.0.
+
 0.03  August 05, 2009
       - Added transaction support with ALPM::Transaction.
       - Implemented callback options to ALPM and also transaction

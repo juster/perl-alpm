@@ -72,7 +72,6 @@ sub create_repos
         chdir "$REPOS_BUILD/$repodir";
         for my $pkgdir ( grep { !/[.]{1,2}/ && -d $_ } readdir REPODIR ) {
             chdir "$REPOS_BUILD/$repodir/$pkgdir";
-            printf STDERR "DEBUG: cwd = %s\n", cwd();
             system 'makepkg -fd >/dev/null 2>&1'
                 and die "error for makepkg in $pkgdir: $?";
         }
@@ -136,8 +135,9 @@ SKIP:
     diag( "created @repos test repositories" );
 
     corrupt_package();
-    create_conf();
 }
+
+create_conf();
 
 diag( "initializing our test rootdir" );
 ok( clean_root(), 'remake fake root dir' );

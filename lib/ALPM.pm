@@ -15,7 +15,6 @@ use ALPM::Transaction;
 use ALPM::Package;
 use ALPM::PackageFree;
 use ALPM::DB;
-use ALPM::Ex;
 
 our $VERSION   = '0.04';
 #our @EXPORT    = qw();

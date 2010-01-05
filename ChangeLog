@@ -1,0 +1,60 @@
+2010-01-04  Justin Davis  <jrcd83@gmail.com>
+
+	* 0.5 (RELEASE)
+
+	* lib/ALPM/LoadConfig.pm (_make_parser): Tweaked regex to accept empty values.
+	Removed error when an unknown field name is given.
+
+	* lib/ALPM.pm: Added ability to set usedelta option, which was missing.
+
+	* Makefile.PL: Added repository URL to the META.yml.
+
+	* t/07-TiedOptions.t: Hides the warning for the last test using $SIG{__WARN__}.
+
+	* t/04-FakeRepos.t (create_repos): Fixed a bug where I must use
+	the --asroot option when running makepkg inside makepkg, because
+	of fakeroot.
+
+2009-10-29  Justin Davis  <jrcd83@gmail.com>
+
+	* 0.4: Released version 0.4
+
+2009-10-08  Justin Davis  <jrcd83@gmail.com>
+
+	* lib/ALPM.pm (transaction): 'flags' are now passed as a string
+	of flag names separated by spaces.  Added the sysupgrade
+	transaction 'type'.
+
+	* ALPM.xs: Added conv and progress callbacks for transactions.
+
+2009-09-03  Justin Davis  <jrcd83@gmail.com>
+
+	* ALPM.xs: s/alpm_pkg_get_/alpm_pkg_/;
+
+	* lib/ALPM/DB.pm: Renamed get_pkg_cache() to packages().
+
+	* lib/ALPM.pm: Changed methods local_db to localdb, get_sync_dbs
+	to syncdbs, get_repo_db to repodb, and added search.
+
+	- Updated to version 3.30 of pacman.  The upgrade changes
+	many constants and functions.
+	- I have declared war on the get_ named methods.  It seems silly
+	to have all these get_ methods when there is no set_ method for
+	anything except ALPM options (whose prefix I will keep).
+
+2005-08-05  Justin Davis  <jrcd83@gmail.com>
+	0.03
+        - Added transaction support with ALPM::Transaction.
+	- Implemented callback options to ALPM and also transaction
+        callbacks using the transaction() method.
+        - Created tied hash interface to ALPM options just for fun.
+
+2009-07-15  Justin Davis  <jrcd83@gmail.com>
+	0.02
+	- Added ALPM::LoadConfig which is used to load pacman.conf
+        config files
+
+2009-05-03  Justin Davis  <jrcd83@gmail.com>
+	0.01
+	- First public release, uploading to CPAN
+	- Has just about everything working except syncing/transactions

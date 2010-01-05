@@ -14,13 +14,17 @@ use ALPM;
 
 my %_CFG_OPTS =
     qw{ RootDir   root       CacheDir     cachedirs    DBPath      dbpath
-        LogFile   logfile    HoldPkg      holdpkgs     XferCommand xfercommand
+        LogFile   logfile    UseSyslog    usesyslog    XferCommand xfercommand
         IgnorePkg ignorepkgs IgnoreGroup  ignoregrps   NoUpgrade   noupgrades
         NoExtract noextracts NoPassiveFtp nopassiveftp };
 
+# The following options are implemented in pacman and not ALPM so are ignored:
+my @NULL_OPTS = qw{ HoldPkg SyncFirst CleanMethod XferCommand
+                    ShowSize TotalDownload };
+
 my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
 my $SECTION_MATCH = qr/ \A \s* [[] (\w+) []] \s* \z /xms;
-my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]+) /xms;
+my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]*) /xms;
 
 ####----------------------------------------------------------------------
 #### PRIVATE FUNCTIONS
@@ -57,10 +61,13 @@ sub _make_parser
                     return;
                 }
                 elsif ( my ($field_name, $field_val) = $line =~ /$FIELD_MATCH/ ) {
-                    die qq{Unrecognized field named "$field_name"\n}
-                        unless ( exists $hooks->{field}{$field_name} );
+                    return unless $field_val;
 
-                    $hooks->{field}{$field_name}->($field_val);
+                    # Not sure if I should warn or not...
+                    # warn qq{Unrecognized field named "$field_name"\n}
+                    #     unless ( exists $hooks->{field}{$field_name} );
+
+                    $hooks->{field}{$field_name}->( $field_val );
                     return;
                 }
                 die "Invalid line in config file, not a comment, section, or field\n";
@@ -163,7 +170,7 @@ sub load_file
 #      },
 
      # these fields do nothing, for now...
-     ( map { ( $_ => \&_null_sub ) } qw { SyncFirst TotalDownload } ),
+     ( map { ( $_ => \&_null_sub ) } @NULL_OPTS ),
 
      Server    => sub { _register_db(shift, $current_section) },
      Include   => sub {
@@ -183,9 +190,6 @@ sub load_file
     { field   => $field_hooks,
       section => sub { $current_section = shift; }};
                        #print STDERR "DEBUG: found section $current_section\n"; }};
-
-    #use Data::Dumper;
-    #print STDERR Dumper($parser_hooks);
 
     # Load default values like pacman does...
     _set_defaults();

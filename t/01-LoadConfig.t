@@ -1,14 +1,18 @@
 #!/usr/bin/perl
-use Test::More tests => 4;
+use Test::More;
 use warnings;
 use strict;
 
 #use Devel::Peek;
 
-BEGIN {
-    use_ok('ALPM');
-};
+if ( -e '/etc/pacman.conf' ) {
+    plan tests => 4;
+}
+else {
+    plan skip_all => 'This test requires /etc/pacmanf.conf';
+}
 
+ok( require ALPM );
 ok( ALPM->load_config('/etc/pacman.conf') );
 ok( my $local = ALPM->register_db );
 ok( my $dbs = ALPM->get_opt('syncdbs') );

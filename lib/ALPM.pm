@@ -4,7 +4,6 @@ package ALPM;
 use strict;
 use warnings;
 
-require Exporter;
 use AutoLoader;
 
 use Scalar::Util qw(weaken);
@@ -16,9 +15,7 @@ use ALPM::Package;
 use ALPM::PackageFree;
 use ALPM::DB;
 
-our $VERSION   = '0.04';
-#our @EXPORT    = qw();
-#our @EXPORT_OK = qw($ALPM);
+our $VERSION = '0.05';
 
 # constants are only used internally... they are ugly.
 sub AUTOLOAD {
@@ -56,14 +53,12 @@ XSLoader::load('ALPM', $VERSION);
 # Transaction global variable
 our $_Transaction;
 
-our %_IS_GETSETOPTION = ( map { ( $_ => 1 ) }
-                          qw{ root dbpath cachedirs logfile usesyslog
-                              noupgrades noextracts ignorepkgs ignoregrps
+our @GET_SET_OPTS = qw{ root dbpath cachedirs logfile usesyslog
+                        noupgrades noextracts ignorepkgs ignoregrps
+                        nopassiveftp logcb dlcb totaldlcb fetchcb };
 
-                              nopassiveftp logcb dlcb totaldlcb fetchcb } );
-
-our %_IS_GETOPTION    = ( %_IS_GETSETOPTION,
-                         map { ( $_ => 1 ) } qw/ lockfile localdb syncdbs / );
+our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ usedelta / );
+our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ lockfile localdb syncdbs / );
 
 
 ### Transaction Constants ###
@@ -175,7 +170,7 @@ sub set_opt
         unless defined $optname;
 
     $optname = lc $optname;
-    unless ( $_IS_GETSETOPTION{$optname} ) {
+    unless ( $_IS_SETOPTION{$optname} ) {
         carp qq{Given option "$optname" is not settable or unknown};
         return;
     }

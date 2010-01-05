@@ -4,7 +4,7 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
 
 =head1 VERSION
 
-0.04 -- compatible with pacman 3.3.0's alpm
+0.05 -- compatible with pacman 3.3's alpm
 
 =head1 SYNOPSIS
 
@@ -96,7 +96,7 @@ global for everyone who is using the module.  You can specify either:
 
 It is important to set options as soon as possible.
 
-=head1 OPTIONS
+=head1 ALPM OPTIONS
 
 ALPM has a number of options corresponding to the
 C<alpm_option_get_...> and C<alpm_option_set...> C functions in the
@@ -156,6 +156,10 @@ shell command to use for downloading (ie wget)
 
 if true, do not use passive ftp mode
 
+=item B<usedelta>+
+
+should you use deltas? not really sure, never tried it...
+
 =back
 
 =head2 Read-only options
@@ -202,6 +206,27 @@ The total number of bytes downloaded so far is passed to the provided
 code ref as the only argument.
 
 =back
+
+=head1 TIED OPTION HASH
+
+This is probably the easiest way to manipulate ALPM's options.  Perl
+has an old mechanism which allows reading or writing to hashes act
+sort of like objects.  Basically, you can I<tie> ALPM's options to a
+hash variable and any changes to that hash change the same option.
+
+  # Taken from SYNOPSIS
+  tie my %alpm, 'ALPM';
+  $alpm{root} = '/';
+  print "Root Dir = $alpm{root}\n";
+  my ($root, $dbpath, $cachedir) = @alpm{qw/root dbpath cachedir/};
+
+But you cannot delete a key or empty the hash.  In fact assigning
+undef also does not work for options that don't use arrayrefs.
+
+  # Doesn't work!
+  delete $alpm{root};
+  undef $alpm{root};
+  %alpm = ();
 
 =head1 CLASS METHODS
 

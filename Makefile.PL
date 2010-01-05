@@ -1,7 +1,12 @@
-use 5.010000;
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+
+# Avoid FAIL reports from CPAN Testers...
+require DynaLoader;
+unless ( DynaLoader::dl_findfile( '-lalpm' )) {
+    print STDERR "ERROR: pacman/libalpm must be installed for this module\n";
+    exit 0;
+}
+
 WriteMakefile(
     NAME              => 'ALPM',
     VERSION_FROM      => 'lib/ALPM.pm', # finds $VERSION
@@ -12,6 +17,9 @@ WriteMakefile(
     LIBS              => ['-lalpm'], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => '-I.', # e.g., '-I. -I/usr/include/other'
+    META_ADD          => { resources =>
+                           { repository =>
+                             'http://github.com/juster/perl-alpm' }},
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );

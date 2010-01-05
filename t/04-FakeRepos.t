@@ -5,8 +5,9 @@ use Test::More tests => 5;
 
 use Data::Dumper;
 
-use ALPM; # qw(t/test.conf);
+use ALPM;
 use Cwd;
+use English qw( -no_match_vars );
 use File::Find;
 use File::Copy;
 use File::Path;
@@ -15,13 +16,16 @@ use File::Spec::Functions qw(rel2abs);
 my $REPOS_BUILD = rel2abs('t/repos/build');
 my $REPOS_SHARE = rel2abs('t/repos/share');
 my $TEST_ROOT   = rel2abs('t/root');
+my $TEST_CONF   = 't/test.conf';
 
 my $start_dir = cwd();
 
 sub create_conf
 {
+    my $conf_path = shift;
+
     chdir $start_dir;
-    open my $conf_file, '>', 't/test.conf'
+    open my $conf_file, '>', $conf_path
         or die "failed to open t/test.conf file: $!";
 
     print $conf_file <<"END_CONF";
@@ -54,7 +58,7 @@ sub create_adder
         return unless /[.]pkg[.]tar[.]gz$/;
         system 'repo-add', "$reposhare/$repo_name.db.tar.gz",
             $File::Find::name
-                and die "error $? with repo-add in $REPOS_SHARE";
+                and die "error ", $? >> 8, " with repo-add in $REPOS_SHARE";
         copy( $_, "$reposhare/$_" );
     }
 }
@@ -69,11 +73,18 @@ sub create_repos
     for my $repodir ( @repos ) {
         opendir REPODIR, "$REPOS_BUILD/$repodir"
             or die "couldn't opendir on $REPOS_BUILD/$repodir";
-        chdir "$REPOS_BUILD/$repodir";
+        chdir "$REPOS_BUILD/$repodir"
+            or die qq{cannot chdir to repodir "$repodir"};
+
         for my $pkgdir ( grep { !/[.]{1,2}/ && -d $_ } readdir REPODIR ) {
-            chdir "$REPOS_BUILD/$repodir/$pkgdir";
-            system 'makepkg -fd >/dev/null 2>&1'
-                and die "error for makepkg in $pkgdir: $?";
+            chdir "$REPOS_BUILD/$repodir/$pkgdir"
+                or die qq{cannot chdir to pkgdir "$pkgdir"};
+
+            my $opts = join q{ }, qw/ -f -d /,
+                ( $EFFECTIVE_USER_ID == 0 ? '--asroot' : qw// );
+
+            system "makepkg $opts >/dev/null 2>&1"
+                and die 'error code ', $? >> 8, ' from makepkg in $pkgdir: ';
         }
         closedir REPODIR;
 
@@ -93,7 +104,7 @@ sub copy_sync_db
         or die "mkpath for simpltest db failed: $!";
     system 'tar', ( '-zxf' => "$REPOS_SHARE/simpletest.db.tar.gz",
                     '-C'   => "$TEST_ROOT/db/sync/simpletest/" )
-        and die "error $? when untarring db tarball failed";
+        and die "error ", $? >> 8, " when untarring db tarball failed";
 }
 
 sub clean_root
@@ -137,12 +148,13 @@ SKIP:
     corrupt_package();
 }
 
-create_conf();
+# Allows me to tweak the test.conf file and not have it overwritten...
+create_conf( $TEST_CONF ) unless ( -e $TEST_CONF );
 
 diag( "initializing our test rootdir" );
 ok( clean_root(), 'remake fake root dir' );
 
-ok( ALPM->load_config( 't/test.conf' ), 'load our generated config' );
+ok( ALPM->load_config( $TEST_CONF ), 'load our generated config' );
 #ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
 
 for my $reponame ( 'simpletest', 'upgradetest' ) {

@@ -6,7 +6,6 @@ use strict;
 use English qw(-no_match_vars);
 use base qw(Exporter);
 use Carp qw(croak);
-use ALPM;
 
 my %_PKG_ATTRIBS = map { /^has_(.*)$/ ? ( $1 => $_ ) : ( $_ => $_ ) }
     qw { filename name version desc url

@@ -3,7 +3,7 @@ pkgname=bar
 pkgver=1.0
 pkgrel=1
 pkgdesc="Bar!"
-arch=(i686 x86_64)
+arch=(any)
 depends=(foo)
 license=('GPL')
 

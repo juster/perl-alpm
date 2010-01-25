@@ -2,7 +2,7 @@ pkgname=corruptme
 pkgver=1.0
 pkgrel=1
 pkgdesc="I'm so easily corrupted!"
-arch=(i686 x86_64)
+arch=(any)
 license=('GPL')
 
 build() {

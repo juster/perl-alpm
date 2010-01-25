@@ -3,7 +3,7 @@ pkgname=fileconflict
 pkgver=1.0
 pkgrel=1
 pkgdesc="File Conflict!"
-arch=(i686 x86_64)
+arch=(any)
 license=('GPL')
 
 build() {

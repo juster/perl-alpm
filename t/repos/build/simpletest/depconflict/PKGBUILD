@@ -2,7 +2,7 @@ pkgname=depconflict
 pkgver=1.0
 pkgrel=1
 pkgdesc="Dep Conflict!"
-arch=(i686 x86_64)
+arch=(any)
 license=('GPL')
 conflicts=('foo')
 

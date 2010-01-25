@@ -1,3 +1,15 @@
+2010-01-25  Justin Davis  <jrcd83@gmail.com>
+
+	* t/04-FakeRepos.t (create_repos): Fixed problems with test
+	04-FakeRepos where packages would fail to build.  Changed
+	generated test packages to arch "any" so we don't have to check
+	our arch.
+
+	* Makefile.PL: "make clean" will now delete the test repository
+	share directories (t/repos/share) and the test root
+	directory (t/root) automatically.
+
+
 2010-01-04  Justin Davis  <jrcd83@gmail.com>
 
 	* 0.5 (RELEASE)

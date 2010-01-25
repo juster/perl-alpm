@@ -37,14 +37,6 @@ LogFile  = $TEST_ROOT/test.log
 
 END_CONF
 
-#     for my $repo ( @repos ) {
-#         print $conf_file <<"END_REPO";
-# [$repo]
-# Server   = file://$REPOS_SHARE/$repo
-
-# END_REPO
-#     }
-
     close $conf_file;
 }
 
@@ -109,11 +101,8 @@ sub clean_root
 
 sub corrupt_package
 {
-    my $arch = `uname -m`;
-    chomp $arch;
-
     my $fqp = rel2abs( "$REPOS_SHARE" )
-        . "/simpletest/corruptme-1.0-1-$arch.pkg.tar.gz";
+        . "/simpletest/corruptme-1.0-1-any.pkg.tar.gz";
 
     unlink $fqp or die "failed to unlink file whilst corrupting: $!";
 
@@ -152,9 +141,10 @@ ok( ALPM->load_config( $TEST_CONF ), 'load our generated config' );
 #ALPM->set_opt( 'logcb', sub { printf STDERR '[%10s] %s', @_; } );
 
 for my $reponame ( 'simpletest', 'upgradetest' ) {
-    ok( my $db = ALPM->register_db( $reponame,
-                           sprintf( 'file://%s/%s', rel2abs( $REPOS_SHARE ),
-                                    $reponame )) );
+    my $repopath = sprintf( 'file://%s/%s',
+			    rel2abs( $REPOS_SHARE ),
+			    $reponame );
+    ok( my $db = ALPM->register_db( $reponame, $repopath ));
     $db->update;
 }
 

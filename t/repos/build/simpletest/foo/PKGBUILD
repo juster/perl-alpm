@@ -3,7 +3,7 @@ pkgname=foo
 pkgver=1.0
 pkgrel=1
 pkgdesc="Foo!"
-arch=(i686 x86_64)
+arch=(any)
 license=('GPL')
 
 build() {

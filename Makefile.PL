@@ -13,15 +13,18 @@ WriteMakefile(
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/ALPM.pod', # retrieve abstract from module
-       AUTHOR         => 'Justin Davis <jrcd at gmail dot com>') : ()),
+       AUTHOR         => 'Justin Davis <juster at cpan>') : ()),
     LIBS              => ['-lalpm'], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => '-I.', # e.g., '-I. -I/usr/include/other'
     META_MERGE        => { resources =>
-                           { repository => 'http://github.com/juster/perl-alpm' }},
+                           { repository => 'http://github.com/juster/perl-alpm'
+			   }},
+    clean => { FILES  => 't/root t/repos/share' },
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );
+
 if  (eval {require ExtUtils::Constant; 1}) {
   # If you edit these definitions to change the constants used by this module,
   # you will need to use the generated const-c.inc and const-xs.inc

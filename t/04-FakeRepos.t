@@ -55,6 +55,8 @@ sub create_adder
 
 sub create_repos
 {
+    local $ENV{PKGDEST} = undef;
+
     opendir BUILDDIR, $REPOS_BUILD
         or die "couldn't opendir on $REPOS_BUILD: $!";
 
@@ -70,7 +72,7 @@ sub create_repos
         chdir "$REPOS_BUILD/$repodir"
             or die qq{cannot chdir to repodir "$repodir"};
 
-	# Create each package, which is a PKGBUILD in a each subdir...
+        # Create each package, which is a PKGBUILD in a each subdir...
         for my $pkgdir ( grep { !/[.]{1,2}/ && -d $_ } readdir REPODIR ) {
             chdir "$REPOS_BUILD/$repodir/$pkgdir"
                 or die qq{cannot chdir to pkgdir "$pkgdir"};

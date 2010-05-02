@@ -46,8 +46,8 @@ sub create_adder
     my $reposhare   = "$REPOS_SHARE/$repo_name";
 
     return sub {
-        return unless /[.]pkg[.]tar[.](xz|gz)$/;
-        system 'repo-add', "$reposhare/$repo_name.db.tar.$1", $File::Find::name
+        return unless /[.]pkg[.]tar[.](?:xz|gz)$/;
+        system 'repo-add', "$reposhare/$repo_name.db.tar.gz", $File::Find::name
                 and die "error ", $? >> 8, " with repo-add in $REPOS_SHARE";
         rename $_, "$reposhare/$_";
     }

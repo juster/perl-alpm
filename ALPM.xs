@@ -1083,19 +1083,9 @@ void
 alpm_option_set_nopassiveftp(nopasv)
     unsigned short nopasv
 
-const char *
-alpm_option_get_arch()
-
-void
-alpm_option_set_arch(arch)
-    const char * arch;
-
 void
 alpm_option_set_usedelta(usedelta)
     unsigned short usedelta
-
-int
-alpm_option_get_usedelta()
 
 SV *
 alpm_option_get_localdb()

@@ -11,7 +11,7 @@ use English qw( -no_match_vars );
 use File::Find;
 use File::Copy;
 use File::Path qw( make_path remove_tree );
-use File::Spec::Functions qw( rel2abs );
+use File::Spec::Functions qw( rel2abs catfile );
 
 my $REPOS_BUILD = rel2abs('t/repos/build');
 my $REPOS_SHARE = rel2abs('t/repos/share');
@@ -46,8 +46,8 @@ sub create_adder
     my $reposhare   = "$REPOS_SHARE/$repo_name";
 
     return sub {
-        return unless /[.]pkg[.]tar[.]gz$/;
-        system 'repo-add', "$reposhare/$repo_name.db.tar.gz", $File::Find::name
+        return unless /[.]pkg[.]tar[.](xz|gz)$/;
+        system 'repo-add', "$reposhare/$repo_name.db.tar.$1", $File::Find::name
                 and die "error ", $? >> 8, " with repo-add in $REPOS_SHARE";
         rename $_, "$reposhare/$_";
     }
@@ -82,8 +82,8 @@ sub create_repos
         }
         closedir REPODIR;
 
-	# Move each repo's package to the share dir and add it to the
-	# repo's db.tar.gz file...
+        # Move each repo's package to the share dir and add it to the
+        # repo's db.tar.gz file...
         make_path( "$REPOS_SHARE/$repodir", { mode => 0755 } );
         find( create_adder( $repodir ), "$REPOS_BUILD/$repodir" );
     }
@@ -103,8 +103,12 @@ sub clean_root
 
 sub corrupt_package
 {
-    my $fqp = rel2abs( "$REPOS_SHARE" )
-        . "/simpletest/corruptme-1.0-1-any.pkg.tar.gz";
+    my ($fqp) = ( grep { -f $_ }
+                  map {
+                      catfile( rel2abs( "$REPOS_SHARE" ),
+                                q{simpletest},
+                               qq{corruptme-1.0-1-any.pkg.tar.$_} );
+                  } qw/ xz gz / );
 
     unlink $fqp or die "failed to unlink file whilst corrupting: $!";
 

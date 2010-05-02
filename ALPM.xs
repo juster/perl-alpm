@@ -794,6 +794,11 @@ PROTOTYPES: DISABLE
 
 INCLUDE: const-xs.inc
 
+# Make ALPM::PackageFree a subclass of ALPM::Package
+BOOT:
+    av_push( get_av( "ALPM::PackageFree::ISA", GV_ADD ),
+             newSVpvn( "ALPM::Package", 13 ) );
+
 MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
 
 void

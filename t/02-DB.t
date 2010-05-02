@@ -4,7 +4,6 @@ use warnings;
 use strict;
 
 use Test::More tests => 15;
-use Data::Dumper;
 use Net::Ping;
 use Time::HiRes qw(sleep);
 

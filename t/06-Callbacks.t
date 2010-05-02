@@ -3,7 +3,6 @@ use warnings;
 use strict;
 use Test::More tests => 11;
 use ALPM qw(t/test.conf);
-use Data::Dumper;
 use File::Spec::Functions qw(rel2abs);
 use File::stat qw(stat);
 use File::Copy qw(copy);
@@ -43,10 +42,10 @@ sub create_cb_checker
 
 $alpm_opt{ignorepkgs} = [ 'baz' ];
 
-use Data::Dumper;
-sub dump_cb {
-    print STDERR Dumper(\@_);
-}
+# use Data::Dumper;
+# sub dump_cb {
+#     print STDERR Dumper(\@_);
+# }
 
 my ($total_bytes, $bytes_count);
 

@@ -14,7 +14,7 @@ use ALPM;
 
 my %_CFG_OPTS =
     qw{ RootDir   root       CacheDir     cachedirs    DBPath      dbpath
-        LogFile   logfile    UseSyslog    usesyslog    XferCommand xfercommand
+        LogFile   logfile    UseSyslog    usesyslog    UseDelta    usedelta
         IgnorePkg ignorepkgs IgnoreGroup  ignoregrps   NoUpgrade   noupgrades
         NoExtract noextracts NoPassiveFtp nopassiveftp };
 

@@ -1,3 +1,10 @@
+2010-05-02  Justin Davis  <juster@cpan.org>
+
+	* t/04-FakeRepos.t: Add support for .pkg.tar.xz package files.
+
+	* lib/ALPM/LoadConfig.pm: Add support for UseDelta setting in
+	pacman.conf.
+
 2010-01-25  Justin Davis  <jrcd83@gmail.com>
 
 	* t/04-FakeRepos.t (create_repos): Fixed problems with test

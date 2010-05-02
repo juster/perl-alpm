@@ -229,11 +229,11 @@ L<ALPM>
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 at gmail dot com> >>
+Justin Davis, C<< <juster at cpan dot org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 by Justin Davis
+Copyright (C) 2010 by Justin Davis
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,

@@ -1,6 +1,6 @@
 =head1 NAME
 
-ALPM::DB - Class to represent a libalpm database
+ALPM::DB - ALPM database class.
 
 =head1 SYNOPSIS
 
@@ -108,7 +108,7 @@ L<ALPM>, L<ALPM::Package>, L<ALPM::Transaction>
 
 =head1 AUTHOR
 
-Justin Davis, C<< <jrcd83 at gmail> >>
+Justin Davis, C<< <juster at cpan dot org> >>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -35,4 +35,3 @@ ok defined $pkg->changelog;
 my $attribs_ref = $pkg->attribs_ref;
 ok( $attribs_ref );
 ok( ref $attribs_ref eq 'HASH' );
-

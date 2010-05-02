@@ -3,8 +3,6 @@ use warnings;
 use strict;
 use Test::More tests => 5;
 
-use Data::Dumper;
-
 use ALPM;
 use Cwd;
 use English qw( -no_match_vars );

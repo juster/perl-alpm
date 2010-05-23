@@ -11,7 +11,6 @@ use English      qw(-no_match_vars);
 use Carp         qw(carp croak confess);
 
 use ALPM::Transaction;
-use ALPM::PackageFree;
 use ALPM::Package;
 use ALPM::Group;
 use ALPM::DB;

@@ -27,6 +27,7 @@ t/repos/build/simpletest/foo/PKGBUILD
 t/repos/build/simpletest/corruptme/PKGBUILD
 bin/ppacman
 lib/App/PerlPacman.pm
+lib/App/PerlPacman/Query.pm
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm

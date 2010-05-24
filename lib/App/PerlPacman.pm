@@ -4,8 +4,9 @@ use warnings;
 use strict;
 
 use Getopt::Long qw(GetOptionsFromArray);
+use ALPM qw(/etc/pacman.conf);
 
-Getopt::Long::Configure qw(bundling no_ignore_case);
+Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
 
 sub parse_options
 {
@@ -31,7 +32,8 @@ sub run
     my $class = shift;
     my ($extra_args, %opts)  = $class->parse_options( @_ );
 
-    $class->run_opts( $extra_args, %opts );
+    my $retval = $class->run_opts( $extra_args, %opts );
+    return $retval if defined $retval;
 
     return $class->help() if $opts{'help'};
     die 'INTERNAL ERROR'; # shouldn't get here
@@ -51,9 +53,17 @@ sub run_opts
         next ACT_LOOP unless $opts{ $action };
         my $subclass = "App::PerlPacman::" . ucfirst $action;
 
-        return $subclass->help() if $opts{'help'};
+        eval "require $subclass; 1;"
+            or die "Internal error: failed to load $subclass...\n$@";
+
+        if ( $opts{'help'} ) {
+            print $subclass->help();
+            return 0;
+        }
         return $subclass->run( @{ $extra_args } );
-    }    
+    }
+
+    return;
 }
 
 sub error
@@ -64,9 +74,7 @@ sub error
 
 sub help
 {
-    my $class = shift;
-
-    print <<'END_HELP';
+    return <<'END_HELP';
 usage:  ppacman <operation> [...]
 operations:
     ppacman {-h --help}

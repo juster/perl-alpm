@@ -8,25 +8,93 @@ use ALPM;
 
 sub option_spec
 {
-    qw{ changelog deps explicit groups info check|k list foreign|m 
-        owns:s file|p:s search:s unrequired|t upgrades|u quiet|q
-        config:s logfile:s noconfirm noprogressbar noscriplet
-        verbose debug root dbpath|b cachedir };
+    qw{ changelog|c deps|d explicit|e groups|g info|i check|k list|l foreign|m 
+        owns|o:s file|p:s search:s unrequired|t upgrades|u quiet|q
+        config|c:s logfile|l:s noconfirm noprogressbar noscriplet
+        verbose|v debug root|r dbpath|b cachedir };
+}
+
+sub _print_package
+{
+    printf "%s %s\n", $_->name, $_->version;
+}
+
+sub _convert_args
+{
+    my ($args_ref, $lookup_ref, $default_ref) = @_;
+
+    my (@found, @notfound);
+
+    return ( [ $default_ref->() ], [] ) unless @$args_ref;
+
+    FINDOBJ_LOOP:
+    for my $objname ( @$args_ref ) {
+        my $obj = $lookup_ref->( $objname );
+        unless ( $obj ) {
+            push @notfound, $objname;
+            next FINDOBJ_LOOP;
+        }
+        push @found, $obj;
+    }
+
+    return \@found, \@notfound;
 }
 
 sub run_opts
 {
-    my ($class, $packages_ref, %opts) = @_;
+    my ($class, $args_ref, %opts) = @_;
 
-    # Loop over all our local db packages if none were specified...
-    unless ( @$packages_ref ) {
-        $packages_ref = [ ALPM->localdb->packages ];
+    # Check if an unrecognized option is leftover...
+    my ($badopt) = grep { /\A-/ } @$args_ref;
+    $class->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
+
+    # Groups are easy, we just print them
+    if ( $opts{'groups'} ) {
+        $class->print_groups( $args_ref );
+        return 0;
     }
 
-    $class->filter_packages( $packages_ref, %opts );
+    # Loop over all our local db packages if none were specified...
+    my (@notfound, @packages, $printer);
 
-    printf "%s %s\n", $_->name, $_->version
-        foreach @$packages_ref;
+    $printer = \&_print_package;
+
+    my $localdb = ALPM->localdb;
+    my ($packages_ref, $notfound)
+        = _converts_args( $args_ref,
+                          sub { $localdb->find( shift ) },
+                          sub { $localdb->packages } );
+
+    $class->filter_packages( $packages_ref, %opts );
+    $printer->() foreach @$packages_ref;
+
+    return 0;
+}
+
+sub print_groups
+{
+    my ($class, $groupargs_ref) = @_;
+
+    my @groups = ALPM->localdb->groups;
+    my ($groups_ref, $notfound_ref)
+        = _convert_args( $groupargs_ref,
+                         sub {
+                             my $name = shift;
+                             my ($obj)
+                                 = grep { $_->name eq $name } @groups;
+                             $obj
+                         },
+                         sub { @groups  } );
+
+    for my $group ( @$groups_ref ) {
+        my $name = $group->name;
+        for my $package ( $group->packages ) {
+            printf "%s %s\n", $name, $package->name;
+        }
+    }
+
+    $class->error( qq{group "$_" was not found} )
+        foreach ( @$notfound_ref );
 
     return 0;
 }

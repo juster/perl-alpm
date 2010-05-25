@@ -69,7 +69,13 @@ sub run_opts
 sub error
 {
     my $class = shift;
-    die "error: @_\n";
+    print "error: ", @_, "\n";
+}
+
+sub fatal
+{
+    my $class = shift;
+    $class->error( @_ );
 }
 
 sub help

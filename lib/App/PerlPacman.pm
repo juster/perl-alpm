@@ -15,7 +15,7 @@ sub parse_options
 
     my %result;
     
-    GetOptionsFromArray( \@opts, \%result, qw/ help|h /,
+    GetOptionsFromArray( \@opts, \%result, 'help|h',
                          $class->option_spec() );
 
     return \@opts, %result;
@@ -30,12 +30,13 @@ sub option_spec
 sub run
 {
     my $class = shift;
-    my ($extra_args, %opts)  = $class->parse_options( @_ );
+    my ($extra_args, %opts) = $class->parse_options( @_ );
 
     my $retval = $class->run_opts( $extra_args, %opts );
     return $retval if defined $retval;
 
-    return $class->help() if $opts{'help'};
+    
+    $class->print_help() if $opts{'help'};
     die 'INTERNAL ERROR'; # shouldn't get here
 }
 
@@ -57,7 +58,7 @@ sub run_opts
             or die "Internal error: failed to load $subclass...\n$@";
 
         if ( $opts{'help'} ) {
-            print $subclass->help();
+            $subclass->print_help();
             return 0;
         }
         return $subclass->run( @{ $extra_args } );
@@ -77,6 +78,13 @@ sub fatal
     my $class = shift;
     $class->error( @_ );
     exit 1;
+}
+
+sub print_help
+{
+    my $class = shift;
+    print $class->help();
+    exit 0;
 }
 
 sub help

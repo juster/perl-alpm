@@ -55,41 +55,27 @@ $info{'desc'};
 END_INFO
 }
 
-sub make_printer
+sub create_printer
 {
-    my (%opts) = @_;
+    my ($class, %opts) = @_;
 
-    my $print_ref = sub {}; # null sub
+    my $printer_result;
 
     my $append = sub {
         my $newprinter = shift;
-        my $oldprinter = $print_ref;
-        $print_ref = sub {
+        my $oldprinter = $printer_result || sub { };
+        $printer_result = sub {
             my $obj = shift;
             $newprinter->( $obj );
             $oldprinter->( $obj );
         }
     };
 
-    my $use_default = 1;
     my $printer = sub {
         my $optname = shift;
         return unless $opts{ $optname };
-        $use_default = 0;
         $append->( shift );
     };
-
-    $printer->( 'groups' =>
-                sub {
-                    my $group = shift;
-                    my $name  = $group->name;
-                    for my $package ( $group->packages ) {
-                        printf "%s %s\n", $name, $package->name;
-                    }
-                } );
-
-    # Ignore other options if --group is set...
-    return $print_ref if $opts{ 'groups' };
 
     $printer->( 'info' => \&_print_info );
     $printer->( 'changelog' => sub {
@@ -106,61 +92,101 @@ sub make_printer
                     }
                 } );
 
-    if ( $use_default ) {
-        $append->( sub {
-                       my $pkg = shift;
-                       printf "%s %s\n", $pkg->name, $pkg->version;
-                   } );
-    }
-
-    return $print_ref;
+    return $printer_result;
 }
 
-sub convert_args
+sub _convert_args_to_objs
 {
-    my ($args_ref, $lookup_ref, $default_ref, $missing_fmt) = @_;
+
+    my %param = @_;
 
     my @found;
 
-    return $default_ref->() unless @$args_ref;
+    my $args_ref   = $param{'args'};
+    my $lookup_ref = $param{'converter'};
+    return $param{'defaults'}->() unless @$args_ref;
 
     FINDOBJ_LOOP:
     for my $objname ( @$args_ref ) {
-        my $obj = $lookup_ref->( $objname );
-        unless ( $obj ) {
-            __PACKAGE__->error( sprintf $missing_fmt, $objname );
+        my @objs = $lookup_ref->( $objname );
+        unless ( @objs ) {
+            __PACKAGE__->error( sprintf $param{'error'}, $objname );
             next FINDOBJ_LOOP;
         }
-        push @found, $obj;
+        push @found, @objs;
     }
 
     return @found;
 }
 
-sub convert_args_by_opts
+# Create a converter sub that translates arguments to objects.
+sub create_conv_print
 {
-    my ($args_ref, %opts) = @_;
+    my ($class, %opts) = @_;
 
+    use Dumpvalue;
+    Dumpvalue->new->dumpValue( \%opts );
+
+    # Converts groups to a list of packages, the printer still remembers
+    # which group the package came from...
     if ( $opts{'groups'} ) {
+        my %group_of;
+
         my $converter = sub {
             my $name = shift;
-            my ($obj)
-                = grep { $_->name eq $name }
-                    ALPM->localdb->groups;
-            $obj
+            my ($group_obj) = grep { $_->name eq $name }
+                ALPM->localdb->groups;
+            return undef unless $group_obj;
+            print STDERR "Returning group packages\n";
+
+            # This reverse lookup is used when printing packages...
+            $group_of{ $_->name } = $group_obj->name
+                for $group_obj->packages;
+
+            return $group_obj->packages;
         };
 
-        return convert_args( $args_ref, $converter,
-                             sub { ALPM->localdb->groups },
-                             'group %s was not found',
-                            );
+        my $printer_ref = sub {
+            my $pkg  = shift;
+
+            my $name = $pkg->name;
+            printf "%s %s\n", $group_of{$name}, $name;
+        };
+
+        my $convert_ref = sub {
+            _convert_args_to_objs
+                ( args      => shift,
+                  converter => $converter,
+                  defaults  => sub {
+                      map { 
+                          for my $pkg ( $_->pkgs ) {
+                              $group_of{ $pkg->name } = $_->name;
+                          }
+                          $_->pkgs;
+                      } ALPM->localdb->groups;
+                  },
+                  error     => 'group %s was not found',
+                 );
+        };
+
+        return ( $convert_ref, $printer_ref );
     }
 
-    return convert_args( $args_ref,
-                         sub { ALPM->localdb->find( shift ) },
-                         sub { ALPM->localdb->packages },
-                         'package %s not found',
-                        );
+    # Packages are simpler...
+    my $convert_ref = sub {
+        _convert_args_to_objs
+            ( args      => shift,
+              converter => sub { ALPM->localdb->find( shift ) },
+              defaults  => sub { ALPM->localdb->packages },
+              error     => 'package %s not found' );
+    };
+
+    my $printer_ref = sub {
+        my $pkg = shift;
+        printf "%s %s\n", $pkg->name, $pkg->version;
+    };
+
+    return ( $convert_ref, $printer_ref );
 }
 
 sub run_opts
@@ -171,9 +197,11 @@ sub run_opts
     my ($badopt) = grep { /\A-/ } @$args_ref;
     $class->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
 
-    my @packages = convert_args_by_opts( $args_ref, %opts );
+    my ($converter, $defprinter) = $class->create_conv_print( %opts );
+    my $printer  = $class->create_printer( %opts ) || $defprinter;
+    my @packages = $converter->( $args_ref );
+
     filter_packages( \@packages, %opts );
-    my $printer = make_printer( %opts );
     $printer->( $_ ) foreach @packages;
 
     return 0;

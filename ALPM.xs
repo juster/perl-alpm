@@ -1232,8 +1232,12 @@ alpm_pkg_vercmp(a, b)
     const char *b
 
 StringListFree
-alpm_pkg_compute_requiredby(pkg)
+alpm_pkg_requiredby(pkg)
     ALPM_Package pkg
+  CODE:
+    RETVAL = alpm_pkg_compute_requiredby(pkg);
+  OUTPUT:
+    RETVAL
 
 const char *
 alpm_pkg_filename(pkg)

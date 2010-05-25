@@ -10,8 +10,8 @@ use Carp qw(croak);
 my %_PKG_ATTRIBS = map { /^has_(.*)$/ ? ( $1 => $_ ) : ( $_ => $_ ) }
     qw { filename name version desc url
          builddate installdate packager md5sum
-         arch size isize reason licenses
-         groups depends optdepends conflicts
+         arch size isize reason licenses requiredby
+         groups depends optdepends conflicts 
          provides deltas replaces files backup
          has_scriptlet has_force download_size };
 
@@ -108,8 +108,9 @@ C<attr> method, or you can use the C<attribs> method.
 
 =head2 ATTRIBUTE ACCESSORS
 
-The accessors are named exactly the same as the C<alpm_pkg_get...>
-functions.  They are easy to use if you only want a few attributes.
+The accessors are named I<(almost)> exactly the same as the
+C<alpm_pkg_get...> functions.  They are easy to use if you only want a
+few attributes.
 
 I have removed the get_ prefix on the accessors.  This is because you
 can't really I<set> anything so you should know it's a get anyways.
@@ -169,6 +170,8 @@ can't really I<set> anything so you should know it's a get anyways.
 =item * download_size
 
 =item * changelog
+
+=item * requiredby
 
 =back
 

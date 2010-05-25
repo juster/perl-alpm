@@ -45,7 +45,7 @@ sub run_opts
     my ($class, $extra_args, %opts) = @_;
 
     # Display error if no options were specified...
-    $class->error( 'no operation specified (use -h for help)' )
+    $class->fatal( 'no operation specified (use -h for help)' )
         unless ( %opts );
 
     ACT_LOOP:
@@ -76,6 +76,7 @@ sub fatal
 {
     my $class = shift;
     $class->error( @_ );
+    exit 1;
 }
 
 sub help

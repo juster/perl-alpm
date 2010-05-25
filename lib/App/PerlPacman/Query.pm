@@ -4,6 +4,7 @@ use base qw(App::PerlPacman);
 use warnings;
 use strict;
 
+use Text::Wrap;
 use ALPM;
 
 sub option_spec
@@ -14,30 +15,152 @@ sub option_spec
         verbose|v debug root|r dbpath|b cachedir };
 }
 
-sub _print_package
+sub _print_info
 {
-    printf "%s %s\n", $_->name, $_->version;
+    my $pkg = shift;
+
+    my %info = $pkg->attribs;
+    $info{'desc'} = Text::Wrap::wrap( 'Description    : ',
+                                      '                 ',
+                                      $info{'desc'} );
+
+    for my $pluralkey ( grep { /s\z/ } keys %info ) {
+        my $aref = $info{ $pluralkey };
+        $info{ $pluralkey } = ( @$aref ? join q{ }, @$aref : 'None' );
+    }
+
+    $info{'reason'}        = ucfirst $info{'reason'} . 'ly installed.';
+    $info{'has_scriptlet'} = ( $info{'has_scriptlet'} ? 'Yes' : 'No' );
+
+    return <<"END_INFO";
+Name           : $info{'name'}
+Version        : $info{'version'}
+URL            : $info{'url'}
+Licenses       : $info{'licenses'}
+Groups         : $info{'groups'}
+Provides       : $info{'provides'}
+Depends On     : $info{'depends'}
+Optional Deps  : $info{'optdepends'}
+Required By    : $info{'requiredby'}
+Conflicts With : $info{'conflicts'}
+Replaces       : $info{'replaces'}
+Installed Size : $info{'isize'}
+Packager       : $info{'packager'}
+Architecture   : $info{'arch'}
+Build Date     : $info{'builddate'}
+Install Date   : $info{'installdate'}
+Install Reason : $info{'reason'}
+Install Script : $info{'has_scriptlet'}
+$info{'desc'};
+END_INFO
 }
 
-sub _convert_args
+sub make_printer
 {
-    my ($args_ref, $lookup_ref, $default_ref) = @_;
+    my (%opts) = @_;
 
-    my (@found, @notfound);
+    my $print_ref = sub {}; # null sub
 
-    return ( [ $default_ref->() ], [] ) unless @$args_ref;
+    my $append = sub {
+        my $newprinter = shift;
+        my $oldprinter = $print_ref;
+        $print_ref = sub {
+            my $obj = shift;
+            $newprinter->( $obj );
+            $oldprinter->( $obj );
+        }
+    };
+
+    my $use_default = 1;
+    my $printer = sub {
+        my $optname = shift;
+        return unless $opts{ $optname };
+        $use_default = 0;
+        $append->( shift );
+    };
+
+    $printer->( 'groups' =>
+                sub {
+                    my $group = shift;
+                    my $name  = $group->name;
+                    for my $package ( $group->packages ) {
+                        printf "%s %s\n", $name, $package->name;
+                    }
+                } );
+
+    # Ignore other options if --group is set...
+    return $print_ref if $opts{ 'groups' };
+
+    $printer->( 'info' => \&_print_info );
+    $printer->( 'changelog' => sub {
+                    my $pkg = shift;
+                    my $changelog = $pkg->changelog;
+                    if ( $changelog ) {
+                        print $changelog;
+                    }
+                    else {
+                        my $name = $pkg->name;
+                        __PACKAGE__->error
+                            ( q{no changelog available for } .
+                              qq{'$name'} );
+                    }
+                } );
+
+    if ( $use_default ) {
+        $append->( sub {
+                       my $pkg = shift;
+                       printf "%s %s\n", $pkg->name, $pkg->version;
+                   } );
+    }
+
+    return $print_ref;
+}
+
+sub convert_args
+{
+    my ($args_ref, $lookup_ref, $default_ref, $missing_fmt) = @_;
+
+    my @found;
+
+    return $default_ref->() unless @$args_ref;
 
     FINDOBJ_LOOP:
     for my $objname ( @$args_ref ) {
         my $obj = $lookup_ref->( $objname );
         unless ( $obj ) {
-            push @notfound, $objname;
+            __PACKAGE__->error( sprintf $missing_fmt, $objname );
             next FINDOBJ_LOOP;
         }
         push @found, $obj;
     }
 
-    return \@found, \@notfound;
+    return @found;
+}
+
+sub convert_args_by_opts
+{
+    my ($args_ref, %opts) = @_;
+
+    if ( $opts{'groups'} ) {
+        my $converter = sub {
+            my $name = shift;
+            my ($obj)
+                = grep { $_->name eq $name }
+                    ALPM->localdb->groups;
+            $obj
+        };
+
+        return convert_args( $args_ref, $converter,
+                             sub { ALPM->localdb->groups },
+                             'group %s was not found',
+                            );
+    }
+
+    return convert_args( $args_ref,
+                         sub { ALPM->localdb->find( shift ) },
+                         sub { ALPM->localdb->packages },
+                         'package %s not found',
+                        );
 }
 
 sub run_opts
@@ -48,71 +171,28 @@ sub run_opts
     my ($badopt) = grep { /\A-/ } @$args_ref;
     $class->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
 
-    # Groups are easy, we just print them
-    if ( $opts{'groups'} ) {
-        $class->print_groups( $args_ref );
-        return 0;
-    }
-
-    # Loop over all our local db packages if none were specified...
-    my (@notfound, @packages, $printer);
-
-    $printer = \&_print_package;
-
-    my $localdb = ALPM->localdb;
-    my ($packages_ref, $notfound)
-        = _converts_args( $args_ref,
-                          sub { $localdb->find( shift ) },
-                          sub { $localdb->packages } );
-
-    $class->filter_packages( $packages_ref, %opts );
-    $printer->() foreach @$packages_ref;
-
-    return 0;
-}
-
-sub print_groups
-{
-    my ($class, $groupargs_ref) = @_;
-
-    my @groups = ALPM->localdb->groups;
-    my ($groups_ref, $notfound_ref)
-        = _convert_args( $groupargs_ref,
-                         sub {
-                             my $name = shift;
-                             my ($obj)
-                                 = grep { $_->name eq $name } @groups;
-                             $obj
-                         },
-                         sub { @groups  } );
-
-    for my $group ( @$groups_ref ) {
-        my $name = $group->name;
-        for my $package ( $group->packages ) {
-            printf "%s %s\n", $name, $package->name;
-        }
-    }
-
-    $class->error( qq{group "$_" was not found} )
-        foreach ( @$notfound_ref );
+    my @packages = convert_args_by_opts( $args_ref, %opts );
+    filter_packages( \@packages, %opts );
+    my $printer = make_printer( %opts );
+    $printer->( $_ ) foreach @packages;
 
     return 0;
 }
 
 sub filter_packages
 {
-    my ($class, $packages_ref, %opts) = @_;
+    my ($packages_ref, %opts) = @_;
 
-    my $filters_ref = $class->_create_filters( %opts );
-    $class->_filtration( $filters_ref, $packages_ref );
+    my $filters_ref = create_filters( %opts );
+    filtration( $filters_ref, $packages_ref );
 
     # Not necessary, because we alter reference in place...
     return $packages_ref;
 }
 
-sub _filtration
+sub filtration
 {
-    my ($class, $filters_ref, $packages_ref) = @_;
+    my ($filters_ref, $packages_ref) = @_;
 
     FILTER:
     for my $filter ( @$filters_ref ) {
@@ -152,9 +232,9 @@ sub _filter_upgrades
     return 0;
 }
 
-sub _create_filters
+sub create_filters
 {
-    my ($class, %opts) = @_;
+    my (%opts) = @_;
 
     my @filters;
     my $filter = sub {

@@ -69,7 +69,7 @@ sub run_opts
 sub error
 {
     my $class = shift;
-    print "error: ", @_, "\n";
+    print STDERR "error: ", @_, "\n";
 }
 
 sub fatal

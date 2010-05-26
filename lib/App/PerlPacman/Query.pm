@@ -4,13 +4,14 @@ use base qw(App::PerlPacman);
 use warnings;
 use strict;
 
+use File::Spec;
 use Text::Wrap;
 use ALPM;
 
 sub option_spec
 {
     qw{ changelog|c deps|d explicit|e groups|g info|i check|k list|l foreign|m 
-        owns|o:s file|p:s search:s unrequired|t upgrades|u quiet|q
+        owns|o file|p:s search=s unrequired|t upgrades|u quiet|q
         config|c:s logfile|l:s noconfirm noprogressbar noscriplet
         verbose|v debug root|r dbpath|b cachedir };
 }
@@ -55,6 +56,8 @@ sub run_opts
     my ($badopt) = grep { /\A-/ } @$args_ref;
     $class->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
 
+    return _run_owns( $args_ref ) if $opts{'owns'};
+
     # 1. Convert arguments to package objects (or use all packages/groups)
     # 2. Filter out packages based on command-line options
     # 3. Print more info depending on command-line options
@@ -69,58 +72,117 @@ sub run_opts
     return 0;
 }
 
+sub _run_owns
+{
+    my $args_ref = shift;
+
+    __PACKAGE__->fatal( 'no targets specified (use -h for help)' )
+        unless @$args_ref;
+
+    FILE_LOOP:
+    for my $filename ( @$args_ref ) {
+        if ( -d $filename ) {
+            __PACKAGE__->error( 'cannot determine ownership of a ',
+                                'directory');
+            next FILE_LOOP;
+        }
+        unless ( -f $filename ) {
+            __PACKAGE__->error( qq{failed to read file '$filename'},
+                                 q{: No such file or directory} );
+            next FILE_LOOP;
+        }
+
+        # The filepath in the package is absolute, without the leading /
+        my $fqp = File::Spec->rel2abs( $filename );
+        substr $fqp, 0, 1, q{};
+
+        my $owner;
+        PKG_LOOP:
+        for my $pkg ( ALPM->localdb->packages ) {
+            PKGFILE_LOOP:
+            for my $pkgfile ( @{$pkg->files} ) {
+                next PKGFILE_LOOP unless $fqp eq $pkgfile;
+                $owner = $pkg;
+                last PKG_LOOP;
+            }
+        }
+
+        if ( $owner ) {
+            printf "$filename is owned by %s %s\n",
+                $owner->name, $owner->version;
+        }
+        else {
+            __PACKAGE__->error( "No package owns $filename" );
+        }
+    }
+
+    return 0;
+}
+
 ##----------------------------------------------------------------------------
 ## CONVERTERS
 ##----------------------------------------------------------------------------
+
+# Converts groups to a list of packages, the printer still remembers
+# which group the package came from...
+sub _convert_groups
+{
+    my %group_of;
+
+    my $converter = sub {
+        my $name = shift;
+        my ($group_obj) = grep { $_->name eq $name }
+            ALPM->localdb->groups;
+        return undef unless $group_obj;
+
+        # This reverse lookup is used when printing packages...
+        $group_of{ $_->name } = $group_obj->name
+            for $group_obj->packages;
+
+        return $group_obj->packages;
+    };
+
+    my $printer_ref = sub {
+        my $pkg  = shift;
+
+        my $name = $pkg->name;
+        printf "%s %s\n", $group_of{$name}, $name;
+    };
+
+    my $convert_ref = sub {
+        _convert_args_to_objs
+            ( args      => shift,
+              converter => $converter,
+              defaults  => sub {
+                  map { 
+                      for my $pkg ( $_->pkgs ) {
+                          $group_of{ $pkg->name } = $_->name;
+                      }
+                      $_->pkgs;
+                  } ALPM->localdb->groups;
+              },
+              error     => 'group %s was not found',
+             );
+    };
+
+    return ( $convert_ref, $printer_ref );
+}
+
+sub _convert_files
+{
+    # Converts a filename into its owner package or displays
+    # an error...
+    my $converter = sub {
+    };
+}
 
 # Create a converter sub that translates arguments to objects.
 sub create_conv_print
 {
     my ($class, %opts) = @_;
 
-    # Converts groups to a list of packages, the printer still remembers
-    # which group the package came from...
-    if ( $opts{'groups'} ) {
-        my %group_of;
-
-        my $converter = sub {
-            my $name = shift;
-            my ($group_obj) = grep { $_->name eq $name }
-                ALPM->localdb->groups;
-            return undef unless $group_obj;
-
-            # This reverse lookup is used when printing packages...
-            $group_of{ $_->name } = $group_obj->name
-                for $group_obj->packages;
-
-            return $group_obj->packages;
-        };
-
-        my $printer_ref = sub {
-            my $pkg  = shift;
-
-            my $name = $pkg->name;
-            printf "%s %s\n", $group_of{$name}, $name;
-        };
-
-        my $convert_ref = sub {
-            _convert_args_to_objs
-                ( args      => shift,
-                  converter => $converter,
-                  defaults  => sub {
-                      map { 
-                          for my $pkg ( $_->pkgs ) {
-                              $group_of{ $pkg->name } = $_->name;
-                          }
-                          $_->pkgs;
-                      } ALPM->localdb->groups;
-                  },
-                  error     => 'group %s was not found',
-                 );
-        };
-
-        return ( $convert_ref, $printer_ref );
-    }
+    return _convert_groups if ( $opts{'groups'} );
+    return _convert_files  if ( $opts{'owns'} );
 
     # Packages are simpler...
     my $convert_ref = sub {
@@ -155,7 +217,9 @@ sub _convert_args_to_objs
     for my $objname ( @$args_ref ) {
         my @objs = $lookup_ref->( $objname );
         unless ( @objs ) {
-            __PACKAGE__->error( sprintf $param{'error'}, $objname );
+            if ( $param{'error'} ) {
+                __PACKAGE__->error( sprintf $param{'error'}, $objname );
+            }
             next FINDOBJ_LOOP;
         }
         push @found, @objs;

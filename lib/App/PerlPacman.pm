@@ -80,6 +80,12 @@ sub fatal
     exit 1;
 }
 
+sub fatal_notargets
+{
+    my $class = shift;
+    $class->fatal( 'no targets specified (use -h for help)' );
+}
+
 sub print_help
 {
     my $class = shift;

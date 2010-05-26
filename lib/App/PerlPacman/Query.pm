@@ -4,14 +4,15 @@ use base qw(App::PerlPacman);
 use warnings;
 use strict;
 
-use File::Spec;
-use Text::Wrap;
+use File::Spec qw();
+use Text::Wrap qw();
+use POSIX      qw();
 use ALPM;
 
 sub option_spec
 {
     qw{ changelog|c deps|d explicit|e groups|g info|i check|k list|l foreign|m 
-        owns|o file|p:s search=s unrequired|t upgrades|u quiet|q
+        owns|o file|p search=s unrequired|t upgrades|u quiet|q
         config|c:s logfile|l:s noconfirm noprogressbar noscriplet
         verbose|v debug root|r dbpath|b cachedir };
 }
@@ -168,21 +169,32 @@ sub _convert_groups
     return ( $convert_ref, $printer_ref );
 }
 
-sub _convert_files
+sub _convert_pkgfile
 {
-    # Converts a filename into its owner package or displays
-    # an error...
     my $converter = sub {
+        _convert_args_to_objs
+            ( args      => shift,
+              converter => sub { ALPM->load_pkgfile( shift ) },
+              defaults  => sub { __PACKAGE__->fatal_notargets },
+             );
     };
+
+    my $printer = sub {
+        my $pkg = shift;
+        printf "%s %s\n", $pkg->name, $pkg->version;
+    };
+
+    return ( $converter, $printer );
 }
 
 # Create a converter sub that translates arguments to objects.
+# as well as a default printing closure.
 sub create_conv_print
 {
     my ($class, %opts) = @_;
 
-    return _convert_groups if ( $opts{'groups'} );
-    return _convert_files  if ( $opts{'owns'} );
+    return _convert_pkgfile if $opts{'file' };
+    return _convert_groups  if $opts{'groups'};
 
     # Packages are simpler...
     my $convert_ref = sub {
@@ -277,39 +289,65 @@ sub _print_info
     my $pkg = shift;
 
     my %info = $pkg->attribs;
-    $info{'desc'} = Text::Wrap::wrap( 'Description    : ',
-                                      '                 ',
-                                      $info{'desc'} );
 
-    for my $pluralkey ( grep { /s\z/ } keys %info ) {
+    for my $pluralkey ( 'requiredby', grep { /s\z/ } keys %info ) {
         my $aref = $info{ $pluralkey };
         $info{ $pluralkey } = ( @$aref ? join q{ }, @$aref : 'None' );
     }
 
-    $info{'reason'}        = ucfirst $info{'reason'} . 'ly installed.';
+    $info{'reason'} = ( $info{'reason'} eq 'implicit'
+                        ? 'Installed as a dependency for another package'
+                        : 'Explicitly installed' );
     $info{'has_scriptlet'} = ( $info{'has_scriptlet'} ? 'Yes' : 'No' );
 
-    return <<"END_INFO";
-Name           : $info{'name'}
-Version        : $info{'version'}
-URL            : $info{'url'}
-Licenses       : $info{'licenses'}
-Groups         : $info{'groups'}
-Provides       : $info{'provides'}
-Depends On     : $info{'depends'}
-Optional Deps  : $info{'optdepends'}
-Required By    : $info{'requiredby'}
-Conflicts With : $info{'conflicts'}
-Replaces       : $info{'replaces'}
-Installed Size : $info{'isize'}
-Packager       : $info{'packager'}
-Architecture   : $info{'arch'}
-Build Date     : $info{'builddate'}
-Install Date   : $info{'installdate'}
-Install Reason : $info{'reason'}
-Install Script : $info{'has_scriptlet'}
-$info{'desc'};
-END_INFO
+    my @fields = ( ( map { ( $_ => lc $_ ) }
+                     qw{ Name Version URL Licenses Groups Provides } ),
+                   'Depends On' => 'depends',
+                   'Optional Deps' => 'optdepends',
+                   'Required By' => 'requiredby',
+                   'Conflicts With' => 'conflicts',
+                   'Replaces' => 'replaces',
+                   'Installed Size' => 'isize',
+                   'Packager' => 'packager',
+                   'Architecture' => 'arch',
+                   'Build Date' => 'builddate',
+                   'Install Date' => 'installdate',
+                   'Install Reason' => 'reason',
+                   'Install Script' => 'has_scriptlet',
+                   'Description' => 'desc',
+                  );
+
+    @info{ qw/builddate installdate/ } =
+        map { POSIX::strftime '%a %b %d %H:%M %Y', localtime $_ }
+            @info{ qw/builddate installdate/ };            
+    
+    my $indent = q{ } x 17;
+    while ( my ($field, $key) = splice @fields, 0, 2 ) {
+        my $field_start = sprintf '%-15s: ', $field;
+        print Text::Wrap::wrap( $field_start, $indent, $info{ $key } ), "\n";
+    }
+
+#     print <<"END_INFO";
+# Name           : $info{'name'}
+# Version        : $info{'version'}
+# URL            : $info{'url'}
+# Licenses       : $info{'licenses'}
+# Groups         : $info{'groups'}
+# Provides       : $info{'provides'}
+# Depends On     : $info{'depends'}
+# Optional Deps  : $info{'optdepends'}
+# Required By    : $info{'requiredby'}
+# Conflicts With : $info{'conflicts'}
+# Replaces       : $info{'replaces'}
+# Installed Size : $info{'isize'}
+# Packager       : $info{'packager'}
+# Architecture   : $info{'arch'}
+# Build Date     : $info{'builddate'}
+# Install Date   : $info{'installdate'}
+# Install Reason : $info{'reason'}
+# Install Script : $info{'has_scriptlet'}
+# $info{'desc'};
+# END_INFO
 }
 
 ##----------------------------------------------------------------------------

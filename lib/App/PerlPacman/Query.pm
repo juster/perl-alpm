@@ -326,28 +326,6 @@ sub _print_info
         my $field_start = sprintf '%-15s: ', $field;
         print Text::Wrap::wrap( $field_start, $indent, $info{ $key } ), "\n";
     }
-
-#     print <<"END_INFO";
-# Name           : $info{'name'}
-# Version        : $info{'version'}
-# URL            : $info{'url'}
-# Licenses       : $info{'licenses'}
-# Groups         : $info{'groups'}
-# Provides       : $info{'provides'}
-# Depends On     : $info{'depends'}
-# Optional Deps  : $info{'optdepends'}
-# Required By    : $info{'requiredby'}
-# Conflicts With : $info{'conflicts'}
-# Replaces       : $info{'replaces'}
-# Installed Size : $info{'isize'}
-# Packager       : $info{'packager'}
-# Architecture   : $info{'arch'}
-# Build Date     : $info{'builddate'}
-# Install Date   : $info{'installdate'}
-# Install Reason : $info{'reason'}
-# Install Script : $info{'has_scriptlet'}
-# $info{'desc'};
-# END_INFO
 }
 
 ##----------------------------------------------------------------------------

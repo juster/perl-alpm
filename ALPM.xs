@@ -256,7 +256,7 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
 
     /* fprintf( stderr, "Left switch statement\n" ); */
 
-#undef MAPLIST
+#undef MAPERRLIST
 #undef convert_invalid_delta
 #undef pminvalid_delta_t
 #undef free_invalid_delta_errors

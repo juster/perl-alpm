@@ -205,11 +205,8 @@ sub load_file
     # Load default values like pacman does...
     _set_defaults();
 
-    my $parser_ref = _make_parser( $cfg_path, $parser_hooks );
-    my $ret        = $parser_ref->();
-
-    if ( $ret ) { ALPM->register_db; } # register local db
-    return $ret;
+    _make_parser( $cfg_path, $parser_hooks )->();
+    return;
 }
 
 1;

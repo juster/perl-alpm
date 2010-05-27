@@ -127,7 +127,7 @@ sub new
                  'Hash argument must have coderefs as values' )
         if List::Util::first { ref $_ ne 'CODE'  } values %custom_fields;
 
-    bless { custom_fields => %custom_fields }, $class;
+    bless { custom_fields => \%custom_fields }, $class;
 }
 
 sub load_file
@@ -171,7 +171,7 @@ sub load_file
                  # singular options get scalar values
                  sub {
                      my $cfg_value = shift;
-                     die qq{$field_name can only be set in the }
+                     die qq{$field_name can only be set in the } .
                          qq{[options] section\n}
                              unless ( $current_section eq 'options' );
                      ALPM->set_opt( $opt_name, $cfg_value );
@@ -194,7 +194,7 @@ sub load_file
      },
 
      # aaaand SHAZAM! customize!
-     %custom_fields,
+     %{ $self->{'custom_fields'} },
     }; # end of field_hooks hashref brackets
 
     # Now we have hooks for parsing the main config file...

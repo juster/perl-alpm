@@ -12,9 +12,7 @@ use ALPM;
 sub option_spec
 {
     qw{ changelog|c deps|d explicit|e groups|g info|i check|k list|l foreign|m 
-        owns|o file|p search=s unrequired|t upgrades|u quiet|q
-        config|c:s logfile|l:s noconfirm noprogressbar noscriplet
-        verbose|v debug root|r dbpath|b cachedir };
+        owns|o file|p search=s unrequired|t upgrades|u quiet|q };
 }
 
 sub help

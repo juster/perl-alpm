@@ -4,9 +4,12 @@ use warnings;
 use strict;
 
 use Getopt::Long qw(GetOptionsFromArray);
-use ALPM qw(/etc/pacman.conf);
+use ALPM;
+use ALPM::LoadConfig;
 
 Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
+
+our ($Converse_cb, $Progress_cb, %Config);
 
 sub parse_options
 {
@@ -14,9 +17,7 @@ sub parse_options
     my @opts = @_;
 
     my %result;
-    
-    GetOptionsFromArray( \@opts, \%result, 'help|h',
-                         $class->option_spec() );
+    GetOptionsFromArray( \@opts, \%result, $class->option_spec() );
 
     return \@opts, %result;
 }
@@ -24,7 +25,11 @@ sub parse_options
 # Subclasses override this method
 sub option_spec
 {
-    qw/ version|V query|Q remove|R sync|S upgrade|U /;
+    qw{ help|h config|c=s logfile|l=s noconfirm
+        noprogressbar noscriplet verbose|v debug
+        root|r dbpath|b cachedir
+
+        version|V query|Q remove|R sync|S upgrade|U };
 }
 
 sub run
@@ -35,9 +40,55 @@ sub run
     my $retval = $class->run_opts( $extra_args, %opts );
     return $retval if defined $retval;
 
-    
     $class->print_help() if $opts{'help'};
     die 'INTERNAL ERROR'; # shouldn't get here
+}
+
+sub _converse_callback
+{
+
+}
+
+sub _progress_callback
+{
+
+}
+
+#** HELPER FUNCTION
+# Stores all pacman-specific fields inside $Config package var.
+sub _pacman_field_handlers
+{
+    my %field_handlers;
+
+    my $handler = sub {
+        my $field = shift;
+        return sub { $Config{ $field } = shift };
+    };
+
+    for my $key ( qw{ HoldPkg SyncFirst CleanMethod XferCommand
+                      ShowSize TotalDownload } ) {
+        $field_handlers{ $key }  = $handler->( $key );
+    }
+
+    return %field_handlers;
+}
+
+sub prepare_alpm
+{
+    my ($class, %opts) = @_;
+
+    my $loader = ALPM::LoadConfig->new( _pacman_field_handlers() );
+    $loader->load_file( $opts{'config'} || '/etc/pacman.conf' );
+
+    tie my %alpm, 'ALPM';
+    for my $opt ( qw/ logfile root dbpath / ) {
+        $alpm{ $opt } = $opts{ $opt } if $opts{ $opt };
+    }
+
+    push @{ $alpm{'cachedir'} }, $opts{'cachedir'}
+        if $opts{'cachedir'};
+
+    return;
 }
 
 # Subclasses override this method...
@@ -49,6 +100,8 @@ sub run_opts
     $class->fatal( 'no operation specified (use -h for help)' )
         unless ( %opts );
 
+    $class->prepare_alpm( %opts );
+
     ACT_LOOP:
     for my $action ( qw/query remove sync upgrade/ ) {
         next ACT_LOOP unless $opts{ $action };
@@ -57,10 +110,10 @@ sub run_opts
         eval "require $subclass; 1;"
             or die "Internal error: failed to load $subclass...\n$@";
 
-        if ( $opts{'help'} ) {
-            $subclass->print_help();
-            return 0;
-        }
+        # if ( $opts{'help'} ) {
+        #     $subclass->print_help();
+        #     return 0;
+        # }
         return $subclass->run( @{ $extra_args } );
     }
 

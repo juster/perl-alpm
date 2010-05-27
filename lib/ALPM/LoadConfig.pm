@@ -8,9 +8,9 @@ use English qw(-no_match_vars);
 use Carp    qw(croak);
 use ALPM;
 
-####----------------------------------------------------------------------
-#### GLOBALS
-####----------------------------------------------------------------------
+##------------------------------------------------------------------------
+## GLOBALS
+##------------------------------------------------------------------------
 
 my %_CFG_OPTS =
     qw{ RootDir   root       CacheDir     cachedirs    DBPath      dbpath
@@ -26,9 +26,9 @@ my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
 my $SECTION_MATCH = qr/ \A \s* [[] (\w+) []] \s* \z /xms;
 my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]*) /xms;
 
-####----------------------------------------------------------------------
-#### PRIVATE FUNCTIONS
-####----------------------------------------------------------------------
+##------------------------------------------------------------------------
+## PRIVATE FUNCTIONS
+##------------------------------------------------------------------------
 
 sub _null_sub
 {
@@ -60,7 +60,8 @@ sub _make_parser
                     $hooks->{section}->($section_name);
                     return;
                 }
-                elsif ( my ($field_name, $field_val) = $line =~ /$FIELD_MATCH/ ) {
+                elsif ( my ($field_name, $field_val) =
+                        $line =~ /$FIELD_MATCH/ ) {
                     return unless $field_val;
 
                     # Not sure if I should warn or not...
@@ -70,13 +71,14 @@ sub _make_parser
                     $hooks->{field}{$field_name}->( $field_val );
                     return;
                 }
-                die "Invalid line in config file, not a comment, section, or field\n";
+                die "Invalid line in config file, not a comment, section, " .
+                    "or field\n";
             };
 
             # Print the offending file and line number along with any errors...
             # (This is why we use dies with newlines, for cascading error msgs)
             die "$EVAL_ERROR$path:${\$cfg_file->input_line_number()} $line\n"
-                if ($EVAL_ERROR);
+                if ( $EVAL_ERROR );
         };
 
     return
@@ -94,7 +96,6 @@ sub _register_db
     my ($url, $section) = @_;
     die qq{Section has not previously been declared, cannot set URL\n}
         unless ( $section );
-    #print STDERR "DEBUG: \$section = $section -- \$url = $url\n";
     ALPM->register_db( $section => $url );
     return;
 }
@@ -107,9 +108,9 @@ sub _set_defaults
                         logfile     => '/var/log/pacman.log', });
 }
 
-####----------------------------------------------------------------------
-#### PUBLIC METHODS
-####----------------------------------------------------------------------
+##------------------------------------------------------------------------
+## PUBLIC METHODS
+##------------------------------------------------------------------------
 
 sub new
 {
@@ -127,7 +128,8 @@ sub load_file
     my $include_hooks =
     { section => sub {
           my $file = shift;
-          die qq{Section declaration is not allowed in Include-ed file\n($file)\n};
+          die  q{Section declaration is not allowed in } .
+              qq{Include-ed file\n($file)\n};
       },
       field  => { Server => sub {
                       my $server_url = shift;
@@ -141,33 +143,29 @@ sub load_file
          my $field_name = $_;
          my $opt_name   = $_CFG_OPTS{$_};
          # create hash of field names to hooks
-         $_ => ( $opt_name =~ /s$/ ? 
-                 sub { # plural options get set arrayref values
+         $_ => ( $opt_name =~ /s\z/ ? 
+
+                 # plural options get set arrayref values
+                 sub { 
                      my $cfg_value = shift;
-                     die "$field_name can only be set in the [options] section\n"
-                         unless ( $current_section eq 'options' );
-                     #print STDERR "DEBUG: setting $opt_name to [ $cfg_value ]\n";
+                     die qq{$field_name can only be set in the} .
+                         qq{[options] section\n}
+                             unless ( $current_section eq 'options' );
                      ALPM->set_opt( $opt_name, [ split /\s+/, $cfg_value ] );
                  }
+
                  :
-                 sub { # singular options get scalar values
+
+                 # singular options get scalar values
+                 sub {
                      my $cfg_value = shift;
-                     die "$field_name can only be set in the [options] section\n"
-                         unless ( $current_section eq 'options' );
-                     #print STDERR "DEBUG: setting $opt_name to $cfg_value\n";
+                     die qq{$field_name can only be set in the }
+                         qq{[options] section\n}
+                             unless ( $current_section eq 'options' );
                      ALPM->set_opt( $opt_name, $cfg_value );
                  }
                 )
      } keys %_CFG_OPTS ),
-
-#      DBPath    => sub {
-#          my $db_path = shift;
-#          die "DBPath can only be set in the [options] section\n"
-#              unless ( $current_section eq 'options' );
-#          #print STDERR "DEBUG: setting $opt_name to $cfg_value\n";
-#          ALPM->set_opt( 'dbpath', $db_path );
-#          ALPM->register_db;
-#      },
 
      # these fields do nothing, for now...
      ( map { ( $_ => \&_null_sub ) } @NULL_OPTS ),
@@ -186,16 +184,15 @@ sub load_file
      };
 
     # Now we have hooks for parsing the main config file...
-    my $parser_hooks =
-    { field   => $field_hooks,
-      section => sub { $current_section = shift; }};
-                       #print STDERR "DEBUG: found section $current_section\n"; }};
+    my $parser_hooks = { field   => $field_hooks,
+                         section => sub { $current_section = shift;}
+                        };
 
     # Load default values like pacman does...
     _set_defaults();
 
     my $parser_ref = _make_parser( $cfg_path, $parser_hooks );
-    my $ret = $parser_ref->();
+    my $ret        = $parser_ref->();
 
     if ( $ret ) { ALPM->register_db; } # register local db
     return $ret;

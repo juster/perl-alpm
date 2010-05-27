@@ -3,10 +3,11 @@ package ALPM::LoadConfig;
 use warnings;
 use strict;
 
-use IO::Handle;
-use English qw(-no_match_vars);
-use Carp    qw(croak);
-use ALPM;
+use List::Util qw();
+use IO::Handle qw();
+use English    qw(-no_match_vars);
+use Carp       qw();
+use ALPM       qw();
 
 ##------------------------------------------------------------------------
 ## GLOBALS
@@ -115,7 +116,18 @@ sub _set_defaults
 sub new
 {
     my $class = shift;
-    bless do { my $anon_scalar; \$anon_scalar; }, $class;
+
+    Carp::croak( "Invalid arguments to ALPM::LoadConfig::new.\n" .
+                 'Args must be a hash of custom fields to handlers' )
+        unless @_ % 2 == 0;
+
+    my %custom_fields = @_;
+
+    Carp::croak( "Invalid arguments to ALPM::LoadConfig::new.\n" .
+                 'Hash argument must have coderefs as values' )
+        if List::Util::first { ref $_ ne 'CODE'  } values %custom_fields;
+
+    bless { custom_fields => %custom_fields }, $class;
 }
 
 sub load_file
@@ -131,10 +143,10 @@ sub load_file
           die  q{Section declaration is not allowed in } .
               qq{Include-ed file\n($file)\n};
       },
-      field  => { Server => sub {
-                      my $server_url = shift;
-                      _register_db( $server_url, $current_section )
-                  } },
+      field   => { Server => sub {
+                       my $server_url = shift;
+                       _register_db( $server_url, $current_section )
+                   } },
      };
 
     my $field_hooks =
@@ -170,18 +182,20 @@ sub load_file
      # these fields do nothing, for now...
      ( map { ( $_ => \&_null_sub ) } @NULL_OPTS ),
 
-     Server    => sub { _register_db(shift, $current_section) },
-     Include   => sub {
+     Server  => sub { _register_db( shift, $current_section ) },
+     Include => sub {
          die "Cannot have an Include directive in the [options] section\n"
              if ( $current_section eq 'options' );
 
          # An include directive spawns its own little parser...
-         my $inc_path = shift;
-         #print STDERR "DEBUG: Include-ing $inc_path\n";
+         my $inc_path   = shift;
          my $parser_ref = _make_parser( $inc_path, $include_hooks );
          $parser_ref->();
-     }
-     };
+     },
+
+     # aaaand SHAZAM! customize!
+     %custom_fields,
+    }; # end of field_hooks hashref brackets
 
     # Now we have hooks for parsing the main config file...
     my $parser_hooks = { field   => $field_hooks,
@@ -204,7 +218,7 @@ __END__
 
 =head1 NAME
 
-ALPM::LoadConfig - pacman.conf config file parser
+ALPM::LoadConfig - pacman.conf config file parsing class.
 
 =head1 SYNOPSIS
 
@@ -214,11 +228,17 @@ ALPM::LoadConfig - pacman.conf config file parser
   # At runtime:
   ALPM->load_config('/etc/pacman.conf');
 
+  # Load custom fields as well:
+  my $value;
+  my %fields = ( 'CustomField' => sub { $value = shift } );
+  my $loader = ALPM::LoadConfig->new( %fields );
+  $loader->load_file( '/etc/pacman.conf' );
+
 =head1 DESCRIPTION
 
 This class is used internally by ALPM to parse pacman.conf config
-files.  The settings are used to set ALPM options.  You don't need to
-use this module directly.
+files.  The settings are used to set ALPM options.  You probably don't
+need to use this module directly.
 
 =head1 SEE ALSO
 

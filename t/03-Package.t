@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 28;
+use Test::More tests => 51;
 
 BEGIN { use_ok('ALPM', root        => '/',
                        dbpath      => '/var/lib/pacman/',
@@ -17,7 +17,7 @@ ok( my $local = ALPM->register_db );
 
 my $pkg = $local->find('perl');
 
-my @methnames = qw{ compute_requiredby name version desc
+my @methnames = qw{ requiredby name version desc
                     url builddate installdate packager
                     arch arch size isize reason
                     licenses groups depends optdepends
@@ -26,6 +26,7 @@ my @methnames = qw{ compute_requiredby name version desc
 
 for my $methodname (@methnames) {
     my $method_ref = $ALPM::Package::{$methodname};
+    ok $method_ref, "$methodname is a package method";
     my $result = $method_ref->($pkg);
     ok $result;
 }

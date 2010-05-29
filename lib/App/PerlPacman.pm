@@ -58,7 +58,7 @@ sub _progress_callback
 # Stores all pacman-specific fields inside $Config package var.
 sub _pacman_field_handlers
 {
-    my %field_handlers;
+    my $field_handlers;
 
     my $handler = sub {
         my $field = shift;
@@ -67,17 +67,20 @@ sub _pacman_field_handlers
 
     for my $key ( qw{ HoldPkg SyncFirst CleanMethod XferCommand
                       ShowSize TotalDownload } ) {
-        $field_handlers{ $key }  = $handler->( $key );
+        $field_handlers->{ $key }  = $handler->( $key );
     }
 
-    return %field_handlers;
+    return $field_handlers;
 }
 
 sub prepare_alpm
 {
     my ($class, %opts) = @_;
 
-    my $loader = ALPM::LoadConfig->new( _pacman_field_handlers() );
+    my $loader = ALPM::LoadConfig->new
+        ( custom_fields => _pacman_field_handlers(),
+          auto_register => 0,
+         );
     $loader->load_file( $opts{'config'} || '/etc/pacman.conf' );
 
     tie my %alpm, 'ALPM';

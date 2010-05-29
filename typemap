@@ -205,9 +205,12 @@ T_ALPM_PACKAGEFREE
     sv_setref_pv( $arg, \"ALPM::PackageFree\", (void *)$var );
 
 T_ALPM_GROUP
-    if ( $var == NULL )
-        croak( "ALPM DB Error: %s", alpm_strerror( pm_errno ));
-    sv_setref_pv( $arg, \"ALPM::Group\", (void *)$var );
+    if ( $var == NULL ) {
+        $arg = &PL_sv_undef;
+    }
+    else {
+        sv_setref_pv( $arg, \"ALPM::Group\", (void *)$var );
+    }
 
 
 L_STRING_FREE

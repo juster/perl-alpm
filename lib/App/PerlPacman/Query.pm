@@ -129,21 +129,20 @@ sub _convert_groups
     my %group_of;
 
     my $converter = sub {
-        my $name = shift;
-        my ($group_obj) = grep { $_->name eq $name }
-            ALPM->localdb->groups;
-        return undef unless $group_obj;
+        my $name      = shift;
+        my $group_obj = ALPM->localdb->find_group( $name )
+            or return qw//;
 
+        my @pkgs = $group_obj->packages;
         # This reverse lookup is used when printing packages...
         $group_of{ $_->name } = $group_obj->name
-            for $group_obj->packages;
+            for @pkgs;
 
-        return $group_obj->packages;
+        return @pkgs;
     };
 
     my $printer_ref = sub {
         my $pkg  = shift;
-
         my $name = $pkg->name;
         printf "%s %s\n", $group_of{$name}, $name;
     };
@@ -210,7 +209,6 @@ sub create_conv_print
 
     return ( $convert_ref, $printer_ref );
 }
-
 
 sub _convert_args_to_objs
 {

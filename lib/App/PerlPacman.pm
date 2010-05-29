@@ -27,7 +27,7 @@ sub option_spec
 {
     qw{ help|h config|c=s logfile|l=s noconfirm
         noprogressbar noscriplet verbose|v debug
-        root|r dbpath|b cachedir
+        root|r=s dbpath|b=s cachedir=s
 
         version|V query|Q remove|R sync|S upgrade|U };
 }

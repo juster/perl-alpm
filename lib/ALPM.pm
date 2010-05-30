@@ -424,6 +424,7 @@ sub transaction
     weaken $_Transaction;
     return $t;
 }
+*action = \&transaction;
 
 
 ####----------------------------------------------------------------------

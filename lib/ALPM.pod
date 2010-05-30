@@ -29,7 +29,7 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
 
   # Querying databases & packages
   my $localdb = ALPM->localdb;
-  my $pkg     = $localdb->get_pkg('perl');
+  my $pkg     = $localdb->find('perl');
 
   # Lots of different ways to get package attributes...
   my $attribs_ref    = $pkg->attribs_ref;
@@ -43,14 +43,14 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
   printf "%d perl packages found.\n", scalar @perlpkgs;
 
   # Search all databases/repos.
-  print map { sprintf "%10s: %s %s\n", $_->db->get_name, $_->name, $_->version }
-            ALPM->search('perl');
+  print map { sprintf "%10s: %s %s\n", $_->db->get_name, $_->name,
+              $_->version } ALPM->search('perl');
 
   # Find a database by name of repository.
   my $coredb = ALPM->db('core');
 
   # Transactions
-  my $trans = ALPM->transaction( type => 'sync' );
+  my $trans = ALPM->action( type => 'sync' );
   $trans->add( 'perl', 'perl-alpm', 'pacman' );
   #$trans->prepare; # unnecessary, commit calls prepare if needed
   $trans->commit;
@@ -267,23 +267,23 @@ package or database-specific functions.
   Params  : An option name.
   Returns : The given option's value or undef if it is unset.
 
-=head2 register_db
+=head2 register
 
-  Usage   : my $localdb = ALPM->register_db;
-            my $syncdb  = ALPM->register_db
+  Usage   : my $localdb = ALPM->register;
+            my $syncdb  = ALPM->register
                 ( 'core' => 'ftp://ftp.archlinux.org/$repo/os/i686' );
   Params  : No parameters will return the local database.
             Two parameters will register a sync database:
             1) The name of the repository to connect to.
             2) The URL to the repository's online files.
-               Like with pacman's mirrorlist config file, $repo will be replaced
-               with the repository name (argument 1) ... use single quotes!
+               Like with pacman's mirrorlist config file, $repo will be
+               replaced with the repository name (argument 1) ...
+               use single quotes!
   Precond : You must set options before using register_db.
   Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
   Returns : An ALPM::DB object.
 
-You can also use the method C<register> which is a shorter alias for
-C<register_db>.
+C<register> is a shorter alias for C<register_db>.
 
 See L<ALPM::DB>
 
@@ -308,7 +308,7 @@ See L<ALPM::DB>
   Params  : The name of a repository.
   Returns : An ALPM::DB object matching the repo name.
 
-This is a shorter alias for the method C<repodb>.
+C<db> is a shorter alias for the method C<repodb>.
 
 =head2 dbs
 
@@ -317,7 +317,7 @@ This is a shorter alias for the method C<repodb>.
   Params  : None
   Returns : A list of each database that is registered.
 
-This is a shorter alias for the method C<databases>.
+C<dbs> is a shorter alias for the method C<databases>.
 
 See L<ALPM::DB>
 
@@ -337,20 +337,23 @@ See L<ALPM::Package>
   Params  : The path to a pacman.conf configuration file.
   Returns : 1
 
-=head2 transaction
+See also L<ALPM::LoadConfig> for more advanced needs.
 
-  Usage   : my $t = ALPM->transaction( type     => 'sync',
-                                       flags    => 'nodeps force',
-                                       event    => sub { ... },
-                                       conv     => sub { ... },
-                                       progress => sub { ... } );
+=head2 trans
+
+  Usage   : my $t = ALPM->action( type     => 'sync',
+                                  flags    => 'nodeps force',
+                                  event    => sub { ... },
+                                  conv     => sub { ... },
+                                  progress => sub { ... } );
   Purpose : Initializes a transaction
   Params  : A hash of the transaction settings
   Throws  : An 'ALPM Error: ...' is thrown if a transaction is
             already active.
   Returns : An ALPM::Transaction object.
 
-See L<ALPM::Transaction>
+C<action> is a shorter alias for the C<transaction> method.
+See also L<ALPM::Transaction>.
 
 =head3 transaction Parameters
 
@@ -459,11 +462,13 @@ Unimplemented functions:
 
 =item * L<ALPM::DB>, L<ALPM::Package>, L<ALPM::Transaction>
 
-=item * L<http://code.toofishes.net/cgit/> - GIT repository for pacman/libalpm
+=item * L<http://code.toofishes.net/cgit/> - git repository for pacman/libalpm
 
 =item * L<http://code.toofishes.net/pacman/doc/> - libalpm doxygen docs
 
-=item * L<pacman>(8)
+=item * L<http://wiki.archlinux.org/index.php/Pacman> - uses libalpm
+
+=item * L<http://github.com/juster/perl-alpm> - git repo for this module.
 
 =back
 

@@ -18,3 +18,4 @@ t/repos/share
 t/test\.conf
 t/root
 ^\.
+PKGBUILD

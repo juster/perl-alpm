@@ -1,3 +1,17 @@
+2010-05-29  Justin Davis  <juster@cpan.org>
+
+	* RELEASE (0.08): Uploaded to CPAN.
+
+	* typemap (find_group): Fix a bug with group type conversion.
+	This caused ALPM::DB::find_group() to croak instead of (properly)
+	returning undef when given a group name that didn't exist.
+	Reported by Andre Schmidt. Thanks!
+
+2010-05-24  Justin Davis  <juster@cpan.org>
+
+	* ALPM.xs (ALPM::Package): Renamed compute_requiredby method to
+	requiredby.
+
 2010-05-02  Justin Davis  <juster@cpan.org>
 
 	* t/04-FakeRepos.t: Add support for .pkg.tar.xz package files.

@@ -1,6 +1,6 @@
 =head1 NAME
 
-ALPM - XS module for libalpm (ArchLinux Package Manager)
+ALPM - ArchLinux's Package Manager backend library.
 
 =head1 VERSION
 

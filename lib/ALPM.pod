@@ -4,7 +4,7 @@ ALPM - XS module for libalpm (ArchLinux Package Manager)
 
 =head1 VERSION
 
-0.06 -- compatible with pacman 3.3's alpm
+0.09 -- compatible with pacman 3.3's alpm
 
 =head1 SYNOPSIS
 

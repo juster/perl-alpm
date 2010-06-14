@@ -39,13 +39,6 @@ alpm_trans_sysupgrade(enable_downgrade)
 
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
-# This is used internally, we use the full name of the function
-# (no PREFIX above)
-
-negative_is_error
-alpm_trans_addtarget(target)
-    char * target
-
 negative_is_error
 DESTROY(self)
     SV * self

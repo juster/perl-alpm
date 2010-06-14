@@ -57,8 +57,10 @@ our @GET_SET_OPTS = qw{ root dbpath cachedirs logfile usesyslog
                         noupgrades noextracts ignorepkgs ignoregrps
                         nopassiveftp logcb dlcb totaldlcb fetchcb };
 
-our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ usedelta / );
-our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ lockfile localdb syncdbs / );
+our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
+                       qw/ usedelta / );
+our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
+                       qw/ lockfile localdb syncdbs / );
 
 
 ### Transaction Constants ###
@@ -492,6 +494,3 @@ sub NEXTKEY
 
 
 1;
-
-__END__
-

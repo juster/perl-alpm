@@ -1,12 +1,11 @@
-#-----------------------------------------------------------------------------
-# TRANSACTIONS
-#-----------------------------------------------------------------------------
+#----------------------------------------------------------------------------
+# PRIVATE TRANSACTION FUNCTIONS
+#----------------------------------------------------------------------------
 
-MODULE=ALPM    PACKAGE=ALPM
+MODULE=ALPM    PACKAGE=ALPM    PREFIX=alpm
 
 negative_is_error
-alpm_trans_init(type, flags, event_sub, conv_sub, progress_sub)
-    int type
+alpm_trans_init(flags, event_sub, conv_sub, progress_sub)
     int flags
     SV  *event_sub
     SV  *conv_sub
@@ -40,10 +39,49 @@ DESTROY(self)
   OUTPUT:
     RETVAL
 
+#----------------------------------------------------------------------------
+# PUBLIC METHODS
+#----------------------------------------------------------------------------
+
+MODULE=ALPM    PACKAGE=ALPM::Transaction
+
+negative_is_error
+sync ( target )
+    char * target
+  CODE:
+    RETVAL = alpm_sync_target( target )
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+upgrade ( target )
+    char * target
+  CODE:
+    RETVAL = alpm_add_target( target )
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+remove ( target )
+    char * target
+  CODE:
+    RETVAL = alpm_remove_target( target )
+  OUTPUT:
+    RETVAL
+
+negative_is_error
+add_from_db ( self, target )
+    SV   * self
+    char * target
+  CODE:
+    RETVAL = alpm_sync_dbtarget( target )
+  OUTPUT:
+    RETVAL
+
 MODULE=ALPM    PACKAGE=ALPM::Transaction    PREFIX=alpm_trans_
 
 negative_is_error
-alpm_trans_prepare(self)
+alpm_trans_prepare ( self )
     SV * self
   PREINIT:
     alpm_list_t *errors;

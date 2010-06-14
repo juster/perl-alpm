@@ -8,6 +8,8 @@ use Carp qw(carp croak);
 # used to create the transaction and associate the hashref with
 # this package.  Most of the functionality is in ALPM.xs.
 
+my %IS_VALID_TYPE = map { ( $_ => 1 ) } qw/ sync upgrade remove /;
+
 sub new
 {
     my $class = shift;
@@ -15,37 +17,9 @@ sub new
     my %trans_opts = @_;
 
     bless { prepared => 0,
-            type     => $trans_opts{type},
             flags    => $trans_opts{flags},
-            event    => $trans_opts{event} }, $class;
-}
-
-sub add
-{
-    my $self = shift;
-
-    # Transaction state gets messed up if we don't catch this...
-    croak 'ALPM Error: cannot add to a prepared transaction'
-        if ( $self->{prepared} );
-
-    ADD_LOOP:
-    for my $pkgname ( @_ ) {
-        if ( ref $pkgname ) {
-            carp 'target cannot be a reference, ignored';
-            next ADD_LOOP;
-        }
-
-        # Provide line numbers of calling script if an error occurred.
-        eval { alpm_trans_addtarget($pkgname); };
-        if ( $@ ) {
-            die "$@\n" unless ( $@ =~ /\AALPM Error:/ );
-
-            $@ =~ s/ at .*? line \d+[.]\n//;
-            croak $@;
-        }
-    }
-
-    return 1;
+            event    => $trans_opts{event},
+           }, $class;
 }
 
 1;
@@ -58,13 +32,12 @@ ALPM::Transaction - An object wrapper for transaction functions.
 
 =head1 SYNOPSIS
 
-  my $t = ALPM->transaction( type  => 'upgrade',
-                             flags => 'nodeps force',
+  my $t = ALPM->transaction( flags => 'nodeps force',
                              event => sub { ... },
                              conv  => sub { ... },
                              progress => sub { ... },
                             );
-  $t->add( qw/ perl perl-alpm / );
+  $t->upgrade( qw/ perl perl-alpm / );
   eval { $t->commit };
   if ( $EVAL_ERROR ) {
       given ( $t->{error}{type} ) {

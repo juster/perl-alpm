@@ -405,7 +405,7 @@ sub transaction
     }
 
     eval {
-        alpm_trans_init( $trans_type, $trans_flags,
+        alpm_trans_init( $trans_flags,
                          $trans_opts{event},
                          $trans_opts{conv},
                          $trans_opts{progress});

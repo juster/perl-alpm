@@ -29,14 +29,6 @@ alpm_trans_init(type, flags, event_sub, conv_sub, progress_sub)
   OUTPUT:
     RETVAL
 
-negative_is_error
-alpm_trans_sysupgrade(enable_downgrade)
-    int enable_downgrade
-  CODE:
-    RETVAL = alpm_trans_sysupgrade( enable_downgrade );
-  OUTPUT:
-    RETVAL
-
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
 negative_is_error

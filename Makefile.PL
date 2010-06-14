@@ -42,11 +42,6 @@ if  (eval {require ExtUtils::Constant; 1}) {
       (qw(PM_PKG_REASON_EXPLICIT
           PM_PKG_REASON_DEPEND
 
-          PM_TRANS_TYPE_UPGRADE
-          PM_TRANS_TYPE_REMOVE
-          PM_TRANS_TYPE_REMOVEUPGRADE
-          PM_TRANS_TYPE_SYNC
-
           PM_TRANS_FLAG_NODEPS
           PM_TRANS_FLAG_FORCE
           PM_TRANS_FLAG_NOSAVE

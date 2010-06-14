@@ -1061,13 +1061,6 @@ negative_is_error
 alpm_option_remove_ignoregrp(grp)
     const char  * grp
 
-unsigned short
-alpm_option_get_nopassiveftp()
-
-void
-alpm_option_set_nopassiveftp(nopasv)
-    unsigned short nopasv
-
 void
 alpm_option_set_usedelta(usedelta)
     unsigned short usedelta

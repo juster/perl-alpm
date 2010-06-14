@@ -55,7 +55,7 @@ our $_Transaction;
 
 our @GET_SET_OPTS = qw{ root dbpath cachedirs logfile usesyslog
                         noupgrades noextracts ignorepkgs ignoregrps
-                        nopassiveftp logcb dlcb totaldlcb fetchcb };
+                        logcb dlcb totaldlcb fetchcb };
 
 our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
                        qw/ usedelta / );

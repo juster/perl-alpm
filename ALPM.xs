@@ -97,7 +97,8 @@ static SV * convert_depend ( const pmdepend_t * depend )
     hv_store( depend_hash, "name", 4, newSVpv( depend->name, 0 ), 0 );
     
     if ( depend->version != NULL ) {
-        hv_store( depend_hash, "version", 7, newSVpv( depend->version, 0 ), 0 );
+        hv_store( depend_hash, "version", 7, newSVpv( depend->version, 0 ),
+                  0 );
     }
     
     depmod = depend->mod;
@@ -198,7 +199,6 @@ void free_conflict_errors ( pmconflict_t *conflict )
 static SV * convert_trans_errors ( alpm_list_t * errors )
 {
     HV *error_hash;
-    /*HV *exception_stash;*/
     AV *error_list;
     alpm_list_t *iter;
     SV *ref;
@@ -231,8 +231,6 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
 #define pminvalid_package_t char
 #define free_invalid_package_errors free
 
-    /* fprintf( stderr, "Entering switch statement\n" ); */
-
     switch ( pm_errno ) {
     case PM_ERR_FILE_CONFLICTS:    MAPERRLIST( fileconflict );
     case PM_ERR_UNSATISFIED_DEPS:  MAPERRLIST( depmissing );
@@ -245,8 +243,6 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
         return NULL;
     }
 
-    /* fprintf( stderr, "Left switch statement\n" ); */
-
 #undef MAPERRLIST
 #undef convert_invalid_delta
 #undef pminvalid_delta_t
@@ -257,15 +253,12 @@ static SV * convert_trans_errors ( alpm_list_t * errors )
     
     hv_store( error_hash, "list", 4, newRV_noinc( (SV *)error_list ),
               0 );
-    /* error_hash_stash = gv_stashpv( "ALPM::Ex", 0 ); */
 
     ref = newRV_noinc( (SV *)error_hash );
-    /* ref = sv_bless( ref, error_hash_stash ); */
-    /* fprintf( stderr, "DEBUG: returning\n" ); */
     return ref;
 }
 
-/* CALLBACKS ******************************************************************/
+/* CALLBACKS ****************************************************************/
 
 /* Code references to use as callbacks. */
 static SV *cb_log_sub      = NULL;
@@ -317,11 +310,10 @@ void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
 
     s_level   = sv_2mortal( newSVpv( lvl_str, lvl_len ) );
 
-    /*fprintf( stderr, "DEBUG: format = %s\n", format );*/
-
     s_message = sv_newmortal();
     vsnprintf( buffer, 255, format, args );
     sv_setpv( s_message, buffer );
+
     /* The following gets screwed up by j's: %jd or %ji, etc... */
     /*sv_vsetpvfn( s_message, format, strlen(format), &args,
                  (SV **)NULL, 0, NULL );*/
@@ -440,7 +432,8 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
    with a name, status (start/done/failed/""), and arguments.
    Arguments can have any name in the hash they prefer.  The event
    hash is passed as a ref to the callback. */
-void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
+void cb_trans_event_wrapper ( pmtransevt_t event,
+                              void *arg_one, void *arg_two )
 {
     SV *s_pkg, *s_event_ref;
     HV *h_event;
@@ -595,11 +588,7 @@ void cb_trans_event_wrapper ( pmtransevt_t event, void *arg_one, void *arg_two )
     XPUSHs(s_event_ref);
     PUTBACK;
 
-    /* fprintf( stderr, "DEBUG: trans event callback start\n" ); */
-
     call_sv( cb_trans_event_sub, G_DISCARD );
-
-    /* fprintf( stderr, "DEBUG: trans event callback stop\n" ); */
 
     FREETMPS;
     LEAVE;

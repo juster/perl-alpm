@@ -113,10 +113,10 @@ sub run_opts
         eval "require $subclass; 1;"
             or die "Internal error: failed to load $subclass...\n$@";
 
-        # if ( $opts{'help'} ) {
-        #     $subclass->print_help();
-        #     return 0;
-        # }
+        if ( $opts{'help'} ) {
+            $subclass->print_help();
+            return 0;
+        }
         return $subclass->run( @{ $extra_args } );
     }
 

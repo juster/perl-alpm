@@ -1634,14 +1634,4 @@ alpm_trans_interrupt(self)
   OUTPUT:
     RETVAL
 
-negative_is_error
-alpm_trans_sysupgrade(self, enable_downgrade)
-    SV * self
-    int enable_downgrade
-  CODE:
-    RETVAL = alpm_trans_sysupgrade( enable_downgrade );
-  OUTPUT:
-    RETVAL
-
-
 # EOF

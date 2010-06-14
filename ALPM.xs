@@ -1,18 +1,9 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
 #include "ppport.h"
 
 #include <alpm.h>
-
-/* #include "libalpm/alpm.h" */
-/* #include "libalpm/alpm_list.h" */
-/* #include "libalpm/deps.h" */
-/* #include "libalpm/group.h" */
-/* #include "libalpm/sync.h" */
-/* #include "libalpm/trans.h" */
-
 #include "const-c.inc"
 
 /* These are missing in alpm.h */

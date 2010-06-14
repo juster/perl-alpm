@@ -4,6 +4,9 @@ MANIFEST
 README
 ppport.h
 ALPM.xs
+alpm_xs.h
+convert.c
+callbacks.c
 typemap
 fallback/const-c.inc
 fallback/const-xs.inc

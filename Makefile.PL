@@ -30,7 +30,7 @@ WriteMakefile
         { repository => 'http://github.com/juster/perl-alpm' }},
       clean             => { FILES  => 't/root t/repos/share const-*.inc' },
 	# Un-comment this if you add C files to link with later:
-    # OBJECT            => '$(O_FILES)', # link all the C files too
+      OBJECT            => '$(O_FILES)', # link all the C files too
 );
 
 if  (eval {require ExtUtils::Constant; 1}) {

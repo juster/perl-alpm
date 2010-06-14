@@ -91,9 +91,9 @@ my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
 ####----------------------------------------------------------------------
 
 
-initialize();
+_initialize();
 
-END { release() };
+END { _release() };
 
 
 ####----------------------------------------------------------------------
@@ -280,7 +280,7 @@ sub register_db
     $sync_url =~ s/\$repo/$sync_name/g;
 
     # Set the server right away because function calls break in between...
-    my $new_db = db_register_sync($sync_name);
+    my $new_db = _db_register_sync($sync_name);
     $new_db->set_server($sync_url);
     return $new_db;
 }
@@ -293,7 +293,7 @@ sub localdb
     my $localdb = $class->get_opt('localdb');
 
     return $localdb if $localdb;
-    return db_register_local();
+    return _db_register_local();
 }
 
 sub syncdbs
@@ -330,7 +330,7 @@ sub search
 sub unregister_all_dbs
 {
     # Ignore our args since this should be called as a class method.
-    alpm_db_unregister_all();
+    _db_unregister_all();
 }
 
 sub load_config
@@ -356,7 +356,7 @@ sub load_pkgfile
     }
 
     my $package_path = shift;
-    return alpm_pkg_load( $package_path );
+    return _pkg_load( $package_path );
 }
 
 sub transaction

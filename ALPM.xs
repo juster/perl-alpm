@@ -38,7 +38,11 @@ DESTROY(self)
   OUTPUT:
     RETVAL
 
-MODULE = ALPM    PACKAGE = ALPM
+#----------------------------------------------------------------------------
+# PRIVATE FUNCTIONS
+#----------------------------------------------------------------------------
+ 
+MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 
 ALPM_PackageFree
 alpm_pkg_load(filename, ...)
@@ -55,19 +59,15 @@ alpm_pkg_load(filename, ...)
 negative_is_error
 alpm_db_unregister_all()
 
-MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
-
 negative_is_error
 alpm_initialize()
 
 negative_is_error
 alpm_release()
 
-#--------------------------------------------------------------------------
-# ALPM::DB Functions
-#--------------------------------------------------------------------------
-
-MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
+#----------------------------------------------------------------------------
+# DATABASE FUNCTIONS
+#----------------------------------------------------------------------------
 
 ALPM_DB
 alpm_db_register_local()

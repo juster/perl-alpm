@@ -1,11 +1,5 @@
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include <alpm.h>
-#include "const-c.inc"
 #include "alpm_xs.h"
+#include "const-c.inc"
 
 MODULE = ALPM    PACKAGE = ALPM
 

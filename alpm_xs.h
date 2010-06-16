@@ -17,6 +17,13 @@ struct __pmdepend_t {
 	char *version;
 };
 
+struct __pmdepmissing_t {
+	char *target;
+	pmdepend_t *depend;
+	char *causingpkg; /* this is used in case of remove dependency error only */
+};
+typedef struct __pmdepmissing_t pmdepmissing_t;
+
 /* from group.h */
 struct __pmgrp_t {
 	/*group name*/
@@ -33,6 +40,13 @@ struct __pmsyncpkg_t {
 };
 
 /* from conflicts.h */
+
+struct __pmconflict_t {
+    char *package1;
+    char *package2;
+    char *reason;
+};
+typedef struct __pmconflict_t pmconflict_t;
 
 struct __pmfileconflict_t {
     char *target;

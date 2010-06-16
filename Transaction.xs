@@ -70,11 +70,12 @@ remove ( target )
     RETVAL
 
 negative_is_error
-add_from_db ( self, target )
+upgrade_from_db ( self, db, target )
     SV   * self
     char * target
+    char * db
   CODE:
-    RETVAL = alpm_sync_dbtarget( target )
+    RETVAL = alpm_sync_dbtarget( db, target )
   OUTPUT:
     RETVAL
 

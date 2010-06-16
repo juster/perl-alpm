@@ -192,7 +192,7 @@ T_PKGREASON
 
         /* if the reason arg is a number it must be 0 or 1 */
         if ( i_reason != 0 && i_reason != 1 )) {
-            croak( "Reason must be 0 or 1 when given as a number" );
+            croak( \"Reason must be 0 or 1 when given as a number\" );
         }
 
         $var = i_reason;
@@ -205,22 +205,22 @@ T_PKGREASON
            "explicit" or "implicit" */
         str_reason = SvPV( $arg, length );
         if ( length != 8 ) {
-            croak( "Reason must be \"explicit\" or \"implicit\" when "
-                   "given as a string" );
+            croak( \"Reason must be 'explicit' or 'implicit' \"
+                   \"when given as a string\" );
         }
-        else if ( strcmp( "explicit", str_reason ) == 0 ) {
+        else if ( strcmp( \"explicit\", str_reason ) == 0 ) {
             $var = PM_PKG_REASON_EXPLICIT;
         }
-        else if ( strcmp( "implicit", str_reason ) == 0 ) {
+        else if ( strcmp( \"implicit\", str_reason ) == 0 ) {
             $var = PM_PKG_REASON_IMPLICIT;
         }
         else {
-            croak( "Reason must be \"explicit\" or \"implicit\" when "
-                   "given as a string" );
+            croak( \"Reason must be 'explicit' or 'implicit' \"
+                   \"when given as a string\" );
         }
     }
     else {
-        croak( "Reason must be 0, 1, \"explicit\", or \"implicit\"" );
+        croak( \"Reason must be 0, 1, 'explicit', or 'implicit'\" );
     }
 
 #-----------------------------------------------------------------------------

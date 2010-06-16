@@ -1,7 +1,6 @@
 #ifndef ALPM_XS_H
 #define ALPM_XS_H
 
-/* I'm not sure which one of these includes are absolutely necessary */
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"

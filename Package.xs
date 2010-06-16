@@ -249,11 +249,11 @@ alpm_pkg_changelog(pkg)
   OUTPUT:
     RETVAL
 
-unsigned short
+int
 alpm_pkg_has_scriptlet(pkg)
     ALPM_Package pkg
 
-unsigned short
+int
 alpm_pkg_has_force(pkg)
     ALPM_Package pkg
 

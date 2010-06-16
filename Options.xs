@@ -172,12 +172,12 @@ alpm_option_set_logfile(logfile);
 const char *
 alpm_option_get_lockfile()
 
-unsigned short
+int
 alpm_option_get_usesyslog()
 
 void
 alpm_option_set_usesyslog(usesyslog)
-    unsigned short usesyslog
+    int usesyslog
 
 StringListNoFree
 alpm_option_get_noupgrades()
@@ -241,7 +241,7 @@ alpm_option_remove_ignoregrp(grp)
 
 void
 alpm_option_set_usedelta(usedelta)
-    unsigned short usedelta
+    int usedelta
 
 SV *
 alpm_option_get_localdb()

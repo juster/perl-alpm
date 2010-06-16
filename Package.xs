@@ -206,14 +206,6 @@ alpm_pkg_backup(pkg)
   OUTPUT:
     RETVAL
 
-StringListNoFree
-alpm_pkg_removes(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_removes(pkg);
-  OUTPUT:
-    RETVAL
-
 ALPM_DB
 alpm_pkg_db(pkg)
     ALPM_Package pkg

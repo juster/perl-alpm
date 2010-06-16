@@ -90,6 +90,15 @@ This is an alias for the C<get_pkg_cache> method.
 
   Usage   : my $pkgs_ref = $db->pkgs_ref;
 
+=head2 set_pkg_reason
+
+  Usage    : $db->set_pkg_reason( 'perl', 'explicit' );
+  Params   : The package name and a new package reason.
+             Reason can be 'explicit', 'implicit', 0, or 1.
+  Purpose  : Changes the reason for installing the given package.
+  Comments : Probably best to use on local database ...
+  Returns  : Nothing.
+
 =head2 update
 
   Usage   : $db->update;

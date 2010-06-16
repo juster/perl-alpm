@@ -165,6 +165,16 @@ _search(db, needles)
   OUTPUT:
     RETVAL
 
+negative_is_error
+set_pkg_reason ( db, pkgname, reason )
+    ALPM_DB       db
+    char        * pkgname
+    pmpkgreason_t reason
+  CODE:
+    RETVAL = alpm_db_set_pkgreason( self, pkgname, pkgreason );
+  OUTPUT:
+    RETVAL
+
 #-----------------------------------------------------------------------------
 # PACKAGE GROUPS
 #-----------------------------------------------------------------------------

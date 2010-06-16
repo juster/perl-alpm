@@ -143,6 +143,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_ERR_PKG_OPEN
           PM_ERR_PKG_CANT_REMOVE
           PM_ERR_PKG_INVALID_NAME
+          PM_ERR_PKG_INVALID_ARCH
           PM_ERR_PKG_REPO_NOT_FOUND
 
           PM_ERR_DLT_INVALID

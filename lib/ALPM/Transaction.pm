@@ -311,8 +311,9 @@ I<list> are described in the following table.
   | depconflict     | A package which explicitly conflicts with another    |
   |                 | (in the PKGBUILD) cannot be installed.               |
   | - msg           | 'conflicting dependencies'                           |
-  | - list          | An arrayref of arrayrefs (AoA).                      |
-  |                 | Each element of the list is a pair of conflicts.     |
+  | - list          | An arrayref of hashrefs showing the conflict:        |
+  | -- reason       | A reason message.                                    |
+  | -- packages     | An arrayref of two packages who conflict.            |
   |-----------------+------------------------------------------------------|
   | invalid_delta   | (UNTESTED) A delta is corrupted?                     |
   | - msg           | ?                                                    |

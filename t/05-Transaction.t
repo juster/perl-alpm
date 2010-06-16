@@ -38,12 +38,12 @@ sub check_events
 ok( ALPM->register_db( 'simpletest',
                        'file://' . rel2abs( 't/repos/share/simpletest' )) );
 
-ok( my $t = ALPM->transaction( type => 'sync', event => \&event_log ),
+ok( my $t = ALPM->transaction( event => \&event_log ),
    'create a sync transaction' );
 
-ok( $t->add( 'foo' ), 'add foo package to transaction' );
+ok( $t->sync( 'foo' ), 'add foo package to transaction' );
 
-eval { $t->add('nonexistantpackage') };
+eval { $t->sync('nonexistantpackage') };
 like( $@, qr/^ALPM Error: could not find or read package/,
       'cannot load a non-existing package' );
 
@@ -53,16 +53,12 @@ check_events( qw/resolvedeps interconflicts/ ),
 
 ok( $t->prepare, 'redundant prepare is ignored' );
 
-eval { $t->add('packageafterprepare') };
-like( $@, qr/^ALPM Error: cannot add to a prepared transaction/,
-      'add fails after preparing transaction' );
+eval { $t->sync('foo') };
+like( $@, qr/duplicate target/,
+      'cannot sync the same package twice' );
 
 ok( $t->commit, 'commit the transaction' );
 
 check_events( qw/integrity fileconflicts add/ );
 
 $t = undef;
-
-# ok( $t = ALPM->transaction( type => 'sync' ) );
-# ok( $t->add('bar') );
-# ok( $t->commit );

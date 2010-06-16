@@ -24,13 +24,15 @@ WriteMakefile
       LICENSE           => 'perl',
       ABSTRACT_FROM     => 'lib/ALPM.pod',
       AUTHOR            => 'Justin Davis <juster at cpan dot org>',
-      LIBS              => ['-lalpm'],
+      LIBS              => [ '-lalpm' ],
       META_MERGE        =>
       { resources =>
         { repository => 'http://github.com/juster/perl-alpm' }},
       clean             => { FILES  => 't/root t/repos/share const-*.inc' },
 	# Un-comment this if you add C files to link with later:
-      OBJECT            => '$(O_FILES)', # link all the C files too
+#      OBJECT            => '$(O_FILES)', # link all the C files too
+      OBJECT            => 'ALPM.o convert.o callbacks.o',
+      XS                => { 'ALPM.xs' => 'ALPM.c' },
 );
 
 if  (eval {require ExtUtils::Constant; 1}) {

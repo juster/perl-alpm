@@ -188,10 +188,10 @@ L_STRING_NOFREE
 T_PKGREASON
     if ( SvIOK( $arg )) {
         int i_reason;
-        i_reason = SvIV( reason );
+        i_reason = SvIV( $arg );
 
         /* if the reason arg is a number it must be 0 or 1 */
-        if ( i_reason != 0 && i_reason != 1 )) {
+        if ( i_reason != 0 && i_reason != 1 ) {
             croak( \"Reason must be 0 or 1 when given as a number\" );
         }
 
@@ -212,7 +212,7 @@ T_PKGREASON
             $var = PM_PKG_REASON_EXPLICIT;
         }
         else if ( strcmp( \"implicit\", str_reason ) == 0 ) {
-            $var = PM_PKG_REASON_IMPLICIT;
+            $var = PM_PKG_REASON_DEPEND;
         }
         else {
             croak( \"Reason must be 'explicit' or 'implicit' \"

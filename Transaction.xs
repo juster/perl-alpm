@@ -48,7 +48,7 @@ negative_is_error
 sync ( target )
     char * target
   CODE:
-    RETVAL = alpm_sync_target( target )
+    RETVAL = alpm_sync_target( target );
   OUTPUT:
     RETVAL
 
@@ -56,7 +56,7 @@ negative_is_error
 upgrade ( target )
     char * target
   CODE:
-    RETVAL = alpm_add_target( target )
+    RETVAL = alpm_add_target( target );
   OUTPUT:
     RETVAL
 
@@ -64,7 +64,7 @@ negative_is_error
 remove ( target )
     char * target
   CODE:
-    RETVAL = alpm_remove_target( target )
+    RETVAL = alpm_remove_target( target );
   OUTPUT:
     RETVAL
 
@@ -74,7 +74,7 @@ upgrade_from_db ( self, db, target )
     char * target
     char * db
   CODE:
-    RETVAL = alpm_sync_dbtarget( db, target )
+    RETVAL = alpm_sync_dbtarget( db, target );
   OUTPUT:
     RETVAL
 

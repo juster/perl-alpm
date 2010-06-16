@@ -19,6 +19,9 @@ GroupList             L_GROUP
 pmpkgreason_t         T_PKGREASON
 off_t                 T_INT
 
+#-----------------------------------------------------------------------------
+# INPUT # Perl ==> C
+#-----------------------------------------------------------------------------
 
 INPUT
 I_NEG_IS_ERROR
@@ -182,6 +185,47 @@ L_STRING_NOFREE
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\");
 
+T_PKGREASON
+    if ( SvIOK( $arg )) {
+        int i_reason;
+        i_reason = SvIV( reason );
+
+        /* if the reason arg is a number it must be 0 or 1 */
+        if ( i_reason != 0 && i_reason != 1 )) {
+            croak( "Reason must be 0 or 1 when given as a number" );
+        }
+
+        $var = i_reason;
+    }
+    else if ( SvPOK( $arg )) {
+        char *str_reason;
+        STRLEN length;
+
+        /* if the reason arg is a string, it must be
+           "explicit" or "implicit" */
+        str_reason = SvPV( $arg, length );
+        if ( length != 8 ) {
+            croak( "Reason must be \"explicit\" or \"implicit\" when "
+                   "given as a string" );
+        }
+        else if ( strcmp( "explicit", str_reason ) == 0 ) {
+            $var = PM_PKG_REASON_EXPLICIT;
+        }
+        else if ( strcmp( "implicit", str_reason ) == 0 ) {
+            $var = PM_PKG_REASON_IMPLICIT;
+        }
+        else {
+            croak( "Reason must be \"explicit\" or \"implicit\" when "
+                   "given as a string" );
+        }
+    }
+    else {
+        croak( "Reason must be 0, 1, \"explicit\", or \"implicit\"" );
+    }
+
+#-----------------------------------------------------------------------------
+# OUTPUT # C ==> Perl
+#-----------------------------------------------------------------------------
 
 OUTPUT
 I_NEG_IS_ERROR
@@ -292,7 +336,6 @@ L_GROUP
             iter = iter->next;
         }
     }
-
 
 T_PKGREASON
     $arg = newSV(0);

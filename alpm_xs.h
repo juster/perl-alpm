@@ -45,6 +45,7 @@ struct __pmsyncpkg_t {
 struct __pmconflict_t {
     char *package1;
     char *package2;
+    char *reason;
 };
 typedef struct __pmconflict_t pmconflict_t;
 

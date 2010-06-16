@@ -63,11 +63,19 @@ SV * convert_depmissing ( const pmdepmissing_t * depmiss )
 SV * convert_conflict ( const pmconflict_t * conflict )
 {
     AV *conflict_list;
+    HV *conflict_hash;
 
     conflict_list = newAV();
+    conflict_hash = newHV();
+
     av_push( conflict_list, newSVpv( conflict->package1, 0 ) );
     av_push( conflict_list, newSVpv( conflict->package2, 0 ) );
-    return newRV_inc( (SV *)conflict_list );
+    hv_store( conflict_hash, "packages", 8,
+              newRV_noinc( (SV *)conflict_list ), 0 );
+    hv_store( conflict_hash, "reason", 6,
+              newSVpv( $conflict->reason, 0 ), 0 );
+
+    return newRV_inc( conflict_hash );
 }
 
 SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
@@ -123,6 +131,7 @@ void free_conflict_errors ( pmconflict_t *conflict )
 {
 	free(conflict->package2);
 	free(conflict->package1);
+    free(conflict->reason);
 	free(conflict);
 }
 

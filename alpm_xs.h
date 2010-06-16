@@ -22,7 +22,6 @@ struct __pmdepmissing_t {
 	pmdepend_t *depend;
 	char *causingpkg; /* this is used in case of remove dependency error only */
 };
-typedef struct __pmdepmissing_t pmdepmissing_t;
 
 /* from group.h */
 struct __pmgrp_t {
@@ -46,7 +45,6 @@ struct __pmconflict_t {
     char *package2;
     char *reason;
 };
-typedef struct __pmconflict_t pmconflict_t;
 
 struct __pmfileconflict_t {
     char *target;

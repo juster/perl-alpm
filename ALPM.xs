@@ -166,10 +166,10 @@ _search(db, needles)
     RETVAL
 
 negative_is_error
-set_pkg_reason ( db, pkgname, reason )
-    ALPM_DB       db
+set_pkg_reason ( self, pkgname, pkgreason )
+    ALPM_DB       self
     char        * pkgname
-    pmpkgreason_t reason
+    pmpkgreason_t pkgreason
   CODE:
     RETVAL = alpm_db_set_pkgreason( self, pkgname, pkgreason );
   OUTPUT:

@@ -48,14 +48,16 @@ negative_is_error
 sysupgrade ( self, ... )
     SV  * self
   PREINIT:
-    int   enable_downagrade = ( items > 0 ? 1 : 0 );
+    int enable_downgrade;
   CODE:
-    RETVAL = alpm_sync_sysupgrade( enable_downgrade )
+    enable_downgrade = ( items > 0 ? 1 : 0 );
+    RETVAL = alpm_sync_sysupgrade( enable_downgrade );
   OUTPUT:
     RETVAL
 
 negative_is_error
-sync ( target )
+sync ( self, target )
+    SV   * self
     char * target
   CODE:
     RETVAL = alpm_sync_target( target );
@@ -63,7 +65,8 @@ sync ( target )
     RETVAL
 
 negative_is_error
-upgrade ( target )
+pkgfile ( self, target )
+    SV   * self
     char * target
   CODE:
     RETVAL = alpm_add_target( target );
@@ -71,7 +74,8 @@ upgrade ( target )
     RETVAL
 
 negative_is_error
-remove ( target )
+remove ( self, target )
+    SV   * self
     char * target
   CODE:
     RETVAL = alpm_remove_target( target );

@@ -15,7 +15,7 @@ sub update
     croak "ALPM DB Error: cannot update database with an active transaction"
         if ( $ALPM::_Transaction );
 
-    my $t = ALPM->transaction( type => 'sync' );
+    my $t = ALPM->transaction();
     eval { $self->_update(1) };
     if ( $EVAL_ERROR ) {
         $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;

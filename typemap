@@ -202,7 +202,7 @@ T_PKGREASON
         STRLEN length;
 
         /* if the reason arg is a string, it must be
-           "explicit" or "implicit" */
+           'explicit' or 'implicit' */
         str_reason = SvPV( $arg, length );
         if ( length != 8 ) {
             croak( \"Reason must be 'explicit' or 'implicit' \"

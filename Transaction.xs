@@ -23,8 +23,7 @@ alpm_trans_init(flags, event_sub, conv_sub, progress_sub)
     UPDATE_TRANS_CALLBACK( conv )
     UPDATE_TRANS_CALLBACK( progress )
 
-    RETVAL = alpm_trans_init( type, flags,
-                              event_func, conv_func, progress_func );
+    RETVAL = alpm_trans_init( flags, event_func, conv_func, progress_func );
   OUTPUT:
     RETVAL
 

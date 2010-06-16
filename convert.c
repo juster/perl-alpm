@@ -73,9 +73,9 @@ SV * convert_conflict ( const pmconflict_t * conflict )
     hv_store( conflict_hash, "packages", 8,
               newRV_noinc( (SV *)conflict_list ), 0 );
     hv_store( conflict_hash, "reason", 6,
-              newSVpv( $conflict->reason, 0 ), 0 );
+              newSVpv( conflict->reason, 0 ), 0 );
 
-    return newRV_inc( conflict_hash );
+    return newRV_inc( (SV *)conflict_hash );
 }
 
 SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )

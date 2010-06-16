@@ -62,12 +62,6 @@ our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ lockfile localdb s
 
 
 ### Transaction Constants ###
-my %_TRANS_TYPES = ( 'upgrade'       => PM_TRANS_TYPE_UPGRADE(),
-                     'remove'        => PM_TRANS_TYPE_REMOVE(),
-                     'removeupgrade' => PM_TRANS_TYPE_REMOVEUPGRADE(),
-                     'sync'          => PM_TRANS_TYPE_SYNC(),
-                    );
-
 my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
                      'force'       => PM_TRANS_FLAG_FORCE(),
                      'nosave'      => PM_TRANS_FLAG_NOSAVE(),
@@ -367,33 +361,8 @@ sub transaction
     croak 'arguments to transaction method must be a hash'
         unless ( @_ % 2 == 0 );
 
-    my %trans_opts = @_;
-    my ($trans_type, $trans_flags, $enable_downgrade) = (0) x 3;
-    my $sysupgrade;
-
-    # A type must be specified...
-    croak q{you must specify a 'type' in the hash arguments}
-        unless $trans_opts{type};
-
-    # Transactions of type sysupgrade use the alpm_trans_sysupgrade() func.
-    # We try to hide this difference with the same interface as normal
-    # transactions.
-    if ( $trans_opts{type} eq 'sysupgrade' ) {
-        $sysupgrade = 1;
-        $trans_opts{type} = 'sync';
-
-        if ( exists $trans_opts{flags} ) {
-            my @orig_flags = split /\s+/, $trans_opts{flags};
-            my @pruned_flags = grep { !/^(?:enable_)?downgrade$/ } @orig_flags;
-            if ( scalar @pruned_flags != scalar @orig_flags ) {
-                $enable_downgrade = 1;
-                $trans_opts{flags} = join ' ', @pruned_flags;
-            }
-        }
-    }
-
-    $trans_type = $_TRANS_TYPES{ $trans_opts{type} }
-        or croak qq{unknown transaction type "$trans_type"};
+    my %trans_opts  = @_;
+    my $trans_flags = 0;
 
     # Parse flags if they are provided...
     if ( exists $trans_opts{flags} ) {
@@ -409,7 +378,6 @@ sub transaction
                          $trans_opts{event},
                          $trans_opts{conv},
                          $trans_opts{progress});
-        alpm_trans_sysupgrade( $enable_downgrade ) if ( $sysupgrade );
     };
     if ( $EVAL_ERROR ) {
         die "$EVAL_ERROR\n" unless ( $EVAL_ERROR =~ /\AALPM Error:/ );

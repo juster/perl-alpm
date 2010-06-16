@@ -119,8 +119,7 @@ void cb_totaldl_wrapper ( off_t total )
     LEAVE;
 }
 
-int cb_fetch_wrapper ( const char *url, const char *localpath,
-                       time_t mtimeold, time_t *mtimenew )
+int cb_fetch_wrapper ( const char *url, const char *localpath, int force )
 {
     time_t new_time;
     int    count;
@@ -128,6 +127,7 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
     int    retval;
     dSP;
 
+    /* We shouldn't be called if cb_fetch_sub is null, return error. */
     if ( cb_fetch_sub == NULL ) return -1;
 
     ENTER;
@@ -136,7 +136,7 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
     PUSHMARK(SP);
     XPUSHs( sv_2mortal( newSVpv( url, strlen(url) )));
     XPUSHs( sv_2mortal( newSVpv( localpath, strlen(localpath) )));
-    XPUSHs( sv_2mortal( newSViv( mtimeold )));
+    XPUSHs( sv_2mortal( newSViv( force )));
     PUTBACK;
 
     count = call_sv( cb_fetch_sub, G_EVAL | G_SCALAR );
@@ -145,20 +145,18 @@ int cb_fetch_wrapper ( const char *url, const char *localpath,
 
     result = POPs;
 
+    /* If a perl error occurred, give an automatic warning. */
     if ( ! SvTRUE( result ) || SvTRUE( ERRSV ) ) {
         if ( SvTRUE( ERRSV )) warn( SvPV_nolen( ERRSV ));
-
+        retval = -1;
+    }
+    /* The perl code must be sure to return 0 or 1 properly. */
+    else if ( ! SvIOK( result )) {
+        /* What if it didn't return a number?  Return an error. */
         retval = -1;
     }
     else {
-        new_time = (time_t) SvIV( result );
-        if ( mtimeold && new_time == mtimeold ) {
-            retval = 1;
-        }
-        else {
-            if ( mtimenew != NULL ) *mtimenew = new_time;
-            retval = 0;
-        }
+        retval = SvIV( result );
     }
 
     PUTBACK;

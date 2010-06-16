@@ -97,8 +97,7 @@ extern const char * log_lvl_unknown;
 void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args );
 void cb_download_wrapper ( const char *filename, off_t xfered, off_t total );
 void cb_totaldl_wrapper ( off_t total );
-int cb_fetch_wrapper ( const char *url, const char *localpath,
-                       time_t mtimeold, time_t *mtimenew );
+int cb_fetch_wrapper ( const char *url, const char *localpath, int force );
 
 /* Transaction callbacks */
 

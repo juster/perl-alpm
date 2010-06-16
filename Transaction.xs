@@ -45,6 +45,16 @@ DESTROY(self)
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
 negative_is_error
+sysupgrade ( self, ... )
+    SV  * self
+  PREINIT:
+    int   enable_downagrade = ( items > 0 ? 1 : 0 );
+  CODE:
+    RETVAL = alpm_sync_sysupgrade( enable_downgrade )
+  OUTPUT:
+    RETVAL
+
+negative_is_error
 sync ( target )
     char * target
   CODE:

@@ -239,6 +239,13 @@ negative_is_error
 alpm_option_remove_ignoregrp(grp)
     const char  * grp
 
+const char *
+alpm_option_get_arch ()
+
+void
+alpm_option_set_arch ( arch )
+    const char * arch
+
 int
 alpm_option_get_usedelta()
 

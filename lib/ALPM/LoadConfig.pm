@@ -14,10 +14,10 @@ use ALPM       qw();
 ##------------------------------------------------------------------------
 
 my %_CFG_OPTS =
-    qw{ RootDir   root       CacheDir     cachedirs    DBPath      dbpath
-        LogFile   logfile    UseSyslog    usesyslog    UseDelta    usedelta
-        IgnorePkg ignorepkgs IgnoreGroup  ignoregrps   NoUpgrade   noupgrades
-        NoExtract noextracts NoPassiveFtp nopassiveftp };
+    qw{ RootDir   root       CacheDir     cachedirs    DBPath       dbpath
+        LogFile   logfile    UseSyslog    usesyslog    UseDelta     usedelta
+        IgnorePkg ignorepkgs IgnoreGroup  ignoregrps   NoUpgrade    noupgrades
+        NoExtract noextracts NoPassiveFtp nopassiveftp Architecture arch};
 
 # The following options are implemented in pacman and not ALPM so are ignored:
 my @NULL_OPTS = qw{ HoldPkg SyncFirst CleanMethod XferCommand

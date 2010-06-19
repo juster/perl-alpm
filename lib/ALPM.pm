@@ -58,8 +58,8 @@ our @GET_SET_OPTS = qw{ root dbpath cachedirs logfile usesyslog
                         logcb dlcb totaldlcb fetchcb usedelta };
 
 our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS );
-our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ lockfile localdb syncdbs / );
-
+our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
+                       qw/ lockfile localdb syncdbs / );
 
 ### Transaction Constants ###
 my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),

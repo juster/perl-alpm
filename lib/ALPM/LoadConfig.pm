@@ -67,9 +67,10 @@ sub _make_parser
 
                     # Not sure if I should warn or not...
                     # warn qq{Unrecognized field named "$field_name"\n}
-                    #     unless ( exists $hooks->{field}{$field_name} );
+                    my $field_store = $hooks->{field}{$field_name}
+                        or return;
 
-                    $hooks->{field}{$field_name}->( $field_val );
+                    $field_store->( $field_val );
                     return;
                 }
                 die "Invalid line in config file, not a comment, section, " .

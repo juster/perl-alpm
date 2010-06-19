@@ -239,6 +239,9 @@ negative_is_error
 alpm_option_remove_ignoregrp(grp)
     const char  * grp
 
+int
+alpm_option_get_usedelta()
+
 void
 alpm_option_set_usedelta(usedelta)
     int usedelta

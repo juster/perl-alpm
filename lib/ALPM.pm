@@ -55,9 +55,9 @@ our $_Transaction;
 
 our @GET_SET_OPTS = qw{ root dbpath cachedirs logfile usesyslog
                         noupgrades noextracts ignorepkgs ignoregrps
-                        logcb dlcb totaldlcb fetchcb };
+                        logcb dlcb totaldlcb fetchcb usedelta };
 
-our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ usedelta / );
+our %_IS_SETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS );
 our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS, qw/ lockfile localdb syncdbs / );
 
 

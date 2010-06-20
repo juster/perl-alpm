@@ -22,7 +22,7 @@ SV * convert_depend ( const pmdepend_t * depend )
     pmdepmod_t depmod;
 
     depend_hash = newHV();
-    depend_ref  = newRV_inc( (SV *)depend_hash );
+    depend_ref  = newRV_noinc( (SV *)depend_hash );
         
     hv_store( depend_hash, "name", 4, newSVpv( depend->name, 0 ), 0 );
     
@@ -57,7 +57,7 @@ SV * convert_depmissing ( const pmdepmissing_t * depmiss )
               newSVpv( depmiss->causingpkg, 0 ), 0 );
     hv_store( depmiss_hash, "depend", 6,
               convert_depend( depmiss->depend ), 0 );
-    return newRV_inc( (SV *)depmiss_hash );
+    return newRV_noinc( (SV *)depmiss_hash );
 }
 
 SV * convert_conflict ( const pmconflict_t * conflict )
@@ -70,12 +70,13 @@ SV * convert_conflict ( const pmconflict_t * conflict )
 
     av_push( conflict_list, newSVpv( conflict->package1, 0 ) );
     av_push( conflict_list, newSVpv( conflict->package2, 0 ) );
+
     hv_store( conflict_hash, "packages", 8,
               newRV_noinc( (SV *)conflict_list ), 0 );
     hv_store( conflict_hash, "reason", 6,
               newSVpv( conflict->reason, 0 ), 0 );
 
-    return newRV_inc( (SV *)conflict_hash );
+    return newRV_noinc( (SV *)conflict_hash );
 }
 
 SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
@@ -95,7 +96,7 @@ SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
     hv_store( conflict_hash, "ctarget", 7, newSVpv( fileconflict->ctarget, 0 ),
               0 );
 
-    return newRV_inc( (SV *)conflict_hash );
+    return newRV_noinc( (SV *)conflict_hash );
 }
 
 void free_stringlist_errors ( char *string )
@@ -154,8 +155,8 @@ SV * convert_trans_errors ( alpm_list_t * errors )
 #define MAPERRLIST( TYPE )                                              \
     hv_store( error_hash, "type", 4, newSVpv( #TYPE, 0 ), 0 );          \
     for ( iter = errors ; iter ; iter = iter->next ) {                  \
-        av_push( error_list,                                            \
-                 convert_ ## TYPE ((pm ## TYPE ## _t *) iter->data ));  \
+        ref = convert_ ## TYPE ((pm ## TYPE ## _t *) iter->data );      \
+        av_push( error_list, ref );                                     \
     }                                                                   \
     alpm_list_free_inner( errors,                                       \
                           (alpm_list_fn_free)                           \

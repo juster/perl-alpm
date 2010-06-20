@@ -65,11 +65,10 @@ my ($conv_log,  $conv_check)
 my ($progress_log, $progress_check)
     = create_cb_checker( 'progress (%s) was reported' );
 
-my $trans = ALPM->transaction( type     => 'sync',
-                               event    => $event_log,
+my $trans = ALPM->transaction( event    => $event_log,
                                progress => $progress_log,
                                conv     => $conv_log );
-$trans->add( 'baz' );
+$trans->sync( 'baz' );
 $conv_check->( 'install_ignore' );
 $trans->commit;
 $progress_check->( 'add' );
@@ -102,8 +101,8 @@ ok( $db = ALPM->register( 'upgradetest',
                           rel2abs( 't/repos/share/upgradetest' )) );
 ok( $db->update );
 
-$trans = ALPM->transaction( type => 'sysupgrade',
-                            conv => $conv_log );
+$trans = ALPM->transaction( conv => $conv_log );
+$trans->sysupgrade;
 eval { $trans->commit };
 $conv_check->( 'replace_package' );
 

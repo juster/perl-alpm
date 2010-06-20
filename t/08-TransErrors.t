@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Test::More tests => 31;
+use Test::More tests => 32;
 
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
@@ -16,8 +16,8 @@ ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest') );
 
 # File Conflict Error ########################################################
 
-my $t = ALPM->transaction( type => 'sync', );
-ok( $t->add( 'fileconflict' ) );
+my $t = ALPM->transaction();
+ok( $t->sync( 'fileconflict' ) );
 eval { $t->commit };
 
 ok( $@ && $t->{error}, 'A transaction error occurred' );
@@ -37,8 +37,8 @@ undef $t;
 
 # Unsatisfied dependencies ###################################################
 
-$t = ALPM->transaction( type => 'remove', );
-ok( $t->add( 'foo' ));
+$t = ALPM->transaction();
+ok( $t->remove( 'foo' ));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error:/
     && $t->{error}, 'A transaction error occurred' );
@@ -55,8 +55,8 @@ undef $t;
 
 # Conflicting Dependencies ###################################################
 
-$t = ALPM->transaction( type => 'sync' );
-ok( $t->add( 'depconflict' ));
+$t = ALPM->transaction();
+ok( $t->sync( 'depconflict' ));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error: conflicting dependencies/
     && $t->{error}, 'transaction error with conflicting deps' );
@@ -64,15 +64,17 @@ ok( $@ =~ /^ALPM Transaction Error: conflicting dependencies/
 is $t->{error}{type}, 'conflict';
 is $t->{error}{msg}, 'conflicting dependencies';
 ($error) = @{$t->{error}{list}};
+
 is scalar @{$t->{error}{list}}, 1;
-is $error->[0], 'depconflict';
-is $error->[1], 'foo';
+is $error->{packages}[0],'depconflict';
+is $error->{packages}[1], 'foo';
+is $error->{reason}, 'foo';
 undef $t;
 
 # Corrupt Packages ###########################################################
 
-$t = ALPM->transaction( type => 'sync' );
-ok $t->add( 'corruptme' );
+$t = ALPM->transaction();
+ok $t->sync( 'corruptme' );
 ok $t->prepare;
 eval { $t->commit };
 like $@, qr/^ALPM Transaction Error: invalid or corrupted package/,

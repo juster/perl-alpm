@@ -202,25 +202,27 @@ T_PKGREASON
         STRLEN length;
 
         /* if the reason arg is a string, it must be
-           'explicit' or 'implicit' */
+           'explicit' or 'implicit|depend' */
         str_reason = SvPV( $arg, length );
-        if ( length != 8 ) {
-            croak( \"Reason must be 'explicit' or 'implicit' \"
+        if ( length != 8 && length != 6) {
+            /* might be a good time to use goto */
+            croak( \"Reason must be 'explicit', 'implicit', or 'depend' \"
                    \"when given as a string\" );
         }
         else if ( strcmp( \"explicit\", str_reason ) == 0 ) {
             $var = PM_PKG_REASON_EXPLICIT;
         }
-        else if ( strcmp( \"implicit\", str_reason ) == 0 ) {
+        else if (    strcmp( \"implicit\", str_reason ) == 0
+                  || strcmp( \"depend\",   str_reason ) == 0 ) {
             $var = PM_PKG_REASON_DEPEND;
         }
         else {
-            croak( \"Reason must be 'explicit' or 'implicit' \"
+            croak( \"Reason must be 'explicit', 'implicit', or 'depend' \"
                    \"when given as a string\" );
         }
     }
     else {
-        croak( \"Reason must be 0, 1, 'explicit', or 'implicit'\" );
+        croak( \"Reason must be 0, 1, 'explicit', 'implicit', or 'depend'\" );
     }
 
 #-----------------------------------------------------------------------------

@@ -73,7 +73,7 @@ typedef alpm_list_t * ListAutoFree;
 
 /* Code references to use as callbacks. */
 extern SV *cb_log_sub;
-extern SV *cb_download_sub;
+extern SV *cb_dl_sub;
 extern SV *cb_totaldl_sub;
 extern SV *cb_fetch_sub;
 
@@ -89,14 +89,40 @@ extern const char * log_lvl_debug;
 extern const char * log_lvl_function;
 extern const char * log_lvl_unknown;
 
-/* Callback functions */
+/* CALLBACKS ****************************************************************/
+
+#define DEF_SET_CALLBACK( CBTYPE )                                  \
+    if ( ! SvOK(callback) && cb_ ## CBTYPE ## _sub != NULL ) {      \
+        SvREFCNT_dec( cb_ ## CBTYPE ## _sub );                      \
+        alpm_option_set_ ## CBTYPE ## cb( NULL );                   \
+        cb_ ## CBTYPE ## _sub = NULL;                               \
+    }                                                               \
+    else {                                                          \
+        if ( !SvROK(callback)                                       \
+             || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {            \
+            croak( "value for %scb option must be a code reference", \
+                   #CBTYPE );                                       \
+        }                                                           \
+        if ( cb_ ## CBTYPE ## _sub ) {                              \
+            sv_setsv( cb_ ## CBTYPE ## _sub, callback );            \
+        }                                                           \
+        else {                                                      \
+            cb_ ## CBTYPE ## _sub = newSVsv(callback);              \
+            alpm_option_set_ ## CBTYPE ## cb                        \
+                ( cb_ ## CBTYPE ## _wrapper );                      \
+        }                                                           \
+    }
+
+#define DEF_GET_CALLBACK( CBTYPE )                          \
+    RETVAL = ( cb_ ## CBTYPE ## _sub == NULL                \
+               ? &PL_sv_undef : cb_ ## CBTYPE ## _sub );
 
 void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args );
-void cb_download_wrapper ( const char *filename, off_t xfered, off_t total );
+void cb_dl_wrapper ( const char *filename, off_t xfered, off_t total );
 void cb_totaldl_wrapper ( off_t total );
-int cb_fetch_wrapper ( const char *url, const char *localpath, int force );
+int  cb_fetch_wrapper ( const char *url, const char *localpath, int force );
 
-/* Transaction callbacks */
+/* TRANSACTIONS ************************************************************/
 
 /* This macro is used inside alpm_trans_init.
    CB_NAME is one of the transaction callback types (event, conv, progress).
@@ -138,7 +164,7 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
                                 int item_progress,
                                 int total_count, int total_pos );
 
-/* Conversion functions */
+/* CONVERSION  *************************************************************/
 
 SV * convert_stringlist ( alpm_list_t * string_list );
 SV * convert_depend ( const pmdepend_t * depend );

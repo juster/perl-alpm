@@ -6,39 +6,20 @@ alpm_option_get_syncdbs()
 SV *
 alpm_option_get_logcb()
   CODE:
-    RETVAL = ( cb_log_sub == NULL ? &PL_sv_undef : cb_log_sub );
+    DEF_GET_CALLBACK( log )
   OUTPUT:
     RETVAL
 
 void
-alpm_option_set_logcb(callback)
+alpm_option_set_logcb ( callback )
     SV * callback
   CODE:
-    if ( ! SvOK(callback) ) {
-        if ( cb_log_sub != NULL ) {
-            SvREFCNT_dec( cb_log_sub );
-            alpm_option_set_logcb( NULL );
-            cb_log_sub = NULL;
-        }
-    }
-    else {
-        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
-            croak( "value for logcb option must be a code reference" );
-        }
-
-        if ( cb_log_sub ) {
-            sv_setsv( cb_log_sub, callback );
-        }
-        else {
-            cb_log_sub = newSVsv(callback);
-            alpm_option_set_logcb( cb_log_wrapper );
-        }
-    }
+    DEF_SET_CALLBACK( log )
 
 SV *
 alpm_option_get_dlcb()
   CODE:
-    RETVAL = ( cb_download_sub == NULL ? &PL_sv_undef : cb_download_sub );
+    DEF_GET_CALLBACK( dl )
   OUTPUT:
     RETVAL
 
@@ -46,32 +27,12 @@ void
 alpm_option_set_dlcb(callback)
     SV * callback
   CODE:
-    if ( ! SvOK(callback) ) {
-        if ( cb_download_sub != NULL ) {
-            SvREFCNT_dec( cb_download_sub );
-            alpm_option_set_dlcb( NULL );
-            cb_download_sub = NULL;
-        }
-    }
-    else {
-        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
-            croak( "value for dlcb option must be a code reference" );
-        }
-
-        if ( cb_download_sub ) {
-            sv_setsv( cb_download_sub, callback );
-        }
-        else {
-            cb_download_sub = newSVsv(callback);
-            alpm_option_set_dlcb( cb_download_wrapper );
-        }
-    }
-
+    DEF_SET_CALLBACK( dl )
 
 SV *
 alpm_option_get_totaldlcb()
   CODE:
-    RETVAL = ( cb_totaldl_sub == NULL ? &PL_sv_undef : cb_totaldl_sub );
+    DEF_GET_CALLBACK( totaldl )
   OUTPUT:
     RETVAL
 
@@ -79,31 +40,12 @@ void
 alpm_option_set_totaldlcb(callback)
     SV * callback
   CODE:
-    if ( ! SvOK(callback) ) {
-        if ( cb_totaldl_sub != NULL ) {
-            SvREFCNT_dec( cb_totaldl_sub );
-            alpm_option_set_totaldlcb( NULL );
-            cb_totaldl_sub = NULL;
-        }
-    }
-    else {
-        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
-            croak( "value for totaldlcb option must be a code reference" );
-        }
-
-        if ( cb_totaldl_sub ) {
-            sv_setsv( cb_totaldl_sub, callback );
-        }
-        else {
-            cb_totaldl_sub = newSVsv(callback);
-            alpm_option_set_totaldlcb( cb_totaldl_wrapper );
-        }
-    }
+    DEF_SET_CALLBACK( totaldl )
 
 SV *
 alpm_option_get_fetchcb()
   CODE:
-    RETVAL = ( cb_fetch_sub == NULL ? &PL_sv_undef : cb_fetch_sub );
+    DEF_GET_CALLBACK( fetch )
   OUTPUT:
     RETVAL
 
@@ -111,27 +53,7 @@ void
 alpm_option_set_fetchcb(callback)
     SV * callback
   CODE:
-    if ( ! SvOK(callback) ) {
-        if ( cb_fetch_sub != NULL ) {
-            SvREFCNT_dec( cb_fetch_sub );
-            alpm_option_set_fetchcb( NULL );
-            cb_fetch_sub = NULL;
-        }
-    }
-    else {
-        if ( ! SvROK(callback) || SvTYPE( SvRV(callback) ) != SVt_PVCV ) {
-            croak( "value for fetchcb option must be a code reference" );
-        }
-
-        if ( cb_fetch_sub ) {
-            sv_setsv( cb_fetch_sub, callback );
-        }
-        else {
-            cb_fetch_sub = newSVsv(callback);
-            alpm_option_set_fetchcb( cb_fetch_wrapper );
-        }
-    }
-
+    DEF_SET_CALLBACK( fetch )
 
 const char *
 alpm_option_get_root()

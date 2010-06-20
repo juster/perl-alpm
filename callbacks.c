@@ -1,10 +1,10 @@
 #include "alpm_xs.h"
 
-/* CALLBACKS ****************************************************************/
+/* CALLBACKS ***************************************************************/
 
 /* Code references to use as callbacks. */
 SV *cb_log_sub      = NULL;
-SV *cb_download_sub = NULL;
+SV *cb_dl_sub = NULL;
 SV *cb_totaldl_sub  = NULL;
 SV *cb_fetch_sub    = NULL;
 /* transactions */
@@ -71,12 +71,12 @@ void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
     LEAVE;
 }
 
-void cb_download_wrapper ( const char *filename, off_t xfered, off_t total )
+void cb_dl_wrapper ( const char *filename, off_t xfered, off_t total )
 {
     SV *s_filename, *s_xfered, *s_total;
     dSP;
 
-    if ( cb_download_sub == NULL ) return;
+    if ( cb_dl_sub == NULL ) return;
 
     ENTER;
     SAVETMPS;
@@ -91,7 +91,7 @@ void cb_download_wrapper ( const char *filename, off_t xfered, off_t total )
     XPUSHs(s_total);
     PUTBACK;
 
-    call_sv(cb_download_sub, G_DISCARD);
+    call_sv(cb_dl_sub, G_DISCARD);
 
     FREETMPS;
     LEAVE;
@@ -166,7 +166,7 @@ int cb_fetch_wrapper ( const char *url, const char *localpath, int force )
     return retval;
 }
 
-/* TRANSACTION CALLBACKS *****************************************************/
+/* TRANSACTION CALLBACKS ***************************************************/
 
 /* We convert all enum constants into strings.  An event is now a hash
    with a name, status (start/done/failed/""), and arguments.

@@ -44,6 +44,7 @@ options:
   -r, --root <path>    set an alternate installation root
   -b, --dbpath <path>  set an alternate database location
       --cachedir <dir> set an alternate package cache location
+      --arch <arch>    set an alternate architecture
 END_HELP
 }
 

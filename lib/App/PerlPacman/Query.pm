@@ -1,5 +1,5 @@
 package App::PerlPacman::Query;
-use base qw(App::PerlPacman);
+use App::PerlPacman;
 
 use warnings;
 use strict;
@@ -8,6 +8,8 @@ use File::Spec qw();
 use Text::Wrap qw();
 use POSIX      qw();
 use ALPM;
+
+our @ISA = qw(App::PerlPacman);
 
 sub option_spec
 {

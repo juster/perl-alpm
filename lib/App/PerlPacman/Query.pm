@@ -47,22 +47,26 @@ options:
 END_HELP
 }
 
-sub run_opts
+sub run
 {
-    my ($class, $args_ref, %opts) = @_;
+    my ($self) = @_;
+
+    my $args_ref = $self->{'extra_args'};
+    my %opts     = %{ $self->{'opts'} };
 
     # Check if an unrecognized option is leftover...
     my ($badopt) = grep { /\A-/ } @$args_ref;
-    $class->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
+    $self->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
 
-    return _run_owns( $args_ref ) if $opts{'owns'};
+    return $self->_run_owns( $args_ref )  if $opts{ 'owns' };
+    return $self->_run_check( $args_ref ) if $opts{ 'check' };
 
     # 1. Convert arguments to package objects (or use all packages/groups)
     # 2. Filter out packages based on command-line options
     # 3. Print more info depending on command-line options
-    my ($converter, $defprinter) = $class->create_conv_print( %opts );
-    my $printer  = $class->create_printer( %opts ) || $defprinter;
-    my $filter   = $class->create_filter( %opts );
+    my ($converter, $defprinter) = $self->create_conv_print( %opts );
+    my $printer  = $self->create_printer( %opts ) || $defprinter;
+    my $filter   = $self->create_filter( %opts );
 
     for my $pkg ( grep { $filter->() } $converter->( $args_ref ) ) {
         $printer->( $pkg );
@@ -73,21 +77,20 @@ sub run_opts
 
 sub _run_owns
 {
-    my $args_ref = shift;
+    my ($self, $args_ref) = @_;
 
-    __PACKAGE__->fatal( 'no targets specified (use -h for help)' )
-        unless @$args_ref;
+    $self->fatal_notargets unless @$args_ref;
 
     FILE_LOOP:
     for my $filename ( @$args_ref ) {
         if ( -d $filename ) {
-            __PACKAGE__->error( 'cannot determine ownership of a ',
-                                'directory');
+            $self->error( 'cannot determine ownership of a ',
+                          'directory');
             next FILE_LOOP;
         }
         unless ( -f $filename ) {
-            __PACKAGE__->error( qq{failed to read file '$filename'},
-                                 q{: No such file or directory} );
+            $self->error( qq{failed to read file '$filename'},
+                          q{: No such file or directory} );
             next FILE_LOOP;
         }
 
@@ -111,8 +114,32 @@ sub _run_owns
                 $owner->name, $owner->version;
         }
         else {
-            __PACKAGE__->error( "No package owns $filename" );
+            $self->error( "No package owns $filename" );
         }
+    }
+
+    return 0;
+}
+
+sub _run_check
+{
+    my ($self, $extra_args) = @_;
+
+    PKGNAME_LOOP:
+    for my $pkgname ( @$extra_args ) {
+        my $pkgobj = ALPM->localdb->find( $pkgname );
+        unless ( $pkgobj ) {
+            $self->error( qq{package "$pkgname" not found"} );
+            next PKGNAME_LOOP;
+        }
+        
+        my ($total, $missing) = (0, 0);
+        for my $pkgfile ( map { "/$_" } @{$pkgobj->files} ) {
+            ++$total;
+            ++$missing unless -e $pkgfile;
+        }
+
+        print "$pkgname: $total total files, $missing missing file(s)\n";
     }
 
     return 0;
@@ -168,11 +195,13 @@ sub _convert_groups
 
 sub _convert_pkgfile
 {
+    my $self = shift;
+
     my $converter = sub {
         _convert_args_to_objs
             ( args      => shift,
               converter => sub { ALPM->load_pkgfile( shift ) },
-              defaults  => sub { __PACKAGE__->fatal_notargets },
+              defaults  => sub { $self->fatal_notargets },
              );
     };
 
@@ -188,10 +217,10 @@ sub _convert_pkgfile
 # as well as a default printing closure.
 sub create_conv_print
 {
-    my ($class, %opts) = @_;
+    my ($self, %opts) = @_;
 
-    return _convert_pkgfile if $opts{'file' };
-    return _convert_groups  if $opts{'groups'};
+    return $self->_convert_pkgfile if $opts{'file' };
+    return $self->_convert_groups  if $opts{'groups'};
 
     # Packages are simpler...
     my $convert_ref = sub {
@@ -242,7 +271,7 @@ sub _convert_args_to_objs
 
 sub create_printer
 {
-    my ($class, %opts) = @_;
+    my ($self, %opts) = @_;
 
     my $printer_result;
 
@@ -271,7 +300,7 @@ sub create_printer
                     }
                     else {
                         my $name = $pkg->name;
-                        __PACKAGE__->error
+                        $self->error
                             ( q{no changelog available for } .
                               qq{'$name'} );
                     }
@@ -332,7 +361,7 @@ sub _print_info
 # The closure returns 1 if it is not filtered out, 0 if it is.
 sub create_filter
 {
-    my ($class, %opts) = @_;
+    my ($self, %opts) = @_;
 
     my @filters;
     my $filter = sub {
@@ -360,26 +389,21 @@ sub create_filter
 
 sub _filter_foreign
 {
-    our @SyncDBs;
-    @SyncDBs = ALPM->syncdbs unless @SyncDBs;
-
-    for my $db ( @SyncDBs ) {
+    for my $db ( ALPM->syncdbs ) {
         return 0 if $db->find( $_->name );
     }
 
     return 1;
 }
 
+*pkgvercmp = \&ALPM::Package::vercmp;
 sub _filter_upgrades
 {
-    our @SyncDBs;
-    @SyncDBs = ALPM->syncdbs unless @SyncDBs;
-
     DB_LOOP:
-    for my $db ( @SyncDBs ) {
+    for my $db ( ALPM->syncdbs ) {
         my $pkg = $db->find( $_->name ) or next DB_LOOP;
 
-        return 1 if 1 == ALPM::Package::vercmp( $pkg->version, $_->version );
+        return 1 if 1 == pkgvercmp( $pkg->version, $_->version );
     }
     
     return 0;

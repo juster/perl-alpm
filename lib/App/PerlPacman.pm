@@ -9,8 +9,19 @@ use ALPM::LoadConfig;
 
 Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
 
-our ($Converse_cb, $Progress_cb, %Config);
+sub new
+{
+    my $class = shift;
+    my ($extra_args, %opts) = $class->parse_options( @_ );
 
+    bless { 'converse_cb' => undef,
+            'progress_cb' => undef,
+            'opts'        => \%opts,
+            'extra_args'  => $extra_args,
+            'config'      => {} }, $class;
+}
+
+#---CLASS METHOD---
 sub parse_options
 {
     my $class = shift;
@@ -22,6 +33,7 @@ sub parse_options
     return \@opts, %result;
 }
 
+#---CLASS METHOD---
 # Subclasses override this method
 sub option_spec
 {
@@ -30,18 +42,6 @@ sub option_spec
         root|r=s dbpath|b=s cachedir=s
 
         version|V query|Q remove|R sync|S upgrade|U };
-}
-
-sub run
-{
-    my $class = shift;
-    my ($extra_args, %opts) = $class->parse_options( @_ );
-
-    my $retval = $class->run_opts( $extra_args, %opts );
-    return $retval if defined $retval;
-
-    $class->print_help() if $opts{'help'};
-    die 'INTERNAL ERROR'; # shouldn't get here
 }
 
 sub _converse_callback
@@ -54,15 +54,18 @@ sub _progress_callback
 
 }
 
-#** HELPER FUNCTION
+#---PRIVATE METHOD---
 # Stores all pacman-specific fields inside $Config package var.
 sub _pacman_field_handlers
 {
+    my ($self) = @_;
+
+    my $config = $self->{'config'};
     my $field_handlers;
 
     my $handler = sub {
         my $field = shift;
-        return sub { $Config{ $field } = shift };
+        return sub { $config->{ $field } = shift };
     };
 
     for my $key ( qw{ HoldPkg SyncFirst CleanMethod XferCommand
@@ -75,10 +78,10 @@ sub _pacman_field_handlers
 
 sub prepare_alpm
 {
-    my ($class, %opts) = @_;
+    my ($self, %opts) = @_;
 
     my $loader = ALPM::LoadConfig->new
-        ( custom_fields => _pacman_field_handlers(),
+        ( custom_fields => $self->_pacman_field_handlers(),
           auto_register => 0,
          );
     $loader->load_file( $opts{'config'} || '/etc/pacman.conf' );
@@ -95,58 +98,87 @@ sub prepare_alpm
 }
 
 # Subclasses override this method...
-sub run_opts
+sub run
 {
-    my ($class, $extra_args, %opts) = @_;
+    my ($self) = @_;
+    eval { $self->_run_protected() };
+    if ( $@ ) {
+        print STDERR $@;
+        return 1;
+    }
+    return 0;
+}
+
+# Catch errors inside this sub...
+sub _run_protected
+{
+    my ($self) = @_;
+
+    my $extra_args = $self->{ 'extra_args' };
+    my %opts       = %{ $self->{ 'opts' } };
 
     # Display error if no options were specified...
-    $class->fatal( 'no operation specified (use -h for help)' )
+    $self->fatal( 'no operation specified (use -h for help)' )
         unless ( %opts );
 
-    $class->prepare_alpm( %opts );
+    $self->prepare_alpm( %opts );
 
-    ACT_LOOP:
-    for my $action ( qw/query remove sync upgrade/ ) {
-        next ACT_LOOP unless $opts{ $action };
-        my $subclass = "App::PerlPacman::" . ucfirst $action;
+    my @actions = grep { $opts{ $_ } } qw/ query remove sync upgrade /;
 
-        eval "require $subclass; 1;"
-            or die "Internal error: failed to load $subclass...\n$@";
+    $self->fatal( 'only one operation may be used at a time' )
+        if @actions > 1;
 
-        if ( $opts{'help'} ) {
-            $subclass->print_help();
+    if ( @actions == 0 ) {
+        if ( $opts{ 'help' } ) {
+            $self->print_help();
             return 0;
         }
-        return $subclass->run( @{ $extra_args } );
+        $self->fatal( 'no operation specified (use -h for help)' );
     }
 
-    return;
+    my $subclass = "App::PerlPacman::" . ucfirst $actions[0];
+
+    eval "require $subclass; 1;"
+        or die "Internal error: failed to load $subclass...\n$@";
+
+    if ( $opts{'help'} ) {
+        $subclass->print_help();
+        return 0;
+    }
+
+    my $cmdobj = $subclass->new( @{ $extra_args } );
+    return $cmdobj->run();
 }
 
 sub error
 {
     my $class = shift;
-    print STDERR "error: ", @_, "\n";
+    print STDERR $class->_error_msg( @_ );
+    return;
+}
+
+sub _error_msg
+{
+    my $class = shift;
+    join q{}, "error: ", @_, "\n";
 }
 
 sub fatal
 {
     my $class = shift;
-    $class->error( @_ );
-    exit 1;
+    die $class->_error_msg( @_ );
 }
 
 sub fatal_notargets
 {
-    my $class = shift;
-    $class->fatal( 'no targets specified (use -h for help)' );
+    my $self = shift;
+    $self->fatal( "no targets specified (use -h for help)\n" );
 }
 
 sub print_help
 {
     my $class = shift;
     print $class->help();
-    exit 0;
 }
 
 sub help

@@ -2,6 +2,7 @@
 
 use warnings;
 use strict;
+use App::PerlPacman;
 
-require App::PerlPacman;
-App::PerlPacman->run( @ARGV );
+return 1 if caller;
+exit App::PerlPacman->new( @ARGV )->run();

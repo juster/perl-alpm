@@ -1,6 +1,4 @@
-#----------------------------------------------------------------------------
-# PRIVATE TRANSACTION FUNCTIONS
-#----------------------------------------------------------------------------
+# PRIVATE ###################################################################
 
 MODULE=ALPM    PACKAGE=ALPM    PREFIX=alpm
 
@@ -27,6 +25,8 @@ alpm_trans_init(flags, event_sub, conv_sub, progress_sub)
   OUTPUT:
     RETVAL
 
+# PUBLIC METHODS ############################################################
+
 MODULE=ALPM    PACKAGE=ALPM::Transaction
 
 negative_is_error
@@ -38,19 +38,13 @@ DESTROY(self)
   OUTPUT:
     RETVAL
 
-#----------------------------------------------------------------------------
-# PUBLIC METHODS
-#----------------------------------------------------------------------------
-
-MODULE=ALPM    PACKAGE=ALPM::Transaction
-
 negative_is_error
 sysupgrade ( self, ... )
     SV  * self
   PREINIT:
     int enable_downgrade;
   CODE:
-    enable_downgrade = ( items > 0 ? 1 : 0 );
+    enable_downgrade = ( items > 1 ? 1 : 0 );
     RETVAL = alpm_sync_sysupgrade( enable_downgrade );
   OUTPUT:
     RETVAL
@@ -125,7 +119,8 @@ alpm_trans_prepare ( self )
             if ( trans_error ) {
                 hv_store( trans, "error", 5, trans_error, 0 );
 
-                croak( "ALPM Transaction Error: %s", alpm_strerror( pm_errno ));
+                croak( "ALPM Transaction Error: %s",
+                       alpm_strerror( pm_errno ));
                 fprintf( stderr, "ERROR: prepare shouldn't get here?\n" );
                 RETVAL = 0;
             }
@@ -139,8 +134,6 @@ alpm_trans_prepare ( self )
             }
         }
         else hv_store( trans, "prepared", 8, newSViv(1), 0 );
-
-        /* fprintf( stderr, "DEBUG: ALPM::Transaction::prepare returning\n" ); */
     }
   OUTPUT:
     RETVAL

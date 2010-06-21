@@ -153,6 +153,7 @@ sub _run_check
 # which group the package came from...
 sub _convert_groups
 {
+    my ($self) = @_;
     my %group_of;
 
     my $converter = sub {
@@ -162,17 +163,21 @@ sub _convert_groups
 
         my @pkgs = $group_obj->packages;
         # This reverse lookup is used when printing packages...
-        $group_of{ $_->name } = $group_obj->name
-            for @pkgs;
+        unless ( $self->{'opts'}{'quiet'} ) {
+            $group_of{ $_->name } = $group_obj->name for @pkgs;
+        }
 
         return @pkgs;
     };
 
-    my $printer_ref = sub {
-        my $pkg  = shift;
-        my $name = $pkg->name;
-        printf "%s %s\n", $group_of{$name}, $name;
-    };
+    my $printer_ref = ( $self->{'opts'}{'quiet'}
+                        ? \&_print_pkgname
+                        : sub {
+                            my $pkg  = shift;
+                            my $name = $pkg->name;
+                            printf "%s %s\n", $group_of{$name}, $name;
+                        } );
+                        
 
     my $convert_ref = sub {
         _convert_args_to_objs
@@ -205,10 +210,8 @@ sub _convert_pkgfile
              );
     };
 
-    my $printer = sub {
-        my $pkg = shift;
-        printf "%s %s\n", $pkg->name, $pkg->version;
-    };
+    my $printer = ( $self->{'opts'}{'quiet'}
+                    ? \&_print_pkgname : \&_print_pkgnamever );
 
     return ( $converter, $printer );
 }
@@ -231,10 +234,8 @@ sub create_conv_print
               error     => 'package %s not found' );
     };
 
-    my $printer_ref = sub {
-        my $pkg = shift;
-        printf "%s %s\n", $pkg->name, $pkg->version;
-    };
+    my $printer_ref = ( $self->{'opts'}{'quiet'}
+                        ? \&_print_pkgname : \&_print_pkgnamever );
 
     return ( $convert_ref, $printer_ref );
 }
@@ -307,6 +308,17 @@ sub create_printer
                 } );
 
     return $printer_result;
+}
+
+# These simple printers are used in the converters, above...
+sub _print_pkgname
+{
+    printf "%s\n", $_[0]->name;
+}
+
+sub _print_pkgnamever
+{
+    printf "%s %s\n", $_[0]->name, $_[0]->version;
 }
 
 sub _print_info

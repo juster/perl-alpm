@@ -205,8 +205,12 @@ sub _convert_pkgfile
     my $converter = sub {
         _convert_args_to_objs
             ( args      => shift,
-              converter => sub { ALPM->load_pkgfile( shift ) },
+              converter => sub {
+                  return qw// unless -f $_[0];
+                  ALPM->load_pkgfile( $_[0] )
+              },
               defaults  => sub { $self->fatal_notargets },
+              error     => q{package '%s' not found},
              );
     };
 
@@ -216,7 +220,7 @@ sub _convert_pkgfile
     return ( $converter, $printer );
 }
 
-# Create a converter sub that translates arguments to objects.
+# Returns a converter sub that translates arguments to objects.
 # as well as a default printing closure.
 sub create_conv_print
 {
@@ -229,9 +233,9 @@ sub create_conv_print
     my $convert_ref = sub {
         _convert_args_to_objs
             ( args      => shift,
-              converter => sub { ALPM->localdb->find( shift ) },
+              converter => sub { ALPM->localdb->find( shift ) or qw// },
               defaults  => sub { ALPM->localdb->packages },
-              error     => 'package %s not found' );
+              error     => q{package "%s" not found} );
     };
 
     my $printer_ref = ( $self->{'opts'}{'quiet'}
@@ -240,9 +244,19 @@ sub create_conv_print
     return ( $convert_ref, $printer_ref );
 }
 
+#---HELPER FUNCTION---
+# This is a generic function for converting name strings to objects...
+# Params: Parameters are given as a hash:
+#      {args} An arrayref of names to convert
+# {converter} A closure that takes a name as argument, returning
+#           | a list of objects on success or the empty list on failure
+#     {error} A sprintf formatted error messages, %s is replaced with
+#           | the argument that we could not convert
+#  {defaults} A closure to be called if {args} is an empty list.
+#           | The result of the closure is returned in this case.
+#---------------------
 sub _convert_args_to_objs
 {
-
     my %param = @_;
 
     my @found;

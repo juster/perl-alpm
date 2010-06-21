@@ -37,7 +37,7 @@ sub parse_options
 # Subclasses override this method
 sub option_spec
 {
-    qw{ help|h config|c=s logfile|l=s noconfirm
+    qw{ help|h config=s logfile=s noconfirm
         noprogressbar noscriplet verbose|v debug
         root|r=s dbpath|b=s cachedir=s
 

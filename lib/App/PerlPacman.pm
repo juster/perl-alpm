@@ -197,6 +197,43 @@ use 'ppacman {-h --help}' with an operation for available options
 END_HELP
 }
 
+my %FLAG_OF_OPT =
+    # Some options are exactly the same as their transaction option...
+    map { ( $_ => $_ ) } qw{ nodeps force nosave cascade dbonly
+                             noscriptlet needed unneeded },
+    ( 'asdeps' => 'alldeps', 'asexplicit' => 'allexplicit',
+      'downloadonly' => 'dlonly', 'print' => 'printuris',
+     );
+
+=for Missing Transaction Flags
+Other transaction flags which aren't included are:
+  recurse & recurseall - if the recursive flag is given once, we
+    use the 'recurse' trans flag.  if given twice we use 'recurseall'.
+  noconflicts - I'm not sure which option this corresponds to
+
+=cut
+
+# Converts options to a string of transaction flags...
+sub _convert_trans_opts
+{
+    my ($self) = @_;
+
+    my $opts = $self->{'opts'};
+    my @trans_flags = ( grep { defined }
+                        map  { $FLAG_OF_OPT{ $_ } }
+                        keys %$opts );
+
+    my $recursive = $opts->{'recursive'};
+    REC_CHECK:
+    {
+        last REC_CHECK unless eval { $recursive =~ /\A\d\z/ };
+        if    ( $recursive == 1 ) { push @trans_flags, 'recurse';    }
+        elsif ( $recursive >  1 ) { push @trans_flags, 'recurseall'; }
+    }
+
+    return @trans_flags ? join q{ }, @trans_flags : q{};
+}
+
 1;
 
 __END__

@@ -1,221 +1,9 @@
-MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_
-    
-negative_is_error
-alpm_pkg_checkmd5sum(pkg)
-    ALPM_Package pkg
+# PUBLIC ####################################################################
 
-# TODO: implement this in perl with LWP
-#char *
-#alpm_fetch_pkgurl(url)
-#    const char *url
-
-int
-alpm_pkg_vercmp(a, b)
-    const char *a
-    const char *b
-
-StringListFree
-alpm_pkg_requiredby(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_compute_requiredby(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_filename(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_filename(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_name(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_name(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_version(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_version(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_desc(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_desc(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_url(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_url(pkg);
-  OUTPUT:
-    RETVAL
-
-time_t
-alpm_pkg_builddate(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_builddate(pkg);
-  OUTPUT:
-    RETVAL
-
-time_t
-alpm_pkg_installdate(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_installdate(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_packager(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_packager(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_md5sum(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_md5sum(pkg);
-  OUTPUT:
-    RETVAL
-
-const char *
-alpm_pkg_arch(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_arch(pkg);
-  OUTPUT:
-    RETVAL
-
-off_t
-alpm_pkg_size(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_size(pkg);
-  OUTPUT:
-    RETVAL
-
-off_t
-alpm_pkg_isize(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_isize(pkg);
-  OUTPUT:
-    RETVAL
-
-pmpkgreason_t
-alpm_pkg_reason(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_reason(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_licenses(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_licenses(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_groups(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_groups(pkg);
-  OUTPUT:
-    RETVAL
-
-DependList
-alpm_pkg_depends(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_depends(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_optdepends(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_optdepends(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_conflicts(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_conflicts(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_provides(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_provides(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_deltas(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_deltas(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_replaces(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_replaces(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_files(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_files(pkg);
-  OUTPUT:
-    RETVAL
-
-StringListNoFree
-alpm_pkg_backup(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_backup(pkg);
-  OUTPUT:
-    RETVAL
-
-ALPM_DB
-alpm_pkg_db(pkg)
-    ALPM_Package pkg
-  CODE:
-    RETVAL = alpm_pkg_get_db(pkg);
-  OUTPUT:
-    RETVAL
+MODULE = ALPM    PACKAGE = ALPM::Package
 
 SV *
-alpm_pkg_changelog(pkg)
+changelog(pkg)
     ALPM_Package pkg
   PREINIT:
     void *fp;
@@ -241,6 +29,30 @@ alpm_pkg_changelog(pkg)
   OUTPUT:
     RETVAL
 
+StringListFree
+requiredby(pkg)
+    ALPM_Package pkg
+  CODE:
+    RETVAL = alpm_pkg_compute_requiredby(pkg);
+  OUTPUT:
+    RETVAL
+
+MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_
+
+negative_is_error
+alpm_pkg_checkmd5sum(pkg)
+    ALPM_Package pkg
+
+# TODO: implement this in perl with LWP
+#char *
+#alpm_fetch_pkgurl(url)
+#    const char *url
+
+int
+alpm_pkg_vercmp(a, b)
+    const char *a
+    const char *b
+
 int
 alpm_pkg_has_scriptlet(pkg)
     ALPM_Package pkg
@@ -252,3 +64,58 @@ alpm_pkg_has_force(pkg)
 off_t
 alpm_pkg_download_size(newpkg)
     ALPM_Package newpkg
+
+MODULE = ALPM    PACKAGE = ALPM::Package    PREFIX = alpm_pkg_get_
+
+const char *
+package_get_string ( package )
+    ALPM_Package package
+INTERFACE:
+    alpm_pkg_get_filename
+    alpm_pkg_get_name
+    alpm_pkg_get_version
+    alpm_pkg_get_desc
+    alpm_pkg_get_url
+    alpm_pkg_get_packager
+    alpm_pkg_get_md5sum
+    alpm_pkg_get_arch
+
+time_t
+package_get_time ( package )
+    ALPM_Package package
+INTERFACE:
+    alpm_pkg_get_builddate
+    alpm_pkg_get_installdate
+
+off_t
+package_get_offset ( package )
+    ALPM_Package package
+INTERFACE:
+    alpm_pkg_get_size
+    alpm_pkg_get_isize
+
+pmpkgreason_t
+alpm_pkg_get_reason(pkg)
+    ALPM_Package pkg
+
+StringListNoFree
+package_get_stringlist ( package )
+    ALPM_Package package
+INTERFACE:
+    alpm_pkg_get_licenses
+    alpm_pkg_get_groups
+    alpm_pkg_get_optdepends
+    alpm_pkg_get_conflicts
+    alpm_pkg_get_provides
+    alpm_pkg_get_deltas
+    alpm_pkg_get_replaces
+    alpm_pkg_get_files
+    alpm_pkg_get_backup
+
+DependList
+alpm_pkg_get_depends(pkg)
+    ALPM_Package pkg
+
+ALPM_DB
+alpm_pkg_get_db(pkg)
+    ALPM_Package pkg

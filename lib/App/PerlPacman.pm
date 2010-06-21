@@ -213,7 +213,10 @@ Other transaction flags which aren't included are:
 
 =cut
 
-# Converts options to a string of transaction flags...
+#---PRIVATE METHOD---
+# Converts options to a string of transaction flags.
+# It is the subclasses' responsibility to parse the options
+# that is recognizes...
 sub _convert_trans_opts
 {
     my ($self) = @_;
@@ -226,12 +229,40 @@ sub _convert_trans_opts
     my $recursive = $opts->{'recursive'};
     REC_CHECK:
     {
-        last REC_CHECK unless eval { $recursive =~ /\A\d\z/ };
+        last REC_CHECK unless $recursive && eval { $recursive =~ /\A\d\z/ };
         if    ( $recursive == 1 ) { push @trans_flags, 'recurse';    }
         elsif ( $recursive >  1 ) { push @trans_flags, 'recurseall'; }
     }
 
     return @trans_flags ? join q{ }, @trans_flags : q{};
+}
+
+sub transaction
+{
+    my ($self) = @_;
+
+    my $flags = $self->_convert_trans_opts();
+    my $trans = ALPM->transaction( 'flags' => $flags );
+    # TODO: create the proper callbacks to match pacman's output...
+
+    return $trans;
+}
+
+# This is so common, we place it here in the superclass...
+# We run a transaction, calling the given method on the transaction object
+# for each argument we are passed on the command-line...
+sub run_transaction
+{
+    my ($self, $method_name) = @_;
+
+    my $trans = $self->transaction();
+    my $method = $ALPM::Transaction::{ $method_name }{CODE};
+
+    for my $pkgname ( $self->{'extra_args'} ) {
+        $method->( $trans, $pkgname );
+    }
+
+    return 0;
 }
 
 1;

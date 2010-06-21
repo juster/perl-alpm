@@ -339,7 +339,7 @@ See L<ALPM::Package>
 
 See also L<ALPM::LoadConfig> for more advanced needs.
 
-=head2 trans
+=head2 transaction
 
   Usage   : my $t = ALPM->action( type     => 'sync',
                                   flags    => 'nodeps force',

@@ -12,15 +12,6 @@ BOOT:
     av_push( get_av( "ALPM::PackageFree::ISA", GV_ADD ),
              newSVpvn( "ALPM::Package", 13 ) );
 
-MODULE = ALPM    PACKAGE = ALPM::ListAutoFree
-
-void
-DESTROY(self)
-    ListAutoFree self;
-  CODE:
-#   fprintf( stderr, "DEBUG Freeing memory for ListAutoFree\n" );
-    alpm_list_free(self);
-
 MODULE = ALPM    PACKAGE = ALPM::PackageFree
 
 negative_is_error

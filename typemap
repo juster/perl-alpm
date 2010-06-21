@@ -8,7 +8,6 @@ ALPM_Group            T_ALPM_GROUP
 
 StringListFree        L_STRING_FREE
 StringListNoFree      L_STRING_NOFREE
-ListAutoFree          L_AUTO_FREE
 
 PackageListFree       L_PACKAGE_FREE
 PackageListNoFree     L_PACKAGE_NOFREE
@@ -66,16 +65,6 @@ T_ALPM_GROUP
 	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\", \"ALPM::Group\")
-
-L_AUTO_FREE
-	if ( sv_derived_from($arg, \"ALPM::ListAutoFree\") ) {
-	    IV tmp = SvIV( (SV*)SvRV($arg) );
-	    $var = INT2PTR( $type,tmp );
-	}
-	else
-	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::Package\")
 
 L_PACKAGE_FREE
     if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {

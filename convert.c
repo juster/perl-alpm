@@ -170,6 +170,10 @@ SV * convert_trans_errors ( alpm_list_t * errors )
 #define convert_invalid_package(STR) newSVpv( STR, 0 )
 #define pminvalid_package_t char
 #define free_invalid_package_errors free
+#define convert_invalid_arch(STR) newSVpv( STR, 0 )
+#define pminvalid_arch_t          char
+#define free_invalid_arch_errors  free
+
 
     switch ( pm_errno ) {
     case PM_ERR_FILE_CONFLICTS:    MAPERRLIST( fileconflict );
@@ -177,6 +181,7 @@ SV * convert_trans_errors ( alpm_list_t * errors )
     case PM_ERR_CONFLICTING_DEPS:  MAPERRLIST( conflict );
     case PM_ERR_DLT_INVALID:       MAPERRLIST( invalid_delta );
     case PM_ERR_PKG_INVALID:       MAPERRLIST( invalid_package );
+    case PM_ERR_PKG_INVALID_ARCH:  MAPERRLIST( invalid_arch );
     default:
         SvREFCNT_dec( (SV *)error_hash );
         SvREFCNT_dec( (SV *)error_list );

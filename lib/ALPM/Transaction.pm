@@ -8,8 +8,6 @@ use Carp qw(carp croak);
 # used to create the transaction and associate the hashref with
 # this package.  Most of the functionality is in ALPM.xs.
 
-my %IS_VALID_TYPE = map { ( $_ => 1 ) } qw/ sync upgrade remove /;
-
 sub new
 {
     my $class = shift;

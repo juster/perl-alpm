@@ -168,7 +168,7 @@ sub _print_targets
 
     my $format = $self->{'opts'}{'print-format'} || '%l';
 
-    for my $pkg ( @{ $pkgs_refs } ) {
+    for my $pkg ( @{ $pkgs_ref } ) {
         my $line = $format;
         $line =~ s/\%n/ $pkg->name /ge;
         $line =~ s/\%v/ $pkg->version /ge;
@@ -189,7 +189,7 @@ sub _get_pkg_loc
 
     if ( $method eq 'sync' ) {
         my $dburl = $pkg_obj->db->url or return $pkg_obj->filename;
-        return sprintf '%s/%s', $dburl, $pkg->filename;
+        return sprintf '%s/%s', $dburl, $pkg_obj->filename;
     }
     elsif ( $method eq 'upgrade' ) {
         return $pkg_obj->filename;

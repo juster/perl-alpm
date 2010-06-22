@@ -90,7 +90,14 @@ sub run
         $method->( $trans, $pkgname );
     }
 
-    eval { $trans->commit };
+    eval {
+        $trans->prepare;
+        if ( $self->{'opts'}{'print'} ) {
+            $self->_print_targets;
+            return 0;
+        }
+        $trans->commit;
+    };
     if ( $EVAL_ERROR ) {
         my $err = $trans->{'error'} or die;
         $self->_print_trans_err( $err );
@@ -99,12 +106,79 @@ sub run
     return 0;
 }
 
+# Params : @questions - Questions to concatenate and print together.
+# Returns: The answer! (sans newline)
+sub prompt_ask
+{
+    my $self = shift;
+
+    my $question = join q{}, @_;
+    chomp $question;
+    $question .= q{ };
+
+    local $OUTPUT_AUTOFLUSH = 1;
+    my $prefix = q{ } x 4;
+    print wrap( $prefix, $prefix, $question );
+
+    my $line = <STDIN>;
+    chomp $line;
+    return $line;
+}
+
+# Params: $question - Yes or no question to ask user.
+#         $default  - Whether 'yes' or 'no' is the default.
+#                     (default for $default is Yes!)
+# Returns: 1 for yes 0 for no
+sub prompt_yn
+{
+    my $self = shift;
+    
+    my ($question, $default) = @_;
+    $default ||= 'y';
+
+    my $first = lc substr $default, 0, 1;
+    $default = ( $first eq 'y' ? 1 : $first eq 'n' ? 0 : 1 );
+
+    chomp $question;
+    $question .= q{ } . ( $default ? '[Yn]' : '[yN]' );
+
+    my $answer;
+    QUESTION: {
+        $answer = prompt_ask( $question );
+
+        return $default if ( length $answer == 0 );
+        redo QUESTION unless $answer =~ /\A[yYnN]/;
+    }
+
+    return 0 if $answer =~ /\A[nN]/;
+    return 1;
+}
+
 sub _check_root
 {
     my ($self) = @_;
 
     return if $EFFECTIVE_USER_ID == 0;
     $self->fatal( 'you cannot perform this operation unless you are root.' );
+}
+
+sub _print_targets
+{
+    my ($self, $pkgs_ref) = @_;
+
+    my $format = $self->{'opts'}{'print-format'} || '%l';
+
+    for my $pkg ( @{ $pkgs_refs } ) {
+        my $line = $format;
+        $line =~ s/\%n/ $pkg->name /ge;
+        $line =~ s/\%v/ $pkg->version /ge;
+        # TODO: location
+        $line =~ s/\%r/ ( $pkg->db ? $pkg->db->name : 'local' ) /ge;
+        $line =~ s{\%s}{ sprintf '%.2f', $pkg->size / ( 1024**2 ) }ge;
+        print $line, "\n";
+    }
+
+    return;
 }
 
 sub _print_depmissing_err
@@ -132,7 +206,5 @@ sub _print_trans_err
 
     return;
 }
-
-
 
 1;

@@ -62,22 +62,22 @@ our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
                        qw/ lockfile localdb syncdbs / );
 
 ### Transaction Constants ###
-my %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
-                     'force'       => PM_TRANS_FLAG_FORCE(),
-                     'nosave'      => PM_TRANS_FLAG_NOSAVE(),
-                     'cascade'     => PM_TRANS_FLAG_CASCADE(),
-                     'recurse'     => PM_TRANS_FLAG_RECURSE(),
-                     'dbonly'      => PM_TRANS_FLAG_DBONLY(),
-                     'alldeps'     => PM_TRANS_FLAG_ALLDEPS(),
-                     'dlonly'      => PM_TRANS_FLAG_DOWNLOADONLY(),
-                     'noscriptlet' => PM_TRANS_FLAG_NOSCRIPTLET(),
-                     'noconflicts' => PM_TRANS_FLAG_NOCONFLICTS(),
-                     'needed'      => PM_TRANS_FLAG_NEEDED(),
-                     'allexplicit' => PM_TRANS_FLAG_ALLEXPLICIT(),
-                     'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
-                     'recurseall'  => PM_TRANS_FLAG_RECURSEALL(),
-                     'nolock'      => PM_TRANS_FLAG_NOLOCK(),
-                    );
+our %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
+                      'force'       => PM_TRANS_FLAG_FORCE(),
+                      'nosave'      => PM_TRANS_FLAG_NOSAVE(),
+                      'cascade'     => PM_TRANS_FLAG_CASCADE(),
+                      'recurse'     => PM_TRANS_FLAG_RECURSE(),
+                      'dbonly'      => PM_TRANS_FLAG_DBONLY(),
+                      'alldeps'     => PM_TRANS_FLAG_ALLDEPS(),
+                      'dlonly'      => PM_TRANS_FLAG_DOWNLOADONLY(),
+                      'noscriptlet' => PM_TRANS_FLAG_NOSCRIPTLET(),
+                      'noconflicts' => PM_TRANS_FLAG_NOCONFLICTS(),
+                      'needed'      => PM_TRANS_FLAG_NEEDED(),
+                      'allexplicit' => PM_TRANS_FLAG_ALLEXPLICIT(),
+                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
+                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL(),
+                      'nolock'      => PM_TRANS_FLAG_NOLOCK(),
+                     );
 
 
 ####----------------------------------------------------------------------

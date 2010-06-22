@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More tests => 10;
+use Test::More tests => 13;
 
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
@@ -61,4 +61,11 @@ ok( $t->commit, 'commit the transaction' );
 
 check_events( qw/integrity fileconflicts add/ );
 
-$t = undef;
+undef $t;
+
+$t = ALPM->transaction( flags => 'cascade dbonly dlonly' );
+my $flags = $t->get_flags;
+diag $flags;
+like( $flags, qr/cascade/ );
+like( $flags, qr/dbonly/  );
+like( $flags, qr/dlonly/  );

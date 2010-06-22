@@ -25,6 +25,11 @@ alpm_trans_init(flags, event_sub, conv_sub, progress_sub)
   OUTPUT:
     RETVAL
 
+MODULE=ALPM    PACKAGE=ALPM::Transaction    PREFIX=alpm
+
+int
+alpm_trans_get_flags()
+
 # PUBLIC METHODS ############################################################
 
 MODULE=ALPM    PACKAGE=ALPM::Transaction

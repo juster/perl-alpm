@@ -22,6 +22,21 @@ sub new
            }, $class;
 }
 
+sub get_flags
+{
+    my ($self) = @_;
+
+    my @flag_names;
+    my $raw_flags = _trans_get_flags();
+    FLAG_CHECK:
+    while ( my ($flagname, $flagmask) = each %ALPM::_TRANS_FLAGS ) {
+        next FLAG_CHECK unless $raw_flags & $flagmask;
+        push @flag_names, $flagname;
+    }
+
+    return wantarray ? @flag_names : join q{ }, @flag_names;
+}
+
 1;
 
 __END__

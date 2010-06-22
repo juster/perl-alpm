@@ -207,4 +207,11 @@ sub _print_trans_err
     return;
 }
 
+sub _print_invalid_arch_err
+{
+    my ($self, $pkgname) = @_;
+
+    print ":: package $pkgname does not have a valid architecure\n";
+}
+
 1;

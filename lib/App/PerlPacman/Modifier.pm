@@ -172,13 +172,30 @@ sub _print_targets
         my $line = $format;
         $line =~ s/\%n/ $pkg->name /ge;
         $line =~ s/\%v/ $pkg->version /ge;
-        # TODO: location
+        $line =~ s/\%l/ $self->_get_pkg_loc( $pkg ) /ge;
         $line =~ s/\%r/ ( $pkg->db ? $pkg->db->name : 'local' ) /ge;
         $line =~ s{\%s}{ sprintf '%.2f', $pkg->size / ( 1024**2 ) }ge;
         print $line, "\n";
     }
 
     return;
+}
+
+sub _get_pkg_loc
+{
+    my ($self, $pkg_obj) = @_;
+
+    my $method = $self->{'trans_method'};
+
+    if ( $method eq 'sync' ) {
+        my $dburl = $pkg_obj->db->url or return $pkg_obj->filename;
+        return sprintf '%s/%s', $dburl, $pkg->filename;
+    }
+    elsif ( $method eq 'upgrade' ) {
+        return $pkg_obj->filename;
+    }
+
+    return sprintf '%s-%s', $pkg_obj->name, $pkg_obj->version;
 }
 
 sub _print_depmissing_err

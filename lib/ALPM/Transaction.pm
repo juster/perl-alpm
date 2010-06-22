@@ -35,6 +35,18 @@ sub get_flags
     return wantarray ? @flag_names : join q{ }, @flag_names;
 }
 
+sub get_additions
+{
+    my ($self) = @_;
+    return @{ _trans_get_add() };
+}
+
+sub get_removals
+{
+    my ($self) = @_;
+    return @{ _trans_get_remove() };
+}
+
 1;
 
 __END__
@@ -288,6 +300,48 @@ I<None>
 =item C<$TRUE>
 
 The literal: 1
+
+=back
+
+=head2 get_additions
+
+C<< @PKGS = $TRANS->get_additions(); >>
+
+This method will return a list of packages that are going to be
+installed by the transaction.
+
+=head3 Parameters
+
+I<None>
+
+=head3 Returns
+
+=over
+
+=item C<@PKGS>
+
+A list of L<ALPM::Package> objects.
+
+=back
+
+=head2 get_removals
+
+C<< @PKGS = $TRANS->get_removals(); >>
+
+This method will return a list of packages that are going to be
+uninstalled by the transaction.
+
+=head3 Parameters
+
+I<None>
+
+=head3 Returns
+
+=over
+
+=item C<@PKGS>
+
+A list of L<ALPM::Package> objects.
 
 =back
 

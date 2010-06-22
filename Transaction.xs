@@ -30,6 +30,12 @@ MODULE=ALPM    PACKAGE=ALPM::Transaction    PREFIX=alpm
 int
 alpm_trans_get_flags()
 
+PackageListNoFree
+alpm_trans_get_add()
+
+PackageListNoFree
+alpm_trans_get_remove()
+
 # PUBLIC METHODS ############################################################
 
 MODULE=ALPM    PACKAGE=ALPM::Transaction

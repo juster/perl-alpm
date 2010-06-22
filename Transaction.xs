@@ -82,7 +82,7 @@ remove ( self, target )
     RETVAL
 
 negative_is_error
-upgrade_from_db ( self, db, target )
+sync_from_db ( self, db, target )
     SV   * self
     char * target
     char * db

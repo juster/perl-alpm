@@ -2,6 +2,7 @@ package App::PerlPacman::Modifier;
 
 use warnings;
 use strict;
+use English qw(-no_match_vars);
 
 use App::PerlPacman;
 our @ISA = qw( App::PerlPacman );
@@ -70,18 +71,68 @@ sub transaction
 # This is so common, we place it here in the superclass...
 # We run a transaction, calling the given method on the transaction object
 # for each argument we are passed on the command-line...
-sub run_transaction
+sub run
 {
-    my ($self, $method_name) = @_;
+    my ($self) = @_;
 
+    $self->_check_root;
+
+    my @pkgnames = @{ $self->{ 'extra_args' } }
+        or $self->fatal( 'no targets specified (use -h for help)' );
+
+    my $method_name = $self->{'trans_method'}
+        or die qq{INTERNAL ERROR: 'trans_method' is unset};
     my $trans = $self->transaction();
-    my $method = $ALPM::Transaction::{ $method_name }{CODE};
+    my $method = $ALPM::Transaction::{ $method_name }
+        or die qq{INTERNAL ERROR: invalid method name: $method_name};
 
-    for my $pkgname ( $self->{'extra_args'} ) {
+    for my $pkgname ( @pkgnames ) {
         $method->( $trans, $pkgname );
+    }
+
+    eval { $trans->commit };
+    if ( $EVAL_ERROR ) {
+        my $err = $trans->{'error'} or die;
+        $self->_print_trans_err( $err );
     }
 
     return 0;
 }
+
+sub _check_root
+{
+    my ($self) = @_;
+
+    return if $EFFECTIVE_USER_ID == 0;
+    $self->fatal( 'you cannot perform this operation unless you are root.' );
+}
+
+sub _print_depmissing_err
+{
+    my ($err) = @_;
+
+    printf STDERR ":: %s: requires %s\n", $err->{'target'}, $err->{'cause'};
+    return;
+}
+
+sub _print_trans_err
+{
+    my ($self, $error) = @_;
+
+    $self->error( "failed to prepare transaction ($error->{msg})" );
+
+    my $printer_name = "_print_$error->{type}_err";
+    my $printer_ref  = $App::PerlPacman::Modifier::{ $printer_name }
+        or die 'INTERNAL ERROR: no error printer available for '
+            . $error->{'type'};
+
+    for my $err ( @{ $error->{'list'} } ) {
+        $printer_ref->( $err );
+    }
+
+    return;
+}
+
+
 
 1;

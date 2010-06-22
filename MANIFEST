@@ -32,6 +32,7 @@ bin/ppacman
 lib/App/PerlPacman.pm
 lib/App/PerlPacman/Query.pm
 lib/App/PerlPacman/Modifier.pm
+lib/App/PerlPacman/Remove.pm
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm

@@ -50,9 +50,10 @@ ALPM::Transaction - An object wrapper for transaction functions.
                              conv  => sub { ... },
                              progress => sub { ... },
                             );
-  $t->upgrade( qw/ perl perl-alpm / );
+  $t->sync( $_ ) for qw/ perl perl-alpm /;
   eval { $t->commit };
   if ( $EVAL_ERROR ) {
+      die unless $t->{error}; # re-throw an unknown error
       given ( $t->{error}{type} ) {
           when ( 'fileconflict' ) {
               for my $path ( @{ $t->{error}{list} } ) {
@@ -73,26 +74,222 @@ collected, the transaction is released.
 
 =head1 METHODS
 
-=head2 add
+=head2 sync
 
-  Usage   : $trans->add( 'perl', 'perl-alpm', 'etc' );
-  Purpose : Add package names to be affected by transaction.
-  Params  : A list of package names to be added (or just one).
-  Comment : You cannot add packages to a prepared transaction.
-  Returns : 1
+C<< $TRUE = $TRANS->sync( $PKGNAME ); >>
+
+Sync adds a package to synchronize via the database repos.  The
+package from the database repository is downloaded and installed.
+
+=head3 Parameters
+
+=over
+
+=item C<$PKGNAME>
+
+The name of a package.
+
+=back
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
+
+=head2 pkgfile
+
+C<< $TRUE = $TRANS->pkgfile( $PKGPATH ); >>
+
+Adds a package file to be installed by the transaction.
+
+=head3 Parameters
+
+=over
+
+=item C<$PKGPATH>
+
+The path to the package file to install.
+
+=back
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
+
+=head2 remove
+
+C<< $TRUE = $TRANS->remove( $PKGNAME ); >>
+
+Adds a package to be removed/uninstalled by the transaction.
+
+=head3 Parameters
+
+=over
+
+=item C<$PKGNAME>
+
+The name of a package.
+
+=back
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
+
+=head2 sync_from_db
+
+C<< $TRUE = $TRANS->sync_from_db( $DBNAME, $PKGNAME ); >>
+
+Sync a package from the specified database.
+
+=head3 Parameters
+
+=over
+
+=item C<$DBNAME>
+
+The name of the database.
+
+=item C<$PKGNAME>
+
+The name of a package.
+
+=back
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
+
+=head2 sysupgrade
+
+C<< $TRUE = $TRANS->sysupgrade( [$ENABLE_DOWNGRADE] ); >>
+
+Prepares a transaction for the actions it needs to perform
+a system upgrade.  A system upgrade will sync all the packages
+that are outdated in the local database.
+
+=head3 Parameters
+
+=over
+
+=item C<$ENABLE_DOWNGRADE>
+
+Whether to allow downgrading of packages.  If the version installed is
+greated than the version on the remote database, than the local
+version installed will still be replaced.
+
+Supply any argument in order to enable downgrading.  The value of the
+argument is not checked.  Do not supply an argument if you do
+not wish to enable downgrading.
+
+=back
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
+
+=head2 get_flags
+
+C<< $FLAGSTR|@FLAGLIST = $TRANS->get_flags(); >>
+
+Returns a list or string representing the flags specified when
+creating the transaction with L<ALPM/transaction>.
+
+=head3 Parameters
+
+I<None>
+
+=head3 Returns
+
+=over
+
+=item C<$FLAGSTR>
+
+A string similar to the one used when creating the transaction.  The
+flags may be in a different order than originally passed to the
+L<ALPM/transaction> method.  This string is returned in
+scalar context.
+
+=item C<@FLAGLIST>
+
+A list of strings with each representing a flag.  This list is
+returned when in list context.
+
+=back
 
 =head2 prepare
 
-  Usage   : $trans->prepare;
-  Purpose : Prepares a transaction for committing.
-  Comment : commit() does this automatically if needed.
-  Returns : 1
+C<< $TRUE = $TRANS->prepare() >>
+
+Prepares a transaction.  The transaction will be checked for problems
+and could even throw an error.
+
+L</commit> checks if a transaction is prepared.  If not
+it calls this C<prepare> method automatically.
+
+=head3 Parameters
+
+I<None>
+
+=head3 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
 
 =head2 commit
 
-  Usage   : $trans->commit;
-  Purpose : Commits the transaction.
-  Returns : 1
+C<< $TRUE = $TRANS->commit(); >>
+
+Commits the transaction.  Actually performs the actions loaded into
+the transaction.
+
+=head2 Parameters
+
+I<None>
+
+=head2 Returns
+
+=over
+
+=item C<$TRUE>
+
+The literal: 1
+
+=back
 
 =head1 RELEASING A TRANSACTION
 
@@ -102,7 +299,7 @@ For example:
 
   sub foo
   {
-      my $t = ALPM->transaction( type => 'sync' );
+      my $t = ALPM->transaction();
       ... do stuffs ...
   }
 
@@ -113,8 +310,8 @@ In this way, with good coding practices, you should not need to
 release a transaction because it will go out of scope.  But in order to
 explicitly release a transaction undefine it.  For example:
 
-  my $t = ALPM->transaction( type => 'sync' );
-  $t->add('perl');
+  my $t = ALPM->transaction();
+  $t->sync('perl');
   $t->commit;
   undef $t;
 
@@ -126,6 +323,28 @@ explicitly release a transaction undefine it.  For example:
 So be careful you don't keep extra copies of a transaction stored
 around or else it will not be released.  If you need extra copies
 try using C<weaken> in L<Scalar::Util>.
+
+=head2 DOUBLE TRANSACTION PROBLEM
+
+A problem can occur if you are trying to replace a transaction
+stored in a scalar with a new transaction:
+
+  my $t = ALPM->transaction();
+  $t->sync( 'perl' );
+  $t->commit();
+  $t = ALPM->transaction();  # THIS WILL FAIL!
+
+The problem is the C<$t> is not I<undefined> and released until after
+the C<ALPM->transaction()> call is finished.  Unfortunately the method
+cannot work because the previous transaction in C<$t> is not released
+yet!  Catch 22!  You will have to explicitly C<undef> the transaction
+in this case:
+
+  my $t = ALPM->transaction();
+  $t->sync( 'perl' );
+  $t->commit;
+  undef $t; # force release!
+  $t = ALPM->transaction();
 
 =head1 EVENT CALLBACKS
 
@@ -251,8 +470,6 @@ Arguments are simply additional keys in the hash ref.
   | corrupted_file   | Should the corrupted package file be deleted?     |
   | - filename       | The name of the corrupted package file.           |
   |------------------+---------------------------------------------------|
-
-=back
 
 =head1 PROGRESS CALLBACKS
 

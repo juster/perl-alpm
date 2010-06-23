@@ -18,7 +18,7 @@ sub new
             'progress_cb' => undef,
             'opts'        => \%opts,
             'extra_args'  => $extra_args,
-            'config'      => {} }, $class;
+            'cfg'      => {} }, $class;
 }
 
 #---CLASS METHOD---

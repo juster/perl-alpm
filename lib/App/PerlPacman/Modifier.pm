@@ -159,7 +159,7 @@ sub _display_packages
 {
     my ($self, $prefix, @pkgs) = @_;
 
-    my $makedesc = ( $self->{cfg}{showsize}
+    my $makedesc = ( $self->{'cfg'}{'showsize'}
                      ? sub {
                          sprintf '%s-%s [%.2f MB]',
                              ( $_->name, $_->version,

@@ -48,4 +48,14 @@ options:
 END_HELP
 }
 
+sub trans_confirm
+{
+    my ($self, $trans) = @_;
+
+    $self->display_removals( $trans );
+    
+    return 0 if $self->prompt_yn( "Do you want to remove these packages?" );
+    return 1;
+}
+
 1;

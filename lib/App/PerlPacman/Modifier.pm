@@ -96,6 +96,9 @@ sub run
             $self->_print_targets;
             return 0;
         }
+
+        return 1 unless $self->trans_confirm( $trans );
+
         $trans->commit;
     };
     if ( $EVAL_ERROR ) {

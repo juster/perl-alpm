@@ -154,6 +154,83 @@ sub prompt_yn
     return 1;
 }
 
+sub _display_packages
+{
+    my ($self, $prefix, @pkgs) = @_;
+
+    my $makedesc = ( $self->{cfg}{showsize}
+                     ? sub {
+                         sprintf '%s-%s [%.2f MB]'
+                             ( $_->name, $_->version,
+                               $_->size / ( 1024 * 1024 ) );
+                     }
+                     : sub {
+                         sprintf '%s-%s', ( $_->name, $_->version );
+                     } );
+
+    $prefix .= q{ };
+    my $LINE_MAX = 78 - length $prefix;
+
+    my (@lines, $line);
+
+    for my $desc ( map { $makedesc->() } @pkgs ) {
+        if ( length $line + length $desc + 2 > $LINE_MAX ) {
+            push @lines, $line;
+            $line = $desc;
+            next;
+        }
+
+        $line .= q{  } . $desc;
+    }
+    push @lines, $line;
+
+    my $indent = q{ } x ( length $prefix ) + 1;
+    my $output = join "\n", ( $prefix . ( shift @lines ),
+                              map { $indent . $_ } @lines );
+    return $output . "\n";
+}
+
+sub display_removals
+{
+    my ($self, $trans) = @_;
+
+    my @removals = $trans->get_removals();
+    my $title = sprintf 'Remove (%d):', scalar @removals;
+    $self->display_package( $title, @removals );
+
+    my $isize;
+    for my $pkg ( @removals ) {
+        $isize  += $pkg->isize;
+    }
+
+    printf "\nTotal Removed Size:   %.2f MB\n", isize / ( 1024 * 1024 );
+
+    return;
+}
+
+sub display_additions
+{
+    my ($self, $trans) = @_;
+
+    my @additions = $trans->get_additions();
+    my $title = sprintf 'Targets (%d):', scalar @additions;
+    $self->display_package( $title, @additions );
+
+    my ($dlsize, $isize);
+    for my $pkg ( @removals ) {
+        $dlsize += $pkg->download_size;
+        $isize  += $pkg->isize;
+    }
+
+    printf "\nTotal Download Size:    %.2f MB\n",
+        $dlsize / ( 1024 * 1024 );
+
+    unless ( $self->{'opts'}{'dlonly'} ) {
+        printf "Total Installed Size:   %.2f MB\n",
+            $dlsize / ( 1024 * 1024 );
+    }
+}
+
 sub _check_root
 {
     my ($self) = @_;

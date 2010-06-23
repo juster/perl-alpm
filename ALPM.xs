@@ -127,7 +127,7 @@ name ( db )
     RETVAL
 
 negative_is_error
-set_server ( db, url )
+add_url ( db, url )
     ALPM_DB db
     const char * url
   CODE:

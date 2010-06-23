@@ -275,7 +275,7 @@ sub register_db
 
     # Set the server right away because function calls break in between...
     my $new_db = _db_register_sync($sync_name);
-    $new_db->set_server($sync_url);
+    $new_db->add_url($sync_url);
     return $new_db;
 }
 

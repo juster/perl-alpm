@@ -92,9 +92,9 @@ This is an alias for the C<get_pkg_cache> method.
 
   Usage   : my $pkgs_ref = $db->pkgs_ref;
 
-=head1 set_server
+=head1 add_url
 
-  Usage    : $db->set_server( 'ftp://ftp.archlinux.org/extra/os/i686' );
+  Usage    : $db->add_url( 'ftp://ftp.archlinux.org/extra/os/i686' );
   Purpose  : This adds a mirror for the repository.
   Params   : The URL for the root of the remote repository.
 

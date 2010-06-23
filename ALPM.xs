@@ -28,6 +28,18 @@ DESTROY ( self )
 #----------------------------------------------------------------------------
 
 # PUBLIC ####################################################################
+
+MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
+
+const char *
+alpm_version ( class )
+    SV * class
+  CODE:
+    RETVAL = alpm_version( );
+  OUTPUT:
+    RETVAL
+
+# PRIVATE ###################################################################
  
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 

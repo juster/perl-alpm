@@ -161,7 +161,7 @@ sub _display_packages
 
     my $makedesc = ( $self->{cfg}{showsize}
                      ? sub {
-                         sprintf '%s-%s [%.2f MB]'
+                         sprintf '%s-%s [%.2f MB]',
                              ( $_->name, $_->version,
                                $_->size / ( 1024 * 1024 ) );
                      }
@@ -197,14 +197,14 @@ sub display_removals
 
     my @removals = $trans->get_removals();
     my $title = sprintf 'Remove (%d):', scalar @removals;
-    $self->display_package( $title, @removals );
+    $self->_display_packages( $title, @removals );
 
     my $isize;
     for my $pkg ( @removals ) {
         $isize  += $pkg->isize;
     }
 
-    printf "\nTotal Removed Size:   %.2f MB\n", isize / ( 1024 * 1024 );
+    printf "\nTotal Removed Size:   %.2f MB\n", $isize / ( 1024 * 1024 );
 
     return;
 }
@@ -215,10 +215,10 @@ sub display_additions
 
     my @additions = $trans->get_additions();
     my $title = sprintf 'Targets (%d):', scalar @additions;
-    $self->display_package( $title, @additions );
+    $self->_display_packages( $title, @additions );
 
     my ($dlsize, $isize);
-    for my $pkg ( @removals ) {
+    for my $pkg ( @additions ) {
         $dlsize += $pkg->download_size;
         $isize  += $pkg->isize;
     }

@@ -120,8 +120,7 @@ sub prompt_ask
     $question .= q{ };
 
     local $OUTPUT_AUTOFLUSH = 1;
-    my $prefix = q{ } x 4;
-    print wrap( $prefix, $prefix, $question );
+    print $question;
 
     my $line = <STDIN>;
     chomp $line;
@@ -143,12 +142,11 @@ sub prompt_yn
     $default = ( $first eq 'y' ? 1 : $first eq 'n' ? 0 : 1 );
 
     chomp $question;
-    $question .= q{ } . ( $default ? '[Yn]' : '[yN]' );
+    $question .= q{ } . ( $default ? '[Y/n]' : '[y/N]' );
 
     my $answer;
     QUESTION: {
-        $answer = prompt_ask( $question );
-
+        $answer = $self->prompt_ask( $question );
         return $default if ( length $answer == 0 );
         redo QUESTION unless $answer =~ /\A[yYnN]/;
     }

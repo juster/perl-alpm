@@ -240,6 +240,11 @@ Class methods help remind you of this.  The class method notation also
 helps to differentiate between globally affecting ALPM functions and
 package or database-specific functions.
 
+=head2 version
+
+  Usage   : print ALPM->version(), "\n";
+  Returns : The version of libalpm being used, a string.
+
 =head2 set_options
 
   Params  : Pass set_options a hash or hashref to set many options at

@@ -314,6 +314,7 @@ void cb_trans_event_wrapper ( pmtransevt_t event,
     case PM_TRANS_EVT_RETRIEVE_START:
         EVT_NAME("retrieve")
         EVT_STATUS("start")
+        EVT_TEXT("db", arg_one)
         break;        
     }
 

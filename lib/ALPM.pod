@@ -1,10 +1,12 @@
 =head1 NAME
 
-ALPM - ArchLinux's Package Manager backend library.
+ALPM - ArchLinux Package Manager backend library.
 
 =head1 VERSION
 
-0.09 -- compatible with pacman 3.3's alpm
+1.00
+
+This version of ALPM is compatible with pacman 3.4.
 
 =head1 SYNOPSIS
 

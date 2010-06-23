@@ -467,6 +467,13 @@ This always has 'status' set to the empty string.  There is also a
 This always has 'status' set to the empty string.  There is also a
 'name' key with the URI I guess?
 
+=item B<retrieve>
+
+This always has 'status' set to 'start'.  There is also a 'db'
+key which has the name (ex: "extra") of the database where the
+package is being retrieved from.
+
+
 =back
 
 =head1 CONVERSATION CALLBACKS

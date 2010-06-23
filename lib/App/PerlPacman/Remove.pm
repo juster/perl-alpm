@@ -4,11 +4,6 @@ use App::PerlPacman::Modifier;
 use warnings;
 use strict;
 
-use File::Spec qw();
-use Text::Wrap qw();
-use POSIX      qw();
-use ALPM;
-
 our @ISA = qw( App::PerlPacman::Modifier );
 
 sub new

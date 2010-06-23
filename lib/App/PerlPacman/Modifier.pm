@@ -62,10 +62,91 @@ sub transaction
     my ($self) = @_;
 
     my $flags = $self->_convert_trans_opts();
-    my $trans = ALPM->transaction( 'flags' => $flags );
+    my $trans = ALPM->transaction( 'flags' => $flags,
+                                   'event' => $self->_trans_event_callback(),
+                                  );
     # TODO: create the proper callbacks to match pacman's output...
 
     return $trans;
+}
+
+my %_EVENT_CALLBACKS =
+    ( 'checkdeps'      => { 'start' => sub {
+                                print "checking dependencies...\n";
+                            } },
+      'fileconflicts'  => { 'start' => sub {
+                                print "checking for file conflicts...\n";
+                            } },
+      'resolvedeps'    => { 'start' => sub {
+                                print "resolving dependencies...\n";
+                            } },
+      'interconflicts' => { 'start' => sub {
+                                print "looking for inter-conflicts...\n";
+                            } },
+      # TODO: implement logging and do log stuff for when 'add' is done
+      # 'add'            => { 'done'  => sub {
+      #                           my $pkg = shift;
+      #                       } },
+      # TODO: same here
+      # 'remove'         => { 'done'  => sub { }, },
+      # 'upgrade'        => { 'done'  => sub { }, },
+      'integrity'      => { 'start' => sub {
+                                print "checking package integrity...\n";
+                            } },
+      'deltaintegrity' => { 'start' => sub {
+                                print "checking delta integrity...\n";
+                            } },
+      'deltapatches'   => { 'start' => sub {
+                                print "applying patches...\n";
+                            } },
+      'deltapatch'     => { 'start' => sub {
+                                print "generating $_[0]{pkgname} with "
+                                    . "$_[0]{patches}... ";
+                            },
+                            'done'  => sub {
+                                print "success!\n";
+                            },
+                            'failed' => sub {
+                                print "failed: $_[0]{error}\n";
+                            },
+                           },
+      'scriptlet'      => sub { print $_[0]{'text'}; },
+      'retrieve'       => { 'start' => sub {
+                                print ":: Retrieving patches from "
+                                    ."$_[0]{db}...\n";
+                            } },
+     );
+
+sub _trans_event_callback
+{
+    my ($self) = @_;
+
+    my %callbacks = %_EVENT_CALLBACKS;
+
+    if ( $self->{'cfg'}{'noprogressbar'} ) {
+        $callbacks{'add'}{'start'} = sub {
+            print "installing %s...\n", $_[0]{'package'}->name;
+        };
+        $callbacks{'remove'}{'start'} = sub {
+            print "removing %s...\n", $_[0]{'package'}->name;
+        };
+        $callbacks{'upgrade'}{'start'} = sub {
+            print "upgrading  %s...\n", $_[0]{'package'}->name;
+        };
+    }
+
+    return sub {
+        my $event    = shift;
+        my $callback = $callbacks{ $event->{'name'} }
+            or return;
+
+        if ( ref $callback eq 'HASH' ) {
+            $callback = $callback->{ $event->{'status'} }
+                or return;
+        }
+
+        $callback->( $event );
+    };
 }
 
 # This is so common, we place it here in the superclass...

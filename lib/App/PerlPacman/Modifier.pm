@@ -172,23 +172,34 @@ sub _display_packages
     $prefix .= q{ };
     my $LINE_MAX = 78 - length $prefix;
 
-    my (@lines, $line);
+    my $descs    = [];
+    my @lines    = $descs;
+    my $desclens = 0;
 
+    DESC_LOOP:
     for my $desc ( map { $makedesc->() } @pkgs ) {
-        if ( length $line + length $desc + 2 > $LINE_MAX ) {
-            push @lines, $line;
-            $line = $desc;
-            next;
+        my $newlen = ( length $desc ) + $desclens;
+        my $spaceslen = @$descs > 1 ? ( @$descs-1 ) * 2 : 0;
+
+        # If we have room to add another description to the line...
+        if ( $newlen + $spaceslen <= $LINE_MAX ) {
+            $desclens = $newlen;
+            push @$descs, $desc;
+            next DESC_LOOP;
         }
-
-        $line .= q{  } . $desc;
+        
+        # Otherwise we ran out of room, create a new line...
+        push @lines, ( $descs = [ $desc ] );
+        $desclens = length $desc;
     }
-    push @lines, $line;
 
-    my $indent = q{ } x ( length $prefix ) + 1;
-    my $output = join "\n", ( $prefix . ( shift @lines ),
-                              map { $indent . $_ } @lines );
-    return $output . "\n";
+    # Convert arrayrefs of descriptions into lines, spaces inbetween...
+    @lines = map { join q{  }, @{$_} } @lines;
+
+    my $indent = q{ } x ( length $prefix );
+    print map { $_, "\n" } ( $prefix . ( shift @lines ),
+                             map { $indent . $_ } @lines );
+    return;
 }
 
 sub display_removals

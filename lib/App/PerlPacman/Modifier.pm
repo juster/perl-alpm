@@ -235,6 +235,9 @@ sub _check_root
 {
     my ($self) = @_;
 
+    # We don't need root privileges if we are only going to print...
+    return if $self->{'opts'}{'print'};
+
     return if $EFFECTIVE_USER_ID == 0;
     $self->fatal( 'you cannot perform this operation unless you are root.' );
 }

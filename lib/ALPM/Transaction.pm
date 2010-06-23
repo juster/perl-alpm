@@ -574,39 +574,39 @@ Transaction Error:> prefix.  The array ref in I<list> is different
 depending on each type.  Each I<type> and its associated I<msg> and
 I<list> are described in the following table.
 
-  |-----------------+---------------------------------------------------|
-  | Type            | Description                                       |
-  |-----------------+---------------------------------------------------|
-  | fileconflict    | Two packages each have a file with the same path. |
-  | - msg           | 'conflicting files'                               |
-  | - list          | An arrayref of hashes representing the conflict:  |
-  | -- target       | The package which caused the conflict.            |
-  | -- type         | 'filesystem' or 'target'                          |
-  | -- file         | The path of the conflicting file.                 |
-  | -- ctarget      | Empty string ('') ?                               |
-  |-----------------+---------------------------------------------------|
-  | depmissing      | A dependency could not be satisfied (missing?).   |
-  | - msg           | 'could not satisfy dependencies'                  |
-  | - list          | An arrayref of hashes represending the dep:       |
-  | -- target       | The depended on package name.                     |
-  | -- cause        | The package name of who depends on target.        |
-  | -- depend       | A hashref, same as dependencies of packages.      |
-  |-----------------+---------------------------------------------------|
-  | depconflict     | A package which explicitly conflicts with another |
-  |                 | (in the PKGBUILD) cannot be installed.            |
-  | - msg           | 'conflicting dependencies'                        |
-  | - list          | An arrayref of hashrefs showing the conflict:     |
-  | -- reason       | A reason message.                                 |
-  | -- packages     | An arrayref of two packages who conflict.         |
-  |-----------------+---------------------------------------------------|
-  | invalid_delta   | (UNTESTED) A delta is corrupted?                  |
-  | - msg           | ?                                                 |
-  | - list          | An arrayref of corrupted delta names.             |
-  |-----------------+---------------------------------------------------|
-  | invalid_package | A package is corrupted (or invalid?).             |
-  | - msg           | 'invalid or corrupted package'                    |
-  | - list          | An arrayref of package filenames.                 |
-  |-----------------+---------------------------------------------------|
+  |-----------------+--------------------------------------------------|
+  | Type            | Description                                      |
+  |-----------------+--------------------------------------------------|
+  | fileconflict    | Two packages share a file with the same path.    |
+  | - msg           | 'conflicting files'                              |
+  | - list          | An arrayref of hashes representing the conflict: |
+  | -- target       | The package which caused the conflict.           |
+  | -- type         | 'filesystem' or 'target'                         |
+  | -- file         | The path of the conflicting file.                |
+  | -- ctarget      | Empty string ('') ?                              |
+  |-----------------+--------------------------------------------------|
+  | depmissing      | A dependency could not be satisfied (missing?).  |
+  | - msg           | 'could not satisfy dependencies'                 |
+  | - list          | An arrayref of hashes represending the dep:      |
+  | -- target       | The depended on package name.                    |
+  | -- cause        | The package name of who depends on target.       |
+  | -- depend       | A hashref, same as dependencies of packages.     |
+  |-----------------+--------------------------------------------------|
+  | depconflict     | A package which explicitly conflicts with        |
+  |                 | another (in the PKGBUILD) cannot be installed.   |
+  | - msg           | 'conflicting dependencies'                       |
+  | - list          | An arrayref of hashrefs showing the conflict:    |
+  | -- reason       | A reason message.                                |
+  | -- packages     | An arrayref of two packages who conflict.        |
+  |-----------------+--------------------------------------------------|
+  | invalid_delta   | (UNTESTED) A delta is corrupted?                 |
+  | - msg           | ?                                                |
+  | - list          | An arrayref of corrupted delta names.            |
+  |-----------------+--------------------------------------------------|
+  | invalid_package | A package is corrupted (or invalid?).            |
+  | - msg           | 'invalid or corrupted package'                   |
+  | - list          | An arrayref of package filenames.                |
+  |-----------------+--------------------------------------------------|
 
 =head1 SEE ALSO
 

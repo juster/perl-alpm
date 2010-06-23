@@ -9,18 +9,19 @@ ALPM::DB - ALPM database class.
   my $localdb = ALPM->localdb;
   my $name    = $localdb->name;
   my $perl    = $localdb->find('perl');
-
+  
   my $url       = 'ftp://ftp.archlinux.org/community/os/i686';
   my $syncdb    = ALPM->register_db( 'community' => $url );
-
+  $syncdb->set_server( $url );
+  
   for my $pkg ( $syncdb->search( 'perl' ) ) {
       printf "%s %s\n", $pkg->name, $pkg->version;
   }
-
+  
   for my $pkg ( $syncdb->find_group('xfce4')->packages ) {
       print join( q{ }, $pkg->attribs('name', 'version') ), "\n";
   }
-
+  
   my @cache = $syncdb->pkgs;
 
 =head1 METHODS
@@ -37,6 +38,7 @@ ALPM::DB - ALPM database class.
   Returns : The url of the repository, the same one the DB
             was initialized with or the empty string if this
             is a 'local' database.
+  Note    : This only returns one of the URL's of the repository.
 
 =head2 find
 
@@ -90,6 +92,12 @@ This is an alias for the C<get_pkg_cache> method.
 
   Usage   : my $pkgs_ref = $db->pkgs_ref;
 
+=head1 set_server
+
+  Usage    : $db->set_server( 'ftp://ftp.archlinux.org/extra/os/i686' );
+  Purpose  : This adds a mirror for the repository.
+  Params   : The URL for the root of the remote repository.
+
 =head2 set_pkg_reason
 
   Usage    : $db->set_pkg_reason( 'perl', 'explicit' );
@@ -121,7 +129,7 @@ Justin Davis, C<< <juster at cpan dot org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 by Justin Davis
+Copyright (C) 2010 by Justin Davis
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,

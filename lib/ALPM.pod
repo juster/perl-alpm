@@ -53,27 +53,17 @@ This version of ALPM is compatible with pacman 3.4.
 
   # Transactions
   my $trans = ALPM->action( type => 'sync' );
-  $trans->add( 'perl', 'perl-alpm', 'pacman' );
-  #$trans->prepare; # unnecessary, commit calls prepare if needed
+  $trans->sync( 'perl', 'perl-alpm', 'pacman' );
+  $trans->prepare;
   $trans->commit;
-  undef $trans;     # to force releasing, now!
+  undef $trans; # this forces releasing the transaction
 
 =head1 DESCRIPTION
-
-This version of ALPM works with the libalpm included with version 3.30
-of pacman.
 
 Archlinux uses a package manager called pacman.  Pacman internally
 uses the alpm library for handling its database of packages.  This
 module is an attempt at creating a perlish object-oriented interface
 to the libalpm C library.
-
-=head1 EXPORT
-
-None.
-
-Because all alpm functions have been converted to class methods,
-classes, and object methods, nothing is exported.
 
 =head1 IMPORT OPTIONS
 
@@ -83,11 +73,20 @@ global for everyone who is using the module.  You can specify either:
 
 =over
 
-=item 1. The path to a pacman.conf configuration file.  Example:
+=item 1. The path to a pacman.conf configuration file.
+
+Example:
 
   use ALPM qw( /etc/pacman.conf );
 
-=item 2. A hash of options to use for ALPM.  Example:
+This is particularly useful on the command-line:
+
+  perl -MALPM=/etc/pacman.conf -e '
+  print qq{%s\n}, $_->name for ALPM->localdb->pkgs'
+
+=item 2. A hash of options to use for ALPM.
+
+Example:
 
   use ALPM qw( root        => '/',
                dbpath      => '/var/lib/pacman/',
@@ -96,7 +95,7 @@ global for everyone who is using the module.  You can specify either:
 
 =back
 
-It is important to set options as soon as possible.
+It is important to set options as soon as possible.  Or stuff breaks.
 
 =head1 ALPM OPTIONS
 
@@ -343,8 +342,7 @@ See also L<ALPM::LoadConfig> for more advanced needs.
 
 =head2 transaction
 
-  Usage   : my $t = ALPM->action( type     => 'sync',
-                                  flags    => 'nodeps force',
+  Usage   : my $t = ALPM->action( flags    => 'nodeps force',
                                   event    => sub { ... },
                                   conv     => sub { ... },
                                   progress => sub { ... } );
@@ -362,22 +360,6 @@ See also L<ALPM::Transaction>.
 Transactions have many named parameters, passed as a hash.
 
 =over 4
-
-=item type - A string, valid types are:
-
-=over 4
-
-=item * upgrade
-
-=item * remove
-
-=item * removeupgrade
-
-=item * sync
-
-=item * sysupgrade
-
-=back
 
 =item flags - A string of flags, each separated by whitespace.
 

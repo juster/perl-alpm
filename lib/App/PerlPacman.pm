@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Getopt::Long qw(GetOptionsFromArray);
+use Fcntl        qw(SEEK_END);
 use ALPM;
 use ALPM::LoadConfig;
 
@@ -54,6 +55,35 @@ sub _converse_callback
 sub _progress_callback
 {
 
+}
+
+sub _loghandle
+{
+    my ($self) = @_;
+
+    my $fh = $self->{'logfh'};
+    return $fh if $fh;
+
+    my $logpath = ALPM->get_opt( 'logfile' )
+        or die "INTERNAL ERROR: logfile option is not set";
+    open $fh, '>>', $logpath
+        or die "INTERNAL ERROR: failed to open logfile ($logpath): $!";
+    seek $fh, 0, SEEK_END;
+
+    my $stdout = select $fh;
+    $| = 1;
+    select $stdout;
+
+    return $self->{'logfh'} = $fh;
+}
+
+sub logaction
+{
+    my ($self, $fmt, @args) = @_;
+    
+    my $logh = $self->_loghandle;
+    printf $logh $fmt, @args;
+    return;
 }
 
 #---PRIVATE METHOD---

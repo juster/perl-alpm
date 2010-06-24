@@ -525,8 +525,9 @@ Arguments are simply additional keys in the hash ref.
   | - db             | The name of the database's repository.         |
   |------------------+------------------------------------------------|
   | package_conflict | Should the conflicting package be removed?     |
-  | - package        | The name of the package being conflicted.      |
-  | - removable      | The name of the removable package.             |
+  | - target         | The name of the package being conflicted.      |
+  | - local          | The name of the removable local package.       |
+  | - conflict       | The type/name of the conflict.                 |
   |------------------+------------------------------------------------|
   | corrupted_file   | Should the corrupted package file be deleted?  |
   | - filename       | The name of the corrupted package file.        |

@@ -382,8 +382,9 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
         break;
     case PM_TRANS_CONV_CONFLICT_PKG:
         EVT_NAME( "package_conflict" );
-        EVT_TEXT( "package", arg_one );
-        EVT_TEXT( "removable", arg_two );
+        EVT_TEXT( "target",   arg_one );
+        EVT_TEXT( "local",    arg_two );
+        EVT_TEXT( "conflict", arg_three );
         break;
     case PM_TRANS_CONV_CORRUPTED_PKG:
         EVT_NAME( "corrupted_file" );

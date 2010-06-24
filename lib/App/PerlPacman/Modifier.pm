@@ -333,6 +333,19 @@ sub display_additions
     }
 }
 
+sub display_optdepends
+{
+    my ($self, $pkg) = @_;
+
+    my $optdepends = $pkg->optdepends;
+    return unless @$optdepends;
+
+    printf "Optional dependencies for %s\n", $pkg->name;
+    print Text::Wrap::wrap( (q{ } x 4) x 2, @$optdepends );
+
+    return;
+}
+
 sub _check_root
 {
     my ($self) = @_;

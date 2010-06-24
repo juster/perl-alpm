@@ -7,6 +7,8 @@ use English qw(-no_match_vars);
 use App::PerlPacman;
 our @ISA = qw( App::PerlPacman );
 
+use Text::Wrap qw();
+
 sub new
 {
     my $class        = shift;
@@ -84,13 +86,6 @@ my %_EVENT_CALLBACKS =
       'interconflicts' => { 'start' => sub {
                                 print "looking for inter-conflicts...\n";
                             } },
-      # TODO: implement logging and do log stuff for when 'add' is done
-      # 'add'            => { 'done'  => sub {
-      #                           my $pkg = shift;
-      #                       } },
-      # TODO: same here
-      # 'remove'         => { 'done'  => sub { }, },
-      # 'upgrade'        => { 'done'  => sub { }, },
       'integrity'      => { 'start' => sub {
                                 print "checking package integrity...\n";
                             } },
@@ -118,24 +113,56 @@ my %_EVENT_CALLBACKS =
                             } },
      );
 
+sub _action_event_cb
+{
+    my ($self, $cb_ref, %params) = @_;
+    my $type_ref;
+    
+    if ( $self->{'cfg'}{'noprogressbar'} ) {
+        $type_ref->{'start'} = sub {
+            print "$params{'verb'} %s...\n", $_[0]{'package'}->name;
+        };
+    }
+    
+    $type_ref->{'done'} = $params{'done'};
+
+    $cb_ref->{ $params{'type'} } = $type_ref;
+}
+
 sub _trans_event_callback
 {
     my ($self) = @_;
 
     my %callbacks = %_EVENT_CALLBACKS;
 
-    if ( $self->{'cfg'}{'noprogressbar'} ) {
-        $callbacks{'add'}{'start'} = sub {
-            print "installing %s...\n", $_[0]{'package'}->name;
-        };
-        $callbacks{'remove'}{'start'} = sub {
-            print "removing %s...\n", $_[0]{'package'}->name;
-        };
-        $callbacks{'upgrade'}{'start'} = sub {
-            print "upgrading  %s...\n", $_[0]{'package'}->name;
-        };
-    }
-
+    my $done = sub {
+        my $pkg =  $_[0]{'package'};
+        $self->logaction( "installed %s (%s)\n",
+                          $pkg->name, $pkg->version );
+        $self->display_optdepends( $pkg );
+    };
+    $self->_action_event_cb( \%callbacks,
+                             ( 'type' => 'add',
+                               'verb' => 'installing',
+                               'done' => $done ));
+    $done = sub {
+        my $pkg = $_[0]->{'package'};
+        $self->logaction( "removed %s (%s)\n",
+                          $pkg->name, $pkg->version );
+    };
+    $self->_action_event_cb( \%callbacks,
+                             ( 'type' => 'remove',
+                               'verb' => 'removing',
+                               'done' => $done ));
+    $done = sub {
+        my ($new, $old) = @{$_[0]}{'new', 'old'};
+        $self->logaction( "upgraded %s (%s -> %s)\n",
+                          $new->name, $old->version, $new->version );
+    };
+    $self->_action_event_cb( \%callbacks,
+                             ( 'type' => 'upgrade',
+                               'verb' => 'upgrading',
+                               'done' => $done ));
     return sub {
         my $event    = shift;
         my $callback = $callbacks{ $event->{'name'} }
@@ -168,7 +195,12 @@ sub _run_protected
         or die qq{INTERNAL ERROR: invalid method name: $method_name};
 
     for my $pkgname ( @$pkgs_ref ) {
-        $method->( $trans, $pkgname );
+        eval { $method->( $trans, $pkgname ) } and next;
+
+        # Match the error message to pacman's...
+        $@ =~ s/\AALPM Error: //;
+        $@ =~ s/ at .*\n\z//;
+        $self->fatal( qq{'$pkgname': $@} );
     }
 
     eval {

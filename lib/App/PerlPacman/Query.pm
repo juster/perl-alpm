@@ -50,26 +50,23 @@ options:
 END_HELP
 }
 
-sub run
+sub _run_protected
 {
-    my ($self) = @_;
-
-    my $args_ref = $self->{'extra_args'};
-    my %opts     = %{ $self->{'opts'} };
+    my ($self, $args_ref, $opts_ref) = @_;
 
     # Check if an unrecognized option is leftover...
     my ($badopt) = grep { /\A-/ } @$args_ref;
     $self->fatal( qq{unrecognized option: '$badopt'} ) if $badopt;
 
-    return $self->_run_owns( $args_ref )  if $opts{ 'owns' };
-    return $self->_run_check( $args_ref ) if $opts{ 'check' };
+    return $self->_run_owns( $args_ref )  if $opts_ref->{ 'owns' };
+    return $self->_run_check( $args_ref ) if $opts_ref->{ 'check' };
 
     # 1. Convert arguments to package objects (or use all packages/groups)
     # 2. Filter out packages based on command-line options
     # 3. Print more info depending on command-line options
-    my ($converter, $defprinter) = $self->create_conv_print( %opts );
-    my $printer  = $self->create_printer( %opts ) || $defprinter;
-    my $filter   = $self->create_filter( %opts );
+    my ($converter, $defprinter) = $self->create_conv_print( %$opts_ref );
+    my $printer  = $self->create_printer( %$opts_ref ) || $defprinter;
+    my $filter   = $self->create_filter( %$opts_ref );
 
     for my $pkg ( grep { $filter->() } $converter->( $args_ref ) ) {
         $printer->( $pkg );

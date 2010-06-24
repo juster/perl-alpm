@@ -12,25 +12,27 @@ Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
 sub new
 {
     my $class = shift;
-    my ($extra_args, %opts) = $class->parse_options( @_ );
 
     bless { 'converse_cb' => undef,
             'progress_cb' => undef,
-            'opts'        => \%opts,
-            'extra_args'  => $extra_args,
+            'opts'        => {},
+            'extra_args'  => q{},
             'cfg'      => {} }, $class;
 }
 
 #---CLASS METHOD---
 sub parse_options
 {
-    my $class = shift;
-    my @opts = @_;
+    my $self = shift;
+    my @args = @_;
 
-    my %result;
-    GetOptionsFromArray( \@opts, \%result, $class->option_spec() );
+    my %opts;
+    GetOptionsFromArray( \@args, \%opts, $self->option_spec() );
 
-    return \@opts, %result;
+    $self->{'opts'}       = \%opts;
+    $self->{'extra_args'} = \@args;
+
+    return \@args, \%opts;
 }
 
 #---CLASS METHOD---
@@ -56,6 +58,8 @@ sub _progress_callback
 
 #---PRIVATE METHOD---
 # Stores all pacman-specific fields inside $Config package var.
+# This is used as a callback for ALPM::LoadConfig.
+#--------------------
 sub _pacman_field_handlers
 {
     my ($self) = @_;
@@ -76,60 +80,64 @@ sub _pacman_field_handlers
     return $field_handlers;
 }
 
-sub prepare_alpm
+sub _prepare_alpm
 {
-    my ($self, %opts) = @_;
+    my ($self, $opts_ref) = @_;
 
     my $loader = ALPM::LoadConfig->new
         ( custom_fields => $self->_pacman_field_handlers(),
           auto_register => 0,
          );
-    $loader->load_file( $opts{'config'} || '/etc/pacman.conf' );
+    $loader->load_file( $opts_ref->{'config'} || '/etc/pacman.conf' );
 
     tie my %alpm, 'ALPM';
     for my $opt ( qw/ logfile root dbpath / ) {
-        $alpm{ $opt } = $opts{ $opt } if $opts{ $opt };
+        $alpm{ $opt } = $opts_ref->{ $opt } if $opts_ref->{ $opt };
     }
 
-    push @{ $alpm{'cachedir'} }, $opts{'cachedir'}
-        if $opts{'cachedir'};
+    push @{ $alpm{'cachedir'} }, $opts_ref->{'cachedir'}
+        if $opts_ref->{'cachedir'};
 
     return;
 }
 
-# Subclasses override this method...
+# Override _run_protected instead of this...
+# A list of command line arguments, split by whitepsace, are arguments...
 sub run
 {
-    my ($self) = @_;
-    eval { $self->_run_protected() };
+    my $self = shift;
+    my ($args, $opts) = $self->parse_options( @_ );
+
+    my $retval = eval { $self->_run_protected( $args, $opts ) };
+    return $retval if defined $retval;
+    
     if ( $@ ) {
         print STDERR $@;
         return 1;
     }
+
     return 0;
 }
 
 # Catch errors inside this sub...
+# Sub-classes override this method.
 sub _run_protected
 {
-    my ($self) = @_;
-
-    my $extra_args = $self->{ 'extra_args' };
-    my %opts       = %{ $self->{ 'opts' } };
+    my ($self, $args, $opts) = @_;
 
     # Display error if no options were specified...
     $self->fatal( 'no operation specified (use -h for help)' )
-        unless ( %opts );
+        unless ( %$opts );
 
-    $self->prepare_alpm( %opts );
+    $self->_prepare_alpm( $opts );
 
-    my @actions = grep { $opts{ $_ } } qw/ query remove sync upgrade /;
+    my @actions = grep { $opts->{ $_ } } qw/ query remove sync upgrade /;
 
     $self->fatal( 'only one operation may be used at a time' )
         if @actions > 1;
 
     if ( @actions == 0 ) {
-        if ( $opts{ 'help' } ) {
+        if ( $opts->{ 'help' } ) {
             $self->print_help();
             return 0;
         }
@@ -141,13 +149,13 @@ sub _run_protected
     eval "require $subclass; 1;"
         or die "Internal error: failed to load $subclass...\n$@";
 
-    if ( $opts{'help'} ) {
+    if ( $opts->{'help'} ) {
         $subclass->print_help();
         return 0;
     }
 
-    my $cmdobj = $subclass->new( @{ $extra_args } );
-    return $cmdobj->run();
+    my $cmdobj = $subclass->new();
+    return $cmdobj->run( @{$args} );
 }
 
 sub error

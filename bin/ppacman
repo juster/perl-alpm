@@ -5,4 +5,4 @@ use strict;
 use App::PerlPacman;
 
 return 1 if caller;
-exit App::PerlPacman->new( @ARGV )->run();
+exit App::PerlPacman->new()->run( @ARGV );

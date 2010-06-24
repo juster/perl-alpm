@@ -12,7 +12,8 @@ sub new
     my $class        = shift;
     my $trans_method = shift;
     
-    my $self                  = $class->SUPER::new( @_ );
+    my $self = $class->SUPER::new( @_ );
+
     $self->{ 'trans_method' } = $trans_method;
     return $self;
 }
@@ -149,17 +150,16 @@ sub _trans_event_callback
     };
 }
 
-# This is so common, we place it here in the superclass...
 # We run a transaction, calling the given method on the transaction object
 # for each argument we are passed on the command-line...
-sub run
+sub _run_protected
 {
-    my ($self) = @_;
+    my ($self, $pkgs_ref, $opts_ref) = @_;
 
     $self->_check_root;
 
-    my @pkgnames = @{ $self->{ 'extra_args' } }
-        or $self->fatal( 'no targets specified (use -h for help)' );
+    $self->fatal( 'no targets specified (use -h for help)' )
+        unless @$pkgs_ref;
 
     my $method_name = $self->{'trans_method'}
         or die qq{INTERNAL ERROR: 'trans_method' is unset};
@@ -167,13 +167,13 @@ sub run
     my $method = $ALPM::Transaction::{ $method_name }
         or die qq{INTERNAL ERROR: invalid method name: $method_name};
 
-    for my $pkgname ( @pkgnames ) {
+    for my $pkgname ( @$pkgs_ref ) {
         $method->( $trans, $pkgname );
     }
 
     eval {
         $trans->prepare;
-        if ( $self->{'opts'}{'print'} ) {
+        if ( $opts_ref->{'print'} ) {
             $self->_print_targets;
             return 0;
         }
@@ -234,6 +234,15 @@ sub prompt_yn
 
     return 0 if $answer =~ /\A[nN]/;
     return 1;
+}
+
+sub log
+{
+    my ($self, $fmt, @args) = @_;
+
+    my $fh = $self->{'logfh'};
+    printf $fh $fmt, @args;
+    return;
 }
 
 sub _display_packages

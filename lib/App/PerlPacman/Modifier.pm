@@ -244,7 +244,7 @@ sub prompt_ask
 #         $default  - Whether 'yes' or 'no' is the default.
 #                     (default for $default is Yes!)
 # Returns: 1 for yes 0 for no
-sub prompt_yn
+sub prompt_yesno
 {
     my $self = shift;
     
@@ -266,6 +266,18 @@ sub prompt_yn
 
     return 0 if $answer =~ /\A[nN]/;
     return 1;
+}
+
+sub prompt_yn
+{
+    my ($self) = shift;
+    return $self->prompt_yesno( shift, 'y' );
+}
+
+sub prompt_ny
+{
+    my ($self) = shift;
+    return $self->prompt_yesno( shift, 'n' );
 }
 
 sub log

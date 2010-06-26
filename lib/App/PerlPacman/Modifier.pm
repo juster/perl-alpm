@@ -177,6 +177,36 @@ sub _trans_event_callback
     };
 }
 
+sub _trans_converse_cb
+{
+    my ($self) = @_;
+
+    my %converse_cb =
+        ( 'install_ignore' => sub {
+              my $pkg = shift->{'package'};
+              my $msg = sprintf ':: %s is in IgnorePkg/IgnoreGroup. '
+                  . ' Install anyway?', $pkg->name;
+              $self->promptyn( $msg );
+          },
+          'replace_package' => sub {
+              my ($old, $new, $db) = @{$_[0]}{'old', 'new', 'db'};
+              $self->promptyn( ":: Replace $old with $db/$new?" );
+          },
+          'package_conflict' => sub {
+              my ($target, $local, $conflict)
+                  = @{$_[0]}{'target', 'local', 'conflict'};
+              if ( ($target eq $local) || ($local eq $conflict) ) {
+                  my $msg = ":: $target and $local are in conflict. "
+                      . "Remove $local?";
+                  return $self->promptny( $msg );
+              }
+              return $self->promptny( ":: $target and $local are in conflict"
+                                      . " ($conflict). Remove $local?" );
+          },
+         );
+    
+}
+
 # We run a transaction, calling the given method on the transaction object
 # for each argument we are passed on the command-line...
 sub _run_protected

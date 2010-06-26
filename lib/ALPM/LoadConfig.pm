@@ -252,14 +252,16 @@ need to use this module directly.
 
 =head2 new
 
- $OBJ = ALPM::LoadConfig->new( custom_fields => $FIELDS_REF,
-                               auto_register => $AUTO_REGISTER );
-
-=head3 Parameters
+ $OBJ = ALPM::LoadConfig->new( [ custom_fields => \%FIELDS_REF,  ]
+                               [ auto_register => $AUTO_REGISTER ] );
 
 =over 4
 
-=item C<$FIELDS_REF> I<(Hash Reference)>
+=item B<Parameters>
+
+=over 4
+
+=item C<\%FIELDS_REF> (Hash Reference) (Optional)
 
 Keys are field names from the C</etc/pacman.conf> configuration file.
 Values are code references.  When a field is found inside the
@@ -267,13 +269,17 @@ configuration file with the I<exact same> name, then the code
 reference is called, passed the value of the entry as the only
 argument.
 
-=item C<$AUTO_REGISTER>
+=item C<$AUTO_REGISTER> (Optional)
 
-Normally, LoadConfig will automatically call C<ALPM->register_db( 'local' )>
-to register the local database after it has read the config file.  If you
-want to override certain ALPM settings immediately after reading the config
-file you will have to turn this feature off.  This is used as a boolean
-value, set it to 0 to disable automatic localdb registering.
+Normally, LoadConfig will automatically call
+C<< ALPM->register_db( 'local' ) >>
+to register the local database after it has read the config file.  If
+you want to override certain ALPM settings immediately after reading
+the config file you will have to turn this feature off.  This is used
+as a boolean value, set it to 0 to disable automatic localdb
+registering.
+
+=back
 
 =back
 
@@ -286,13 +292,17 @@ value, set it to 0 to disable automatic localdb registering.
 This method will read a configuration file, setting ALPM options as it
 goes.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 =over 4
 
 =item C<$CFG_FILE_PATH>
 
 The path to the configuration file to read.
+
+=back
 
 =back
 

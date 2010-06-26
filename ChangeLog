@@ -1,3 +1,10 @@
+2010-06-22  Justin Davis  <juster@cpan.org>
+
+	* lib/ALPM.pm (transaction): Removed type parameter from
+	transaction method.
+
+	* ALPM.xs: Renamed ALPM::DB method set_server to add_url.
+
 2010-05-29  Justin Davis  <juster@cpan.org>
 
 	* RELEASE (0.08): Uploaded to CPAN.

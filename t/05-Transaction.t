@@ -65,7 +65,6 @@ undef $t;
 
 $t = ALPM->transaction( flags => 'cascade dbonly dlonly' );
 my $flags = $t->get_flags;
-diag $flags;
 like( $flags, qr/cascade/ );
 like( $flags, qr/dbonly/  );
 like( $flags, qr/dlonly/  );

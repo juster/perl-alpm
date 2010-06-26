@@ -88,14 +88,16 @@ collected, the transaction is released.
 
 =head2 sync
 
-C<< $TRUE = $TRANS->sync( $PKGNAME ); >>
+  1 = $TRANS->sync( $PKGNAME );
 
 Sync adds a package to synchronize via the database repos.  The
 package from the database repository is downloaded and installed.
 
-=head3 Parameters
+=over 4
 
-=over
+=item B<Parameters>
+
+=over 4
 
 =item C<$PKGNAME>
 
@@ -103,25 +105,19 @@ The name of a package.
 
 =back
 
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
-
 =back
 
 =head2 pkgfile
 
-C<< $TRUE = $TRANS->pkgfile( $PKGPATH ); >>
+  1 = $TRANS->pkgfile( $PKGPATH );
 
 Adds a package file to be installed by the transaction.
 
-=head3 Parameters
+=over 4
 
-=over
+=item B<Parameters>
+
+=over 4
 
 =item C<$PKGPATH>
 
@@ -129,23 +125,17 @@ The path to the package file to install.
 
 =back
 
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
-
 =back
 
 =head2 remove
 
-C<< $TRUE = $TRANS->remove( $PKGNAME ); >>
+  1 = $TRANS->remove( $PKGNAME );
 
 Adds a package to be removed/uninstalled by the transaction.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 =over
 
@@ -155,25 +145,19 @@ The name of a package.
 
 =back
 
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
-
 =back
 
 =head2 sync_from_db
 
-C<< $TRUE = $TRANS->sync_from_db( $DBNAME, $PKGNAME ); >>
+  1 = $TRANS->sync_from_db( $DBNAME, $PKGNAME );
 
 Sync a package from the specified database.
 
-=head3 Parameters
+=over 4
 
-=over
+=item Parameters
+
+=over 4
 
 =item C<$DBNAME>
 
@@ -185,27 +169,21 @@ The name of a package.
 
 =back
 
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
-
 =back
 
 =head2 sysupgrade
 
-C<< $TRUE = $TRANS->sysupgrade( [$ENABLE_DOWNGRADE] ); >>
+  1 = $TRANS->sysupgrade( [$ENABLE_DOWNGRADE] );
 
 Prepares a transaction for the actions it needs to perform
 a system upgrade.  A system upgrade will sync all the packages
 that are outdated in the local database.
 
-=head3 Parameters
+=over 4
 
-=over
+=item B<Parameters>
+
+=over 4
 
 =item C<$ENABLE_DOWNGRADE>
 
@@ -219,30 +197,24 @@ not wish to enable downgrading.
 
 =back
 
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
-
 =back
 
 =head2 get_flags
 
-C<< $FLAGSTR|@FLAGLIST = $TRANS->get_flags(); >>
+  $FLAGSTR|@FLAGLIST = $TRANS->get_flags();
 
 Returns a list or string representing the flags specified when
 creating the transaction with L<ALPM/transaction>.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 I<None>
 
-=head3 Returns
+=item B<Returns>
 
-=over
+=over 4
 
 =item C<$FLAGSTR>
 
@@ -258,6 +230,8 @@ returned when in list context.
 
 =back
 
+=back
+
 =head2 prepare
 
 C<< $TRUE = $TRANS->prepare() >>
@@ -268,55 +242,45 @@ and could even throw an error.
 L</commit> checks if a transaction is prepared.  If not
 it calls this C<prepare> method automatically.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 I<None>
-
-=head3 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
 
 =back
 
 =head2 commit
 
-C<< $TRUE = $TRANS->commit(); >>
+  1 = $TRANS->commit();
 
 Commits the transaction.  Actually performs the actions loaded into
 the transaction.
 
-=head2 Parameters
+=over 4
+
+=item B<Parameters>
 
 I<None>
-
-=head2 Returns
-
-=over
-
-=item C<$TRUE>
-
-The literal: 1
 
 =back
 
 =head2 get_additions
 
-C<< @PKGS = $TRANS->get_additions(); >>
+  @PKGS = $TRANS->get_additions();
 
 This method will return a list of packages that are going to be
 installed by the transaction.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 I<None>
 
-=head3 Returns
+=item B<Returns>
 
-=over
+=over 4
 
 =item C<@PKGS>
 
@@ -324,24 +288,30 @@ A list of L<ALPM::Package> objects.
 
 =back
 
+=back
+
 =head2 get_removals
 
-C<< @PKGS = $TRANS->get_removals(); >>
+  @PKGS = $TRANS->get_removals();
 
 This method will return a list of packages that are going to be
 uninstalled by the transaction.
 
-=head3 Parameters
+=over 4
+
+=item B<Parameters>
 
 I<None>
 
-=head3 Returns
+=item B<Returns>
 
-=over
+=over 4
 
 =item C<@PKGS>
 
 A list of L<ALPM::Package> objects.
+
+=back
 
 =back
 
@@ -414,7 +384,7 @@ different kinds of extra arguments depends on the type of event.
 All events can have one of the two statuses, 'start' or 'done' unless
 noted.
 
-=over
+=over 4
 
 =item B<checkdeps>
 

@@ -21,7 +21,7 @@ To install this module type the following:
 DEPENDENCIES
 
 This module requires the alpm library.  This module was developed for
-libalpm 5.0.0 included with pacman version 3.3.0.
+libalpm 5.0.0 included with pacman version 3.4.0.
 
 COPYRIGHT AND LICENCE
 

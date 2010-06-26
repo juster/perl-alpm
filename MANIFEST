@@ -4,6 +4,9 @@ MANIFEST
 README
 ppport.h
 ALPM.xs
+Options.xs
+Package.xs
+Transaction.xs
 alpm_xs.h
 convert.c
 callbacks.c

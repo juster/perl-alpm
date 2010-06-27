@@ -367,6 +367,12 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 
 #define EVT_NAME( NAME ) EVT_TEXT("name", NAME)
 
+#define EVT_PKGLIST( KEY, PKGLIST )                                   \
+    do {                                                              \
+        hv_store( h_event, KEY, strlen( KEY ),                        \
+                  convert_packagelist( (alpm_list_t *)PKGLIST ), 0 ); \
+    } while ( 0 )
+
     hv_store( h_event, "id", 2, newSViv(type), 0 );
     
     switch ( type ) {
@@ -386,6 +392,10 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
         EVT_TEXT( "local",    arg_two );
         EVT_TEXT( "conflict", arg_three );
         break;
+    case PM_TRANS_CONV_REMOVE_PKGS:
+        EVT_NAME   ( "remove_packages" );
+        EVT_PKGLIST( "packages", arg_one );
+        break;
     case PM_TRANS_CONV_CORRUPTED_PKG:
         EVT_NAME( "corrupted_file" );
         EVT_TEXT( "filename", arg_one );
@@ -396,6 +406,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 #undef EVT_NAME
 #undef EVT_PKG
 #undef EVT_TEXT
+#undef EVT_PKGLIST
 
     PUSHMARK(SP);
     XPUSHs( newRV_noinc( (SV *)h_event ));

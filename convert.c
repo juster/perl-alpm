@@ -15,6 +15,29 @@ SV * convert_stringlist ( alpm_list_t * string_list )
     return newRV_noinc( (SV *)string_array );
 }
 
+SV * convert_packagelist ( alpm_list_t * alpm_pkg_list )
+{
+    /* copied from the typemap */
+    AV * package_list;
+    SV * package_obj;
+    alpm_list_t *iter;
+
+    package_list = newAV();
+    iter         = alpm_pkg_list;
+
+    while ( iter != NULL ) {
+        package_obj = newSV(0);
+        sv_setref_pv( package_obj, "ALPM::Package", iter->data );
+        av_push( package_list, package_obj );
+        iter = iter->next;
+    }
+
+    /* if ( alpm_pkg_list != NULL ) */
+    /*     alpm_list_free( alpm_pkg_list ); */
+
+    return newRV_noinc( (SV *)package_list );
+}
+
 SV * convert_depend ( const pmdepend_t * depend )
 {
     HV *depend_hash;

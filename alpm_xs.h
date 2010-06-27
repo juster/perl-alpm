@@ -167,6 +167,7 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
 /* CONVERSION  *************************************************************/
 
 SV * convert_stringlist ( alpm_list_t * string_list );
+SV * convert_packagelist ( alpm_list_t * package_list );
 SV * convert_depend ( const pmdepend_t * depend );
 SV * convert_depmissing ( const pmdepmissing_t * depmiss );
 SV * convert_conflict ( const pmconflict_t * conflict );

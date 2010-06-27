@@ -333,6 +333,14 @@ sub _display_packages
                          sprintf '%s-%s', ( $_->name, $_->version );
                      } );
 
+    return $self->display_list( $prefix,
+                                map { $makedesc->( $_ ) } @pkgs );
+}
+
+sub display_list
+{
+    my ($self, $prefix, @strings) = @_;
+
     $prefix .= q{ };
     my $LINE_MAX = 78 - length $prefix;
 
@@ -341,8 +349,8 @@ sub _display_packages
     my $desclens = 0;
 
     DESC_LOOP:
-    for my $desc ( map { $makedesc->() } @pkgs ) {
-        my $newlen = ( length $desc ) + $desclens;
+    for my $desc ( @strings) {
+        my $newlen    = ( length $desc ) + $desclens;
         my $spaceslen = @$descs > 1 ? ( @$descs-1 ) * 2 : 0;
 
         # If we have room to add another description to the line...
@@ -361,8 +369,10 @@ sub _display_packages
     @lines = map { join q{  }, @{$_} } @lines;
 
     my $indent = q{ } x ( length $prefix );
-    print map { $_, "\n" } ( $prefix . ( shift @lines ),
-                             map { $indent . $_ } @lines );
+    print "\n", map { $_, "\n" } ( $prefix . ( shift @lines ),
+                                   map { $indent . $_ } @lines );
+    print "\n";
+
     return;
 }
 
@@ -379,7 +389,7 @@ sub display_removals
         $isize  += $pkg->isize;
     }
 
-    printf "\nTotal Removed Size:   %.2f MB\n", $isize / ( 1024 * 1024 );
+    printf "Total Removed Size:   %.2f MB\n\n", $isize / ( 1024 * 1024 );
 
     return;
 }
@@ -398,13 +408,15 @@ sub display_additions
         $isize  += $pkg->isize;
     }
 
-    printf "\nTotal Download Size:    %.2f MB\n",
+    printf "Total Download Size:    %.2f MB\n",
         $dlsize / ( 1024 * 1024 );
 
     unless ( $self->{'opts'}{'dlonly'} ) {
         printf "Total Installed Size:   %.2f MB\n",
             $dlsize / ( 1024 * 1024 );
     }
+
+    print "\n";
 }
 
 sub display_optdepends

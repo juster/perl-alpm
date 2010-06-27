@@ -1,0 +1,8 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use App::PerlPacman;
+
+return 1 if caller;
+exit App::PerlPacman->new()->run( @ARGV );

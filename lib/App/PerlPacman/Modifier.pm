@@ -213,6 +213,15 @@ END_MSG
               $self->promptny( 'Do you want to skip the above '
                                . 'package(s) for this upgrade?' );
           },
+          'local_newer' => sub {
+              return 1 if ( $self->{'opts'}{'downloadonly'} );
+
+              my $pkg = shift->{'package'};
+              $self->promptyn( sprintf ':: %s-%s: local version is newer. '
+                               . 'Upgrade anyways?',
+                               $pkg->name,
+                               $pkg->version );
+          },
          );
     
 }

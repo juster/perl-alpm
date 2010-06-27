@@ -200,8 +200,18 @@ sub _trans_converse_cb
                       . "Remove $local?";
                   return $self->promptny( $msg );
               }
-              return $self->promptny( ":: $target and $local are in conflict"
-                                      . " ($conflict). Remove $local?" );
+              $self->promptny( ":: $target and $local are in conflict"
+                               . " ($conflict). Remove $local?" );
+          },
+          'remove_packages' => sub {
+              my @pkgnames = map { $_->name } @{ $_[0]{'packages'} };
+              print <<'END_MSG';
+:: the following package(s) cannot be upgraded due to
+:: unresolvable dependencies:
+END_MSG
+              $self->display_list( q{ } x 5, @pkgnames );
+              $self->promptny( 'Do you want to skip the above '
+                               . 'package(s) for this upgrade?' );
           },
          );
     

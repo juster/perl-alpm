@@ -222,6 +222,11 @@ END_MSG
                                $pkg->name,
                                $pkg->version );
           },
+          'corrupted_file' => sub {
+              my $filename = $_[0]{'filename'};
+              $self->promptyn( ":: File $filename is corrupted. "
+                               . 'Do you want to delete it?' );
+          },
          );
     
 }

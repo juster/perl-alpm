@@ -396,6 +396,10 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
         EVT_NAME   ( "remove_packages" );
         EVT_PKGLIST( "packages", arg_one );
         break;
+    case PM_TRANS_CONV_LOCAL_NEWER:
+        EVT_NAME( "local_newer"      );
+        EVT_PKG ( "package", arg_one );
+        break;
     case PM_TRANS_CONV_CORRUPTED_PKG:
         EVT_NAME( "corrupted_file" );
         EVT_TEXT( "filename", arg_one );

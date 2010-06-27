@@ -334,15 +334,6 @@ sub prompt_ny
     return $self->prompt_yesno( shift, 'n' );
 }
 
-sub log
-{
-    my ($self, $fmt, @args) = @_;
-
-    my $fh = $self->{'logfh'};
-    printf $fh $fmt, @args;
-    return;
-}
-
 sub _display_packages
 {
     my ($self, $prefix, @pkgs) = @_;

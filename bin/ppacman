@@ -5,4 +5,7 @@ use strict;
 use App::PerlPacman;
 
 return 1 if caller;
+
+binmode STDOUT, ':utf8';
+binmode STDIN, ':utf8';
 exit App::PerlPacman->new()->run( @ARGV );

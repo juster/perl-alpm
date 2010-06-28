@@ -342,6 +342,10 @@ sub _print_info
 
     my %info = $pkg->attribs;
 
+    $info{'depends'} = [ map { join q{}, grep { defined }
+                                   @{$_}{qw/ name mod version /} }
+                         @{ $info{'depends'} } ];
+
     for my $pluralkey ( 'requiredby', grep { /s\z/ } keys %info ) {
         my $aref = $info{ $pluralkey };
         $info{ $pluralkey } = ( @$aref ? join q{ }, @$aref : 'None' );

@@ -3,12 +3,26 @@ package App::PerlPacman;
 use warnings;
 use strict;
 
-use Getopt::Long qw(GetOptionsFromArray);
-use Fcntl        qw(SEEK_END);
-use ALPM;
-use ALPM::LoadConfig;
+use Locale::gettext   qw();
+use Getopt::Long      qw(GetOptionsFromArray);
+use Exporter          qw();
+use Fcntl             qw(SEEK_END);
+
+use ALPM              qw();
+use ALPM::LoadConfig  qw();
 
 Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
+
+our @ISA       = qw(Exporter);
+our @EXPORT_OK = qw(_T);
+
+Locale::gettext::textdomain( 'pacman' );
+
+sub _T
+{
+    return sprintf Locale::gettext::gettext( shift ), @_ if @_ > 1;
+    Locale::gettext::gettext( shift );
+}
 
 sub new
 {
@@ -198,7 +212,7 @@ sub error
 sub _error_msg
 {
     my $class = shift;
-    join q{}, "error: ", @_, "\n";
+    _T("error: "), _T( join q{}, @_, "\n" );
 }
 
 sub fatal
@@ -219,20 +233,43 @@ sub print_help
     print $class->help();
 }
 
+sub _translate
+{
+    my ($self, $text) = @_;
+
+    my %cache;
+    $text =~ s{ \| ( [^|]+ ) \| }
+              { $cache{ $1 } ||=
+                    do {
+                        my $in = $1;
+                        ( $in =~ s/_\z//
+                          ? do { my $out = _T( $in."\n" );
+                                 chomp $out;
+                                 $out; }
+                          : _T( $in ) )
+                    }
+                }xmsge;
+    return $text;
+}
+
 sub help
 {
-    return <<'END_HELP';
-usage:  ppacman <operation> [...]
-operations:
-    ppacman {-h --help}
-    ppacman {-V --version}
-    ppacman {-Q --query}   [options] [package(s)]
-    ppacman {-R --remove}  [options] <package(s)>
-    ppacman {-S --sync}    [options] [package(s)]
-    ppacman {-U --upgrade} [options] <file(s)>
+    my $self = shift;
 
-use 'ppacman {-h --help}' with an operation for available options
+    my $usage = $self->_translate( <<'END_HELP' );
+|usage|:  ppacman <|operation|> [...]
+|operations:
+|    ppacman {-h --help}
+    ppacman {-V --version}
+    ppacman {-Q --query}   [|options|] [|package(s)|]
+    ppacman {-R --remove}  [|options|] <|package(s)|>
+    ppacman {-S --sync}    [|options|] [|package(s)|]
+    ppacman {-U --upgrade} [|options|] <|file(s)|>
 END_HELP
+
+    $usage .= _T( qq{\nuse '\%s {-h --help}' with an operation for available }
+                  . qq{options\n}, 'ppacman' );
+    return $usage;
 }
 
 1;

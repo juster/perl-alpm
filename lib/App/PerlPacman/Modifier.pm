@@ -363,10 +363,15 @@ sub display_list
     my @lines    = $descs;
     my $desclens = 0;
 
+    # We take a list of descriptions and word-wrap them.  The
+    # reason we don't use Text::Wrap is because descriptions may have
+    # spaces inside them.  We don't want to split on these spaces.
+
     DESC_LOOP:
     for my $desc ( @strings) {
-        my $newlen    = ( length $desc ) + $desclens;
+        # Count the length of spaces inbetween that we'll insert later...
         my $spaceslen = @$descs > 1 ? ( @$descs-1 ) * 2 : 0;
+        my $newlen    = ( length $desc ) + $desclens;
 
         # If we have room to add another description to the line...
         if ( $newlen + $spaceslen <= $LINE_MAX ) {
@@ -380,13 +385,12 @@ sub display_list
         $desclens = length $desc;
     }
 
-    # Convert arrayrefs of descriptions into lines, spaces inbetween...
+    # Convert arrayrefs of descriptions into strings w/ spaces inbetween...
     @lines = map { join q{  }, @{$_} } @lines;
 
     my $indent = q{ } x ( length $prefix );
     print "\n", map { $_, "\n" } ( $prefix . ( shift @lines ),
-                                   map { $indent . $_ } @lines );
-    print "\n";
+                                   map { $indent . $_ } @lines ), q{};
 
     return;
 }
@@ -442,7 +446,7 @@ sub display_optdepends
     return unless @$optdepends;
 
     printf "Optional dependencies for %s\n", $pkg->name;
-    print Text::Wrap::wrap( (q{ } x 4) x 2, @$optdepends );
+    $self->display_list( q{ } x 3, @$optdepends );
 
     return;
 }

@@ -352,8 +352,8 @@ sub _print_info
     }
 
     $info{'reason'} = _T( $info{'reason'} eq 'implicit'
-                        ? 'Installed as a dependency for another package'
-                        : 'Explicitly installed' );
+                          ? 'Installed as a dependency for another package'
+                          : 'Explicitly installed' );
     $info{'has_scriptlet'} = _T( $info{'has_scriptlet'} ? 'Yes' : 'No' );
 
     my @fields = ( ( map { ( $_ => lc $_ ) }

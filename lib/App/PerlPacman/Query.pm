@@ -19,34 +19,35 @@ sub option_spec
 
 sub help
 {
-    return <<'END_HELP';
-usage:  ppacman {-Q --query} [options] [package(s)]
-options:
-  -c, --changelog      view the changelog of a package
-  -d, --deps           list packages installed as dependencies [filter]
-  -e, --explicit       list packages explicitly installed [filter]
-  -g, --groups         view all members of a package group
-  -i, --info           view package information (-ii for backup files)
-  -k, --check          check that the files owned by the package(s) are present
-  -l, --list           list the contents of the queried package
-  -m, --foreign        list installed packages not found in sync db(s) [filter]
-  -o, --owns <file>    query the package that owns <file>
-  -p, --file <package> query a package file instead of the database
-  -s, --search <regex> search locally-installed packages for matching strings
-  -t, --unrequired     list packages not required by any package [filter]
-  -u, --upgrades       list outdated packages [filter]
-  -q, --quiet          show less information for query and search
-      --config <path>  set an alternate configuration file
-      --logfile <path> set an alternate log file
-      --noconfirm      do not ask for any confirmation
-      --noprogressbar  do not show a progress bar when downloading files
-      --noscriptlet    do not execute the install scriptlet if one exists
-  -v, --verbose        be verbose
-      --debug          display debug messages
-  -r, --root <path>    set an alternate installation root
-  -b, --dbpath <path>  set an alternate database location
-      --cachedir <dir> set an alternate package cache location
-      --arch <arch>    set an alternate architecture
+    my $self = shift;
+    return $self->_translate( <<'END_HELP' );
+|usage|:  ppacman {-Q --query} [|options|] [|package(s)|]
+|options|:
+|  -c, --changelog      view the changelog of a package_|
+|  -d, --deps           list packages installed as dependencies [filter]_|
+|  -e, --explicit       list packages explicitly installed [filter]_|
+|  -g, --groups         view all members of a package group_|
+|  -i, --info           view package information (-ii for backup files)_|
+|  -k, --check          check that the files owned by the package(s) are present_|
+|  -l, --list           list the contents of the queried package_|
+|  -m, --foreign        list installed packages not found in sync db(s) [filter]_|
+|  -o, --owns <file>    query the package that owns <file>_|
+|  -p, --file <package> query a package file instead of the database_|
+|  -s, --search <regex> search locally-installed packages for matching strings_|
+|  -t, --unrequired     list packages not required by any package [filter]_|
+|  -u, --upgrades       list outdated packages [filter]_|
+|  -q, --quiet          show less information for query and search_|
+|      --config <path>  set an alternate configuration file_|
+|      --logfile <path> set an alternate log file_|
+|      --noconfirm      do not ask for any confirmation_|
+|      --noprogressbar  do not show a progress bar when downloading files_|
+|      --noscriptlet    do not execute the install scriptlet if one exists_|
+|  -v, --verbose        be verbose_|
+|      --debug          display debug messages_|
+|  -r, --root <path>    set an alternate installation root_|
+|  -b, --dbpath <path>  set an alternate database location_|
+|      --cachedir <dir> set an alternate package cache location_|
+|      --arch <arch>    set an alternate architecture_|
 END_HELP
 }
 

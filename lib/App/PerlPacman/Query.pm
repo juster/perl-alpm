@@ -1,5 +1,5 @@
 package App::PerlPacman::Query;
-use App::PerlPacman;
+use App::PerlPacman qw(_T);
 
 use warnings;
 use strict;
@@ -347,10 +347,10 @@ sub _print_info
         $info{ $pluralkey } = ( @$aref ? join q{ }, @$aref : 'None' );
     }
 
-    $info{'reason'} = ( $info{'reason'} eq 'implicit'
+    $info{'reason'} = _T( $info{'reason'} eq 'implicit'
                         ? 'Installed as a dependency for another package'
                         : 'Explicitly installed' );
-    $info{'has_scriptlet'} = ( $info{'has_scriptlet'} ? 'Yes' : 'No' );
+    $info{'has_scriptlet'} = _T( $info{'has_scriptlet'} ? 'Yes' : 'No' );
 
     my @fields = ( ( map { ( $_ => lc $_ ) }
                      qw{ Name Version URL Licenses Groups Provides } ),
@@ -370,13 +370,15 @@ sub _print_info
                   );
 
     @info{ qw/builddate installdate/ } =
-        map { POSIX::strftime '%a %b %d %H:%M %Y', localtime $_ }
+        # map { POSIX::strftime '%a %b %d %H:%M %Y', localtime $_ }
+        map { POSIX::strftime '%c', localtime $_ }
             @info{ qw/builddate installdate/ };            
     
-    my $indent = q{ } x 17;
     while ( my ($field, $key) = splice @fields, 0, 2 ) {
-        my $field_start = sprintf '%-15s: ', $field;
-        print Text::Wrap::wrap( $field_start, $indent, $info{ $key } ), "\n";
+        my $title = _T( sprintf '%-15s:', $field );
+        print Text::Wrap::wrap( $title . q{ },
+                                q{ } x ( ( length $title ) + 1 ),
+                                $info{ $key } ), "\n";
     }
 }
 

@@ -1,4 +1,5 @@
 use ExtUtils::MakeMaker;
+use File::Spec::Functions qw(catfile);
 
 # Avoid FAIL reports from CPAN Testers...
 require DynaLoader;
@@ -30,7 +31,7 @@ WriteMakefile
         { repository => 'http://github.com/juster/perl-alpm' }},
       clean             => { FILES  => 't/root t/repos/share const-*.inc' },
 	# Un-comment this if you add C files to link with later:
-#      OBJECT            => '$(O_FILES)', # link all the C files too
+     # OBJECT            => '$(O_FILES)', # link all the C files too
       OBJECT            => 'ALPM.o convert.o callbacks.o',
       XS                => { 'ALPM.xs' => 'ALPM.c' },
 );
@@ -160,19 +161,23 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_ERR_LIBFETCH
           PM_ERR_EXTERNAL_DOWNLOAD));
 
+  my $cpath  = catfile( qw/ xs const-c.inc  / );
+  my $xspath = catfile( qw/ xs const-xs.inc / );
   ExtUtils::Constant::WriteConstants( NAME         => 'ALPM',
                                       NAMES        => \@names,
                                       DEFAULT_TYPE => 'IV',
-                                      C_FILE       => 'const-c.inc',
-                                      XS_FILE      => 'const-xs.inc',
+                                      C_FILE       => $cpath,
+                                      XS_FILE      => $xspath,
                                   );
 
 }
 else {
   use File::Copy;
   use File::Spec;
-  foreach my $file ('const-c.inc', 'const-xs.inc') {
-    my $fallback = File::Spec->catfile('fallback', $file);
+  for my $file ( map { catfile( 'xs', $_ ) }
+                 qw/ const-c.inc const-xs.inc /
+                ) {
+    my $fallback = catfile( qw/ xs fallback /, $file);
     copy ($fallback, $file) or die "Can't copy $fallback to $file: $!";
   }
 }

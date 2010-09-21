@@ -43,12 +43,12 @@ build() {
     MODULEBUILDRC='/dev/null' TEST_RELEASE=1
 
   msg 'Building ALPM...'
-  { cd "$DIST_DIR"   &&
-    perl Makefile.PL &&
-    make             &&
-    msg2 'Testing ALPM...' &&
-    make test        &&
-    make install     ;
+  { cd "$DIST_DIR"            &&
+    /usr/bin/perl Makefile.PL &&
+    make                      &&
+    msg2 'Testing ALPM...'    &&
+    make test                 &&
+    make install              ;
   } || return 1;
 
   find "$pkgdir" -name .packlist -o -name perllocal.pod -delete

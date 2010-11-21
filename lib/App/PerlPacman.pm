@@ -11,17 +11,18 @@ use Fcntl             qw(SEEK_END);
 use ALPM              qw();
 use ALPM::LoadConfig  qw();
 
-Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
-
 our @ISA       = qw(Exporter);
 our @EXPORT_OK = qw(_T);
 
 Locale::gettext::textdomain( 'pacman' );
 
+#---HELPER FUNCTION---
+# Translate text by using pacman's .po files...
 sub _T
 {
-    return sprintf Locale::gettext::gettext( shift ), @_ if @_ > 1;
-    Locale::gettext::gettext( shift );
+    my $trans = Locale::gettext::gettext( shift );
+    return sprintf $trans, @_ if @_ > 1;
+    return $trans;
 }
 
 sub new
@@ -42,6 +43,7 @@ sub parse_options
     my @args = @_;
 
     my %opts;
+    Getopt::Long::Configure qw(bundling no_ignore_case pass_through);
     GetOptionsFromArray( \@args, \%opts, $self->option_spec() );
 
     $self->{'opts'}       = \%opts;

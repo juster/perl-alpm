@@ -1,3 +1,8 @@
+2010-11-21  Justin Davis  <juster@artemis.juster.info>
+
+	* lib/ALPM/Package.pm (attribs): Fix attribs to return a list and
+	not an array reference.
+
 2010-06-22  Justin Davis  <juster@cpan.org>
 
 	* lib/ALPM.pm (transaction): Removed type parameter from

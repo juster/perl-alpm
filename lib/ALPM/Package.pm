@@ -47,8 +47,7 @@ sub attribs
 {
     my $self = shift;
 
-    return [ map { $self->_attr($_) } @_ ]
-        if ( @_ > 0 );
+    return map { $self->_attr($_) } @_ if ( @_ > 0 );
 
     return map { ( $_ => $self->_attr($_) ) } keys %_PKG_ATTRIBS;
 }

@@ -1,4 +1,9 @@
-2010-11-21  Justin Davis  <juster@artemis.juster.info>
+2011-03-04  Justin Davis  <juster@cpan.org>
+
+	* lib/ALPM/LoadConfig.pm: Fix bug where config file repos could
+	not have hyphens ("-"). Reported by knotty.
+
+2010-11-21  Justin Davis  <juster@cpan.org>
 
 	* lib/ALPM/Package.pm (attribs): Fix attribs to return a list and
 	not an array reference.

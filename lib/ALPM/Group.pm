@@ -72,7 +72,7 @@ L<ALPM::DB>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2010 by Justin Davis
+Copyright (C) 2011 by Justin Davis
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,

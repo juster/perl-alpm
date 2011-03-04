@@ -24,8 +24,8 @@ my @NULL_OPTS = qw{ HoldPkg SyncFirst CleanMethod XferCommand
                     ShowSize TotalDownload };
 
 my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
-my $SECTION_MATCH = qr/ \A \s* [[] (\w+) []] \s* \z /xms;
-my $FIELD_MATCH   = qr/ \A \s* (\w+) \s* = \s* ([^\n]*) /xms;
+my $SECTION_MATCH = qr/ \A \s* \[ ([^\]]+) \] \s* \z /xms;
+my $FIELD_MATCH   = qr/ \A \s* ([^=\s]+) \s* = \s* ([^\n]*) /xms;
 
 ##------------------------------------------------------------------------
 ## PRIVATE FUNCTIONS
@@ -316,7 +316,7 @@ Justin Davis, C<< <juster at cpan dot org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2010 by Justin Davis
+Copyright (C) 2011 by Justin Davis
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,

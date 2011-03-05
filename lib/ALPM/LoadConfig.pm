@@ -25,7 +25,7 @@ my @NULL_OPTS = qw{ HoldPkg SyncFirst CleanMethod XferCommand
 
 my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
 my $SECTION_MATCH = qr/ \A \s* \[ ([^\]]+) \] \s* \z /xms;
-my $FIELD_MATCH   = qr/ \A \s* ([^=\s]+) \s* = \s* ([^\n]*) /xms;
+my $FIELD_MATCH   = qr/ \A \s* ([^=\s]+) (?: \s* = \s* ([^\n]*))? /xms;
 
 ##------------------------------------------------------------------------
 ## PRIVATE FUNCTIONS
@@ -69,6 +69,10 @@ sub _make_parser
                     # warn qq{Unrecognized field named "$field_name"\n}
                     my $field_store = $hooks->{field}{$field_name}
                         or return;
+
+                    # Some fields are enabled merely by having the field
+                    # name appear on a line.
+                    $field_val = 1 unless defined $field_val;
 
                     $field_store->( $field_val );
                     return;

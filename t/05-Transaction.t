@@ -6,6 +6,8 @@ use Test::More tests => 13;
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
 
+$ENV{'LANGUAGE'} = 'en_US';
+
 my $logstr;
 
 sub print_log

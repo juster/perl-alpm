@@ -7,6 +7,8 @@ use Test::More tests => 32;
 use File::Spec::Functions qw(rel2abs);
 use ALPM qw(t/test.conf);
 
+$ENV{'LANGUAGE'} = 'en_US';
+
 # TRANSACTION ERRORS
 
 tie my %alpm_opt, 'ALPM';

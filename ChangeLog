@@ -1,4 +1,16 @@
+2011-03-05  Justin Davis  <juster@artemis.juster.info>
+
+	* RELEASE (1.03)
+
+	* t: Fix many tests that rely on English language error messages.
+
+	* lib/ALPM/LoadConfig.pm (_make_parser): Change the pacman.conf
+	parser to properly recognize fields which are only field names.
+	"= <value>" does not necessary follow them.
+
 2011-03-04  Justin Davis  <juster@cpan.org>
+
+	* RELEASE (1.02)
 
 	* lib/ALPM/LoadConfig.pm: Fix bug where config file repos could
 	not have hyphens ("-"). Reported by knotty.

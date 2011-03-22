@@ -81,8 +81,9 @@ Example:
 
 This is particularly useful on the command-line:
 
-  perl -MALPM=/etc/pacman.conf -e '
-  print qq{%s\n}, $_->name for ALPM->localdb->pkgs'
+  perl -MALPM=/etc/pacman.conf -e '$i=0;
+  printf qq{%d %d %s\n}, ++$i, $_->size, $_->name
+      for sort { $a->size <=> $b->size } ALPM->localdb->pkgs'
 
 =item 2. A hash of options to use for ALPM.
 

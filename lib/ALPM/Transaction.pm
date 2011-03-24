@@ -454,6 +454,10 @@ Arguments are simply additional keys in the hash ref.
   | corrupted_file   | Should the corrupted package file be deleted?  |
   | - filename       | The name of the corrupted package file.        |
   |------------------+------------------------------------------------|
+  | select_provider  | Which provider of a dependency to install?     |
+  | - providers      | An arrayref of package objects.                |
+  | - depstr         | The dependency string being satisfied.         |
+  |------------------+------------------------------------------------|
 
 =head1 PROGRESS CALLBACKS
 

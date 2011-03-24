@@ -381,6 +381,14 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
                   convert_packagelist( (alpm_list_t *)PKGLIST ), 0 ); \
     } while ( 0 )
 
+#define EVT_DEPSTR( NAME, DEPPTR )                                      \
+    do {                                                                \
+        hv_store( h_event, NAME, strlen( NAME ),                        \
+                  newSVpv( alpm_dep_compute_string( (pmdepend_t *) DEPPTR ), \
+                           0 ),                                         \
+                  0 );                                                  \
+    } while ( 0 )
+
     hv_store( h_event, "id", 2, newSViv(type), 0 );
     
     switch ( type ) {
@@ -412,6 +420,10 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
         EVT_NAME( "corrupted_file" );
         EVT_TEXT( "filename", arg_one );
         break;
+    case PM_TRANS_CONV_SELECT_PROVIDER:
+        EVT_NAME( "select_provider" );
+        EVT_PKGLIST( "providers", arg_one );
+        EVT_DEPSTR( "depstr", arg_two );
     }
 
 #undef EVENT
@@ -419,6 +431,7 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 #undef EVT_PKG
 #undef EVT_TEXT
 #undef EVT_PKGLIST
+#undef EVT_DEPSTR
 
     PUSHMARK(SP);
     XPUSHs( newRV_noinc( (SV *)h_event ));

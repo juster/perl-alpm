@@ -310,7 +310,7 @@ sub db
     croak 'Not enough arguments to ALPM::repodb()' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
 
-    my ($found) = grep { $_->name eq $repo_name } $class->databases;
+    my ($found) = grep { $_->name eq $repo_name } $class->dbs;
     return $found;
 }
 

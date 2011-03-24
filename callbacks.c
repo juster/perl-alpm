@@ -315,7 +315,15 @@ void cb_trans_event_wrapper ( pmtransevt_t event,
         EVT_NAME("retrieve")
         EVT_STATUS("start")
         EVT_TEXT("db", arg_one)
-        break;        
+        break;
+    case PM_TRANS_EVT_DISKSPACE_START:
+        EVT_NAME("diskspace")
+        EVT_STATUS("start")
+        break;
+    case PM_TRANS_EVT_DISKSPACE_DONE:
+        EVT_NAME("diskspace")
+        EVT_STATUS("done")
+        break;
     }
 
 #undef EVT_NAME

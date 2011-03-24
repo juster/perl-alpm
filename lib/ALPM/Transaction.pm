@@ -391,6 +391,10 @@ This always has 'status' set to 'start'.  There is also a 'db'
 key which has the name (ex: "extra") of the database where the
 package is being retrieved from.
 
+=item B<diskspace>
+
+This either has 'status' set to 'start' or 'done'. This marks the
+begin and end of the free disk space check.
 
 =back
 

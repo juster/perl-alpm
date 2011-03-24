@@ -302,14 +302,13 @@ sub syncdbs
     return @{ $class->get_opt('syncdbs') };
 }
 
-sub databases
+sub dbs
 {
     my $class = shift;
     return ( $class->localdb, $class->syncdbs );
 }
-*dbs = \&databases;
 
-sub repodb
+sub db
 {
     croak 'Not enough arguments to ALPM::repodb()' if ( @_ < 2 );
     my ($class, $repo_name) = @_;
@@ -317,7 +316,6 @@ sub repodb
     my ($found) = grep { $_->name eq $repo_name } $class->databases;
     return $found;
 }
-*db = \&repodb;
 
 sub search
 {
@@ -358,12 +356,12 @@ sub load_pkgfile
     return _pkg_load( $package_path );
 }
 
-sub transaction
+sub trans
 {
-    croak 'transaction() must be called as a class method' unless ( @_ );
+    croak 'trans() must be called as a class method' unless ( @_ );
     my $class = shift;
 
-    croak 'arguments to transaction method must be a hash'
+    croak 'arguments to trans method must be a hash'
         unless ( @_ % 2 == 0 );
 
     my %trans_opts  = @_;
@@ -397,7 +395,6 @@ sub transaction
     weaken $_Transaction;
     return $t;
 }
-*action = \&transaction;
 
 
 ####----------------------------------------------------------------------
@@ -465,6 +462,3 @@ sub NEXTKEY
 
 
 1;
-
-__END__
-

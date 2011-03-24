@@ -11,9 +11,9 @@ my %_PKG_ATTRIBS = map { /^has_(.*)$/ ? ( $1 => $_ ) : ( $_ => $_ ) }
     qw { filename name version desc url
          builddate installdate packager md5sum
          arch size isize reason licenses requiredby
-         groups depends optdepends conflicts 
+         groups depends optdepends conflicts
          provides deltas replaces files backup
-         has_scriptlet has_force download_size };
+         has_scriptlet download_size };
 
 
 #---HELPER METHOD---
@@ -163,8 +163,6 @@ can't really I<set> anything so you should know it's a get anyways.
 =item * backup
 
 =item * has_scriptlet
-
-=item * has_force
 
 =item * download_size
 

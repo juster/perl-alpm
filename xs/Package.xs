@@ -57,10 +57,6 @@ int
 alpm_pkg_has_scriptlet(pkg)
     ALPM_Package pkg
 
-int
-alpm_pkg_has_force(pkg)
-    ALPM_Package pkg
-
 off_t
 alpm_pkg_download_size(newpkg)
     ALPM_Package newpkg

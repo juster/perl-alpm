@@ -261,9 +261,6 @@ sub register
 {
     my $class = shift;
 
-    croak 'You no longer need to register the local database'
-        $_[0] eq 'local';
-
     croak 'Supply a repository name and a base URL to start it at'
         if @_ != 2;
 
@@ -277,8 +274,8 @@ sub register
 
     if ( $sync_url =~ /\$arch\b/ ) {
         my $arch = ALPM->get_opt( 'arch' );
-        if ( $arch eq 'auto' ) {
-            chomp $arch = `uname -m`;
+        if ( !$arch || $arch eq 'auto' ) {
+            chomp( $arch = `uname -m` );
             die 'Failed to call uname to expand $arch' if $? != 0
         }
         $sync_url =~ s/\$arch\b/$arch/g;
@@ -460,5 +457,6 @@ sub NEXTKEY
              : undef );
 }
 
-
 1;
+
+__END__

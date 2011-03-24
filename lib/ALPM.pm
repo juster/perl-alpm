@@ -15,7 +15,7 @@ use ALPM::Package;
 use ALPM::Group;
 use ALPM::DB;
 
-our $VERSION = '1.03';
+our $VERSION = '2.00';
 
 # constants are only used internally... they are ugly.
 sub AUTOLOAD {

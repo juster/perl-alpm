@@ -4,9 +4,9 @@ ALPM - ArchLinux Package Manager backend library.
 
 =head1 VERSION
 
-1.03
+2.00
 
-This version of ALPM is compatible with pacman 3.4.
+This version of ALPM is compatible with pacman 3.5.
 
 =head1 SYNOPSIS
 
@@ -344,18 +344,17 @@ See also L<ALPM::LoadConfig> for more advanced needs.
 
 =head2 transaction
 
-  Usage   : my $t = ALPM->action( flags    => 'nodeps force',
-                                  event    => sub { ... },
-                                  conv     => sub { ... },
-                                  progress => sub { ... } );
+  Usage   : my $t = ALPM->trans( flags    => 'nodeps force',
+                                 event    => sub { ... },
+                                 conv     => sub { ... },
+                                 progress => sub { ... } );
   Purpose : Initializes a transaction
   Params  : A hash of the transaction settings
   Throws  : An 'ALPM Error: ...' is thrown if a transaction is
             already active.
   Returns : An ALPM::Transaction object.
 
-C<action> is a shorter alias for the C<transaction> method.
-See also L<ALPM::Transaction>.
+See L<ALPM::Transaction>.
 
 =head3 transaction Parameters
 
@@ -440,9 +439,9 @@ TODO: Common error messages and how to fix them?
 
 Unimplemented functions:
 
-  alpm_depcmp, alpm_checkdeps, alpm_deptest, alpm_dep_compute_string,
-  alpm_trans_interrupt, alpm_checkconflicts, alpm_compute_md5sum,
-  alpm_sync_newversion, alpm_delta_... functions
+  alpm_checkdeps, alpm_find_satisfier, alpm_find_dbs_satisfier,
+  alpm_dep_compute_string, alpm_trans_interrupt, alpm_checkconflicts,
+  alpm_compute_md5sum, alpm_sync_newversion, alpm_delta_... functions
 
 =head1 SEE ALSO
 
@@ -450,11 +449,11 @@ Unimplemented functions:
 
 =item * L<ALPM::DB>, L<ALPM::Package>, L<ALPM::Transaction>
 
-=item * L<http://code.toofishes.net/cgit/> - git repository for pacman/libalpm
+=item * L<http://projects.archlinux.org/pacman.git/> - git repository for pacman/libalpm
 
 =item * L<http://code.toofishes.net/pacman/doc/> - libalpm doxygen docs
 
-=item * L<http://wiki.archlinux.org/index.php/Pacman> - uses libalpm
+=item * L<http://wiki.archlinux.org/index.php/Pacman>
 
 =item * L<http://github.com/juster/perl-alpm> - git repo for this module.
 

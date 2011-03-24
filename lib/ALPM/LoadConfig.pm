@@ -97,12 +97,12 @@ sub _make_parser
         };
 }
 
-sub _register_db
+sub _register
 {
     my ($url, $section) = @_;
     die qq{Section has not previously been declared, cannot set URL\n}
         unless ( $section );
-    ALPM->register_db( $section => $url );
+    ALPM->register( $section => $url );
     return;
 }
 
@@ -151,7 +151,7 @@ sub load_file
       },
       field   => { Server => sub {
                        my $server_url = shift;
-                       _register_db( $server_url, $current_section )
+                       _register( $server_url, $current_section )
                    } },
      };
 
@@ -188,7 +188,7 @@ sub load_file
      # these fields do nothing, for now...
      ( map { ( $_ => \&_null_sub ) } @NULL_OPTS ),
 
-     Server  => sub { _register_db( shift, $current_section ) },
+     Server  => sub { _register( shift, $current_section ) },
      Include => sub {
          die "Cannot have an Include directive in the [options] section\n"
              if ( $current_section eq 'options' );

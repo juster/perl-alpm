@@ -19,7 +19,7 @@ const char * log_lvl_debug    = "debug";
 const char * log_lvl_function = "function";
 const char * log_lvl_unknown  = "unknown";
 
-void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args )
+void cb_log_wrapper ( pmloglevel_t level, const char * format, va_list args )
 {
     SV *s_level, *s_message;
     char *lvl_str, buffer[256];

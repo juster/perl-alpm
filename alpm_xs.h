@@ -117,7 +117,7 @@ extern const char * log_lvl_unknown;
     RETVAL = ( cb_ ## CBTYPE ## _sub == NULL                \
                ? &PL_sv_undef : cb_ ## CBTYPE ## _sub );
 
-void cb_log_wrapper ( pmloglevel_t level, char * format, va_list args );
+void cb_log_wrapper ( pmloglevel_t level, const char * format, va_list args );
 void cb_dl_wrapper ( const char *filename, off_t xfered, off_t total );
 void cb_totaldl_wrapper ( off_t total );
 int  cb_fetch_wrapper ( const char *url, const char *localpath, int force );

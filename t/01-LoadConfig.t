@@ -14,8 +14,8 @@ else {
 
 ok( require ALPM );
 ok( ALPM->load_config('/etc/pacman.conf') );
-ok( my $local = ALPM->register_db );
-ok( my $dbs = ALPM->get_opt('syncdbs') );
+ok( my $local = ALPM->localdb );
+ok( my $dbs   = ALPM->syncdbs );
 
 # use Data::Dumper;
 # print STDERR Dumper($dbs);

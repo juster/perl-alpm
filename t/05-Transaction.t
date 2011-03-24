@@ -37,10 +37,10 @@ sub check_events
 
 #ALPM->set_opt( 'logcb', \&print_log );
 
-ok( ALPM->register_db( 'simpletest',
-                       'file://' . rel2abs( 't/repos/share/simpletest' )) );
+ok( ALPM->register( 'simpletest',
+                    'file://' . rel2abs( 't/repos/share/simpletest' )) );
 
-ok( my $t = ALPM->transaction( event => \&event_log ),
+ok( my $t = ALPM->trans( event => \&event_log ),
    'create a sync transaction' );
 
 ok( $t->sync( 'foo' ), 'add foo package to transaction' );
@@ -65,7 +65,7 @@ check_events( qw/integrity fileconflicts add/ );
 
 undef $t;
 
-$t = ALPM->transaction( flags => 'cascade dbonly dlonly' );
+$t = ALPM->trans( flags => 'cascade dbonly dlonly' );
 my $flags = $t->get_flags;
 like( $flags, qr/cascade/ );
 like( $flags, qr/dbonly/  );

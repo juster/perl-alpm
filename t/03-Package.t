@@ -13,7 +13,7 @@ BEGIN { use_ok('ALPM', root        => '/',
 }
 
 
-ok( my $local = ALPM->register_db );
+ok( my $local = ALPM->localdb );
 
 my $pkg = $local->find('perl');
 

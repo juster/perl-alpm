@@ -15,7 +15,7 @@ ok( ALPM->set_options({ root        => '/',
                         logfile     => '/var/log/pacman.log', }) );
 
 
-ok( my $local = ALPM->register_db );
+ok( my $local = ALPM->localdb );
 
 is( $local->name, 'local' );
 
@@ -43,8 +43,8 @@ SKIP:
     skip 'could not ping ftp.archlinux.org', 7 unless $success;
 
     my $name = 'core';
-    my $syncdb = ALPM->register_db( $name =>
-                                    'ftp://ftp.archlinux.org/$repo/os/i686' );
+    my $syncdb = ALPM->register( $name =>
+                                'ftp://ftp.archlinux.org/$repo/os/$arch' );
     ok( $syncdb );
     is( $syncdb->name, $name );
     ok( scalar $syncdb->packages > 1 );

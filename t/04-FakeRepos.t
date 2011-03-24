@@ -146,10 +146,8 @@ ok( ALPM->load_config( $TEST_CONF ), 'load our generated config' );
 
 for my $reponame ( 'simpletest', 'upgradetest' ) {
     my $repopath = sprintf( 'file://%s/%s',
-			    rel2abs( $REPOS_SHARE ),
-			    $reponame );
-    ok( my $db = ALPM->register_db( $reponame, $repopath ));
+                            rel2abs( $REPOS_SHARE ),
+                            $reponame );
+    ok( my $db = ALPM->register( $reponame, $repopath ));
     $db->update;
 }
-
-

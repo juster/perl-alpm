@@ -18,7 +18,7 @@ ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest') );
 
 # File Conflict Error ########################################################
 
-my $t = ALPM->transaction();
+my $t = ALPM->trans();
 ok( $t->sync( 'fileconflict' ) );
 eval { $t->commit };
 
@@ -39,7 +39,7 @@ undef $t;
 
 # Unsatisfied dependencies ###################################################
 
-$t = ALPM->transaction();
+$t = ALPM->trans();
 ok( $t->remove( 'foo' ));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error:/
@@ -57,7 +57,7 @@ undef $t;
 
 # Conflicting Dependencies ###################################################
 
-$t = ALPM->transaction();
+$t = ALPM->trans();
 ok( $t->sync( 'depconflict' ));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error: conflicting dependencies/
@@ -75,7 +75,7 @@ undef $t;
 
 # Corrupt Packages ###########################################################
 
-$t = ALPM->transaction();
+$t = ALPM->trans();
 ok $t->sync( 'corruptme' );
 ok $t->prepare;
 eval { $t->commit };

@@ -57,23 +57,24 @@ ALPM::Transaction - An object wrapper for transaction functions.
 
 =head1 SYNOPSIS
 
-  my $t = ALPM->transaction( flags => 'nodeps force',
-                             event => sub { ... },
-                             conv  => sub { ... },
+  my $t = ALPM->transaction( flags    => 'nodeps force',
+                             event    => sub { ... },
+                             conv     => sub { ... },
                              progress => sub { ... },
                             );
-  $t->sync( $_ ) for qw/ perl perl-alpm /;
+  $t->install( $_ ) for @pkg_objs;
   eval { $t->commit };
-  if ( $EVAL_ERROR ) {
-      die unless $t->{error}; # re-throw an unknown error
-      given ( $t->{error}{type} ) {
-          when ( 'fileconflict' ) {
-              for my $path ( @{ $t->{error}{list} } ) {
-                  say "Conflicting Path: $path";
+  if ( $@ ) {
+      die unless $t->{'error'}; # re-throw an unknown error
+      for ( $t->{'error'}{'type'} ) {
+          if ( /fileconflict/ ) {
+              for my $path ( @{ $t->{'error'}{'list'} } ) {
+                  print "Conflicting Path: $path\n";
               }
           }
-          when ( 'invalid_package' ) {
-              say "Corrupt Package: $_" foreach ( @{ $t->{error}{list} } );
+          elsif ( /invalid_package/ ) {
+              print "Corrupt Package: $_\n"
+                  foreach @{ $t->{'error'}{'list'} };
           }
       }
   }
@@ -86,88 +87,41 @@ collected, the transaction is released.
 
 =head1 METHODS
 
-=head2 sync
+=head2 install
 
-  1 = $TRANS->sync( $PKGNAME );
+  $TRANS->install( $PACKAGE_OBJECT )
 
-Sync adds a package to synchronize via the database repos.  The
-package from the database repository is downloaded and installed.
-
-=over 4
-
-=item B<Parameters>
+Adds a package object to the list of packages to be installed by
+the transaction.
 
 =over 4
 
-=item C<$PKGNAME>
+=item C<$TRANS>
 
-The name of a package.
+An I<ALPM::Transaction> object.
+
+=item C<$PACKAGE_OBJECT>
+
+An L<ALPM::Package> object.
 
 =back
 
-=back
+=head2 uninstall
 
-=head2 pkgfile
+  $TRANS->uninstall( $PACKAGE_OBJECT )
 
-  1 = $TRANS->pkgfile( $PKGPATH );
-
-Adds a package file to be installed by the transaction.
+Adds the given package to the list of packages to be removed by the
+transaction.
 
 =over 4
 
-=item B<Parameters>
+=item C<$TRANS>
 
-=over 4
+An I<ALPM::Transaction> object.
 
-=item C<$PKGPATH>
+=item C<$PACKAGE_OBJECT>
 
-The path to the package file to install.
-
-=back
-
-=back
-
-=head2 remove
-
-  1 = $TRANS->remove( $PKGNAME );
-
-Adds a package to be removed/uninstalled by the transaction.
-
-=over 4
-
-=item B<Parameters>
-
-=over
-
-=item C<$PKGNAME>
-
-The name of a package.
-
-=back
-
-=back
-
-=head2 sync_from_db
-
-  1 = $TRANS->sync_from_db( $DBNAME, $PKGNAME );
-
-Sync a package from the specified database.
-
-=over 4
-
-=item Parameters
-
-=over 4
-
-=item C<$DBNAME>
-
-The name of the database.
-
-=item C<$PKGNAME>
-
-The name of a package.
-
-=back
+An L<ALPM::Package> object.
 
 =back
 
@@ -181,10 +135,6 @@ that are outdated in the local database.
 
 =over 4
 
-=item B<Parameters>
-
-=over 4
-
 =item C<$ENABLE_DOWNGRADE>
 
 Whether to allow downgrading of packages.  If the version installed is
@@ -194,8 +144,6 @@ version installed will still be replaced.
 Supply any argument in order to enable downgrading.  The value of the
 argument is not checked.  Do not supply an argument if you do
 not wish to enable downgrading.
-
-=back
 
 =back
 

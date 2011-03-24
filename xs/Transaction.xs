@@ -61,39 +61,20 @@ sysupgrade ( self, ... )
     RETVAL
 
 negative_is_error
-sync ( self, target )
-    SV   * self
-    char * target
+install ( self, pkg )
+    SV * self
+    ALPM_Package pkg
   CODE:
-    RETVAL = alpm_sync_target( target );
+    RETVAL = alpm_add_pkg( pkg );
   OUTPUT:
     RETVAL
 
 negative_is_error
-pkgfile ( self, target )
-    SV   * self
-    char * target
+uninstall ( self, pkg )
+    SV * self
+    ALPM_Package pkg
   CODE:
-    RETVAL = alpm_add_target( target );
-  OUTPUT:
-    RETVAL
-
-negative_is_error
-remove ( self, target )
-    SV   * self
-    char * target
-  CODE:
-    RETVAL = alpm_remove_target( target );
-  OUTPUT:
-    RETVAL
-
-negative_is_error
-sync_from_db ( self, db, target )
-    SV   * self
-    char * target
-    char * db
-  CODE:
-    RETVAL = alpm_sync_dbtarget( db, target );
+    RETVAL = alpm_remove_pkg( pkg );
   OUTPUT:
     RETVAL
 

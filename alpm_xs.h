@@ -159,11 +159,12 @@ void cb_trans_event_wrapper ( pmtransevt_t event,
 void cb_trans_conv_wrapper ( pmtransconv_t type,
                              void *arg_one, void *arg_two, void *arg_three,
                              int *result );
-void cb_trans_progress_wrapper( pmtransprog_t type,
-                                const char * desc,
-                                int item_progress,
-                                int total_count, int total_pos );
-
+void cb_trans_progress_wrapper ( pmtransprog_t type,
+                                 const char * desc,
+                                 int item_progress,
+                                 size_t total_count,
+                                 size_t total_pos );
+ 
 /* CONVERSION  *************************************************************/
 
 SV * convert_stringlist ( alpm_list_t * string_list );

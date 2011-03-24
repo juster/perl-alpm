@@ -436,7 +436,8 @@ void cb_trans_conv_wrapper ( pmtransconv_t type,
 void cb_trans_progress_wrapper( pmtransprog_t type,
                                 const char * desc,
                                 int item_progress,
-                                int total_count, int total_pos )
+                                size_t total_count,
+                                size_t total_pos )
 {
     HV *h_event;
     dSP;

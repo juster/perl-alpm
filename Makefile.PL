@@ -48,6 +48,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_TRANS_FLAG_NODEPS
           PM_TRANS_FLAG_FORCE
           PM_TRANS_FLAG_NOSAVE
+          PM_TRANS_FLAG_NODEPVERSION
           PM_TRANS_FLAG_CASCADE
           PM_TRANS_FLAG_RECURSE
           PM_TRANS_FLAG_DBONLY
@@ -86,6 +87,8 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_TRANS_EVT_DELTA_PATCH_FAILED
           PM_TRANS_EVT_SCRIPTLET_INFO
           PM_TRANS_EVT_RETRIEVE_START
+          PM_TRANS_EVT_DISKSPACE_START
+          PM_TRANS_EVT_DISKSPACE_DONE
 
           PM_TRANS_CONV_INSTALL_IGNOREPKG
           PM_TRANS_CONV_REPLACE_PKG
@@ -93,11 +96,14 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_TRANS_CONV_CORRUPTED_PKG
           PM_TRANS_CONV_LOCAL_NEWER
           PM_TRANS_CONV_REMOVE_PKGS
+          PM_TRANS_CONV_SELECT_PROVIDER
 
           PM_TRANS_PROGRESS_ADD_START
           PM_TRANS_PROGRESS_UPGRADE_START
           PM_TRANS_PROGRESS_REMOVE_START
           PM_TRANS_PROGRESS_CONFLICTS_START
+          PM_TRANS_PROGRESS_DISKSPACE_START
+          PM_TRANS_PROGRESS_INTEGRITY_START
 
           PM_DEP_MOD_ANY
           PM_DEP_MOD_EQ
@@ -115,6 +121,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_ERR_NOT_A_FILE
           PM_ERR_NOT_A_DIR
           PM_ERR_WRONG_ARGS
+          PM_ERR_DISK_SPACE
 
           PM_ERR_HANDLE_NULL
           PM_ERR_HANDLE_NOT_NULL
@@ -125,6 +132,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_ERR_DB_NULL
           PM_ERR_DB_NOT_NULL
           PM_ERR_DB_NOT_FOUND
+          PM_ERR_DB_VERSION
           PM_ERR_DB_WRITE
           PM_ERR_DB_REMOVE
 
@@ -156,6 +164,7 @@ if  (eval {require ExtUtils::Constant; 1}) {
           PM_ERR_CONFLICTING_DEPS
           PM_ERR_FILE_CONFLICTS
           PM_ERR_RETRIEVE
+          PM_ERR_WRITE
           PM_ERR_INVALID_REGEX
           PM_ERR_LIBARCHIVE
           PM_ERR_LIBFETCH

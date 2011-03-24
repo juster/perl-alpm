@@ -8,7 +8,7 @@ SV * convert_stringlist ( alpm_list_t * string_list )
 {
     AV *string_array = newAV();
     alpm_list_t *iter;
-    for ( iter = string_list; iter; iter = iter->next ) {
+    for ( iter = string_list ; iter != NULL ; iter = alpm_list_next( iter )) {
         SV *string = newSVpv( iter->data, strlen( iter->data ) );
         av_push( string_array, string );
     }
@@ -29,7 +29,7 @@ SV * convert_packagelist ( alpm_list_t * alpm_pkg_list )
         package_obj = newSV(0);
         sv_setref_pv( package_obj, "ALPM::Package", iter->data );
         av_push( package_list, package_obj );
-        iter = iter->next;
+        iter = alpm_list_next( iter );
     }
 
     /* if ( alpm_pkg_list != NULL ) */
@@ -38,23 +38,27 @@ SV * convert_packagelist ( alpm_list_t * alpm_pkg_list )
     return newRV_noinc( (SV *)package_list );
 }
 
-SV * convert_depend ( const pmdepend_t * depend )
+SV * convert_depend ( pmdepend_t * depend )
 {
     HV *depend_hash;
     SV *depend_ref;
     pmdepmod_t depmod;
+    const char * depver;
 
     depend_hash = newHV();
     depend_ref  = newRV_noinc( (SV *)depend_hash );
         
-    hv_store( depend_hash, "name", 4, newSVpv( depend->name, 0 ), 0 );
-    
-    if ( depend->version != NULL ) {
-        hv_store( depend_hash, "version", 7, newSVpv( depend->version, 0 ),
+    hv_store( depend_hash, "name", 4,
+              newSVpv( alpm_dep_get_name( depend ), 0 ), 0 );
+
+    depver = alpm_dep_get_version( depend );
+    if ( depver != NULL ) {
+        hv_store( depend_hash, "version", 7,
+                  newSVpv( depver, 0 ),
                   0 );
     }
     
-    depmod = depend->mod;
+    depmod = alpm_dep_get_mod( depend );
     if ( depmod != 1 ) {
         hv_store( depend_hash, "mod", 3,
                   newSVpv( ( depmod == 2 ? "==" :
@@ -69,21 +73,21 @@ SV * convert_depend ( const pmdepend_t * depend )
     return depend_ref;
 }
 
-SV * convert_depmissing ( const pmdepmissing_t * depmiss )
+SV * convert_depmissing ( pmdepmissing_t * depmiss )
 {
     HV *depmiss_hash;
 
     depmiss_hash = newHV();
     hv_store( depmiss_hash, "target", 6,
-              newSVpv( depmiss->target, 0 ), 0 );
+              newSVpv( alpm_miss_get_target( depmiss ), 0 ), 0 );
     hv_store( depmiss_hash, "cause", 5,
-              newSVpv( depmiss->causingpkg, 0 ), 0 );
+              newSVpv( alpm_miss_get_causingpkg( depmiss ), 0 ), 0 );
     hv_store( depmiss_hash, "depend", 6,
-              convert_depend( depmiss->depend ), 0 );
+              convert_depend( alpm_miss_get_dep( depmiss )), 0 );
     return newRV_noinc( (SV *)depmiss_hash );
 }
 
-SV * convert_conflict ( const pmconflict_t * conflict )
+SV * convert_conflict ( pmconflict_t * conflict )
 {
     AV *conflict_list;
     HV *conflict_hash;
@@ -91,32 +95,40 @@ SV * convert_conflict ( const pmconflict_t * conflict )
     conflict_list = newAV();
     conflict_hash = newHV();
 
-    av_push( conflict_list, newSVpv( conflict->package1, 0 ) );
-    av_push( conflict_list, newSVpv( conflict->package2, 0 ) );
+    av_push( conflict_list,
+             newSVpv( alpm_conflict_get_package1( conflict ), 0 ) );
+    av_push( conflict_list,
+             newSVpv( alpm_conflict_get_package2( conflict ), 0 ) );
 
     hv_store( conflict_hash, "packages", 8,
               newRV_noinc( (SV *)conflict_list ), 0 );
     hv_store( conflict_hash, "reason", 6,
-              newSVpv( conflict->reason, 0 ), 0 );
+              newSVpv( alpm_conflict_get_reason( conflict ), 0 ), 0 );
 
     return newRV_noinc( (SV *)conflict_hash );
 }
 
-SV * convert_fileconflict ( const pmfileconflict_t * fileconflict )
+SV * convert_fileconflict ( pmfileconflict_t * fileconflict )
 {
     HV *conflict_hash;
+    pmfileconflicttype_t contype;
 
+    contype       = alpm_fileconflict_get_type( fileconflict );
     conflict_hash = newHV();
+
     hv_store( conflict_hash, "type", 4,
-              newSVpv( ( fileconflict->type == PM_FILECONFLICT_TARGET ?
+              newSVpv( ( contype == PM_FILECONFLICT_TARGET ?
                          "target" :
-                         fileconflict->type == PM_FILECONFLICT_FILESYSTEM ?
+                         contype == PM_FILECONFLICT_FILESYSTEM ?
                          "filesystem" : "ERROR" ), 0 ), 0);
-    hv_store( conflict_hash, "target", 6, newSVpv( fileconflict->target, 0 ),
+    hv_store( conflict_hash, "target", 6,
+              newSVpv( alpm_fileconflict_get_target( fileconflict ), 0 ),
               0 );
-    hv_store( conflict_hash, "file", 4, newSVpv( fileconflict->file, 0 ),
+    hv_store( conflict_hash, "file", 4,
+              newSVpv( alpm_fileconflict_get_file( fileconflict ), 0 ),
               0 );
-    hv_store( conflict_hash, "ctarget", 7, newSVpv( fileconflict->ctarget, 0 ),
+    hv_store( conflict_hash, "ctarget", 7,
+              newSVpv( alpm_fileconflict_get_ctarget( fileconflict ), 0 ),
               0 );
 
     return newRV_noinc( (SV *)conflict_hash );
@@ -130,33 +142,39 @@ void free_stringlist_errors ( char *string )
 /* Copy/pasted from ALPM's conflict.c */
 void free_fileconflict_errors ( pmfileconflict_t *conflict )
 {
-	if ( strlen( conflict->ctarget ) > 0 ) {
-		free(conflict->ctarget);
-	}
-	free(conflict->file);
-	free(conflict->target);
-	free(conflict);
+    const char * ctarget;
+
+    ctarget = alpm_fileconflict_get_ctarget( conflict );
+	if ( ctarget != NULL ) { free( (void *) ctarget ); }
+	free( (void *) alpm_fileconflict_get_file( conflict ));
+	free( (void *) alpm_fileconflict_get_target( conflict ));
+	free( (void *) conflict);
 }
 
 /* Copy/pasted from ALPM's deps.c */
 void free_depmissing_errors ( pmdepmissing_t *miss )
 {
-	free(miss->depend->name);
-	free(miss->depend->version);
-	free(miss->depend);
+    pmdepend_t *dep;
 
-	free(miss->target);
-	free(miss->causingpkg);
-	free(miss);
+    dep = alpm_miss_get_dep( miss );
+    if ( dep != NULL ) {
+        free( (void *) alpm_dep_get_name( dep ));
+        free( (void *) alpm_dep_get_version( dep ));
+        free( dep );
+    }
+
+	free( (void *) alpm_miss_get_target( miss ));
+	free( (void *) alpm_miss_get_causingpkg( miss ));
+	free( miss);
 }
 
 /* Copy/pasted from ALPM's conflict.c */
 void free_conflict_errors ( pmconflict_t *conflict )
 {
-	free(conflict->package2);
-	free(conflict->package1);
-    free(conflict->reason);
-	free(conflict);
+	free( (void *) alpm_conflict_get_package2( conflict ));
+	free( (void *) alpm_conflict_get_package1( conflict ));
+    free( (void *) alpm_conflict_get_reason( conflict ));
+	free( conflict);
 }
 
 SV * convert_trans_errors ( alpm_list_t * errors )
@@ -177,7 +195,7 @@ SV * convert_trans_errors ( alpm_list_t * errors )
 
 #define MAPERRLIST( TYPE )                                              \
     hv_store( error_hash, "type", 4, newSVpv( #TYPE, 0 ), 0 );          \
-    for ( iter = errors ; iter ; iter = iter->next ) {                  \
+    for ( iter = errors ; iter ; alpm_list_next( iter )) {              \
         ref = convert_ ## TYPE ((pm ## TYPE ## _t *) iter->data );      \
         av_push( error_list, ref );                                     \
     }                                                                   \

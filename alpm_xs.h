@@ -8,51 +8,6 @@
 
 #include <alpm.h>
 
-/* These are missing in alpm.h */
-
-/* from deps.h */
-struct __pmdepend_t {
-	pmdepmod_t mod;
-	char *name;
-	char *version;
-};
-
-struct __pmdepmissing_t {
-	char *target;
-	pmdepend_t *depend;
-	char *causingpkg; /* this is used in case of remove dependency error only */
-};
-
-/* from group.h */
-struct __pmgrp_t {
-	/*group name*/
-	char *name;
-	/*list of pmpkg_t packages*/
-	alpm_list_t *packages;
-};
-
-/* from sync.h */
-struct __pmsyncpkg_t {
-	pmpkgreason_t newreason;
-	pmpkg_t *pkg;
-	alpm_list_t *removes;
-};
-
-/* from conflicts.h */
-
-struct __pmconflict_t {
-    char *package1;
-    char *package2;
-    char *reason;
-};
-
-struct __pmfileconflict_t {
-    char *target;
-    pmfileconflicttype_t type;
-    char *file;
-    char *ctarget;
-};
-
 typedef int           negative_is_error;
 typedef pmdb_t      * ALPM_DB;
 typedef pmpkg_t     * ALPM_Package;
@@ -169,10 +124,10 @@ void cb_trans_progress_wrapper ( pmtransprog_t type,
 
 SV * convert_stringlist ( alpm_list_t * string_list );
 SV * convert_packagelist ( alpm_list_t * package_list );
-SV * convert_depend ( const pmdepend_t * depend );
-SV * convert_depmissing ( const pmdepmissing_t * depmiss );
-SV * convert_conflict ( const pmconflict_t * conflict );
-SV * convert_fileconflict ( const pmfileconflict_t * fileconflict );
+SV * convert_depend ( pmdepend_t * depend );
+SV * convert_depmissing ( pmdepmissing_t * depmiss );
+SV * convert_conflict ( pmconflict_t * conflict );
+SV * convert_fileconflict ( pmfileconflict_t * fileconflict );
 void free_stringlist_errors ( char *string );
 void free_fileconflict_errors ( pmfileconflict_t *conflict );
 void free_depmissing_errors ( pmdepmissing_t *miss );

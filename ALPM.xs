@@ -72,9 +72,6 @@ alpm_release ()
 # These are used inside ALPM.pm, so they keep their _db prefix.
 
 ALPM_DB
-alpm_db_register_local ()
-
-ALPM_DB
 alpm_db_register_sync ( sync_name )
     const char * sync_name
 

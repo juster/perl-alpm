@@ -131,12 +131,9 @@ sub new
 
     Carp::croak( "Invalid arguments to ALPM::LoadConfig::new.\n" .
                  'Hash argument must have coderefs as values' )
-        if List::Util::first { ref $_ ne 'CODE' }
-            values %{ $custom_fields_ref };
+        if grep { ref $_ ne 'CODE' } values %{ $custom_fields_ref };
 
-    bless { custom_fields => $custom_fields_ref,
-            auto_register => $params{ 'auto_register' } || 1,
-           }, $class;
+    bless { custom_fields => $custom_fields_ref }, $class;
 }
 
 sub load_file
@@ -216,10 +213,6 @@ sub load_file
 
     _make_parser( $cfg_path, $parser_hooks )->();
 
-    if ( $self->{'auto_register'} ) {
-        ALPM->register( 'local' );
-    }
-
     return;
 }
 
@@ -242,8 +235,7 @@ ALPM::LoadConfig - pacman.conf config file parsing class.
   # Load custom fields as well:
   my $value;
   my %fields = ( 'CustomField' => sub { $value = shift } );
-  my $loader = ALPM::LoadConfig->new( custom_fields => \%fields,
-                                      auto_register => 0 );
+  my $loader = ALPM::LoadConfig->new( custom_fields => \%fields );
   $loader->load_file( '/etc/pacman.conf' );
 
 =head1 DESCRIPTION
@@ -256,8 +248,7 @@ need to use this module directly.
 
 =head2 new
 
- $OBJ = ALPM::LoadConfig->new( [ custom_fields => \%FIELDS_REF,  ]
-                               [ auto_register => $AUTO_REGISTER ] );
+ $OBJ = ALPM::LoadConfig->new( custom_fields => \%FIELDS_REF? );
 
 =over 4
 
@@ -265,25 +256,13 @@ need to use this module directly.
 
 =over 4
 
-=item C<\%FIELDS_REF> (Hash Reference) (Optional)
+=item C<\%FIELDS_REF> B<(Hash Reference) (Optional)>
 
 Keys are field names from the C</etc/pacman.conf> configuration file.
 Values are code references.  When a field is found inside the
 configuration file with the I<exact same> name, then the code
 reference is called, passed the value of the entry as the only
 argument.
-
-=item C<$AUTO_REGISTER> (Optional)
-
-Normally, LoadConfig will automatically call
-C<< ALPM->register_db( 'local' ) >>
-to register the local database after it has read the config file.  If
-you want to override certain ALPM settings immediately after reading
-the config file you will have to turn this feature off.  This is used
-as a boolean value, set it to 0 to disable automatic localdb
-registering.
-
-=back
 
 =back
 

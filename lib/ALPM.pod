@@ -276,21 +276,17 @@ package or database-specific functions.
 
 =head2 register
 
-  Usage   : my $localdb = ALPM->register;
-            my $syncdb  = ALPM->register
-                ( 'core' => 'ftp://ftp.archlinux.org/$repo/os/i686' );
-  Params  : No parameters will return the local database.
-            Two parameters will register a sync database:
-            1) The name of the repository to connect to.
+  Usage   : my $syncdb = ALPM->register
+                ( 'core' => 'ftp://ftp.archlinux.org/$repo/os/$arch' );
+  Params  : 1) The name of the repository to connect to.
             2) The URL to the repository's online files.
-               Like with pacman's mirrorlist config file, $repo will be
-               replaced with the repository name (argument 1) ...
-               use single quotes!
-  Precond : You must set options before using register_db.
+  Notes   : Like with pacman's mirrorlist config file, $repo will be
+            replaced with the repository name (argument 1) and
+            $arch will be replaced with the architecture.
+            Use single quotes when using $'s!
+  Precond : You must set options before using register.
   Throws  : An 'ALPM DB Error: ...' message is croaked on errors.
   Returns : An ALPM::DB object.
-
-C<register> is a shorter alias for C<register_db>.
 
 See L<ALPM::DB>
 

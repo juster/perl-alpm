@@ -256,22 +256,32 @@ sub set_options
     return 1;
 }
 
-sub register_db
+sub register
 {
     my $class = shift;
 
-    if ( @_ == 0 || $_[0] eq 'local' ) {
-        return $class->localdb;
-    }
+    croak 'You no longer need to register the local database'
+        $_[0] eq 'local';
+
+    croak 'Supply a repository name and a base URL to start it at'
+        if @_ != 2;
 
     my ($sync_name, $sync_url) = @_;
 
-    croak 'You must supply a URL for the database'
-        unless ( defined $sync_url );
+    croak 'You must supply a URL for the database' unless $sync_url;
 
     # Replace the literal string '$repo' with the repo's name,
     # like in the pacman config file... bad idea maybe?
-    $sync_url =~ s/\$repo/$sync_name/g;
+    $sync_url =~ s/\$repo\b/$sync_name/g;
+
+    if ( $sync_url =~ /\$arch\b/ ) {
+        my $arch = ALPM->get_opt( 'arch' );
+        if ( $arch eq 'auto' ) {
+            chomp $arch = `uname -m`;
+            die 'Failed to call uname to expand $arch' if $? != 0
+        }
+        $sync_url =~ s/\$arch\b/$arch/g;
+    }
 
     # Set the server right away because function calls break in between...
     my $new_db = _db_register_sync($sync_name);
@@ -279,22 +289,16 @@ sub register_db
     return $new_db;
 }
 
-*register = \&register_db;
-
 sub localdb
 {
     my $class = shift;
-    my $localdb = $class->get_opt('localdb');
-
-    return $localdb if $localdb;
-    return _db_register_local();
+    return $class->get_opt('localdb');
 }
 
 sub syncdbs
 {
     my $class = shift;
-    my $syncdbs = $class->get_opt('syncdbs');
-    return @$syncdbs;
+    return @{ $class->get_opt('syncdbs') };
 }
 
 sub databases

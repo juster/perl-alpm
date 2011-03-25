@@ -1,4 +1,55 @@
-2011-03-05  Justin Davis  <juster@artemis.juster.info>
+-*- org -*-
+
+:     _    _     ____  __  __    ____ _                                 
+:    / \  | |   |  _ \|  \/  |  / ___| |__   __ _ _ __   __ _  ___  ___ 
+:   / _ \ | |   | |_) | |\/| | | |   | '_ \ / _` | '_ \ / _` |/ _ \/ __|
+:  / ___ \| |___|  __/| |  | | | |___| | | | (_| | | | | (_| |  __/\__ \
+: /_/   \_\_____|_|   |_|  |_|  \____|_| |_|\__,_|_| |_|\__, |\___||___/
+:                                                       |___/           
+
+* Release 2.00
+
+** Upgrade for Pacman 3.5
+   Converted to the new libalpm that is distributed with pacman 3.5.
+
+*** alpm_db_register_local removed
+    You don't have to call ALPM->register() to register the local DB.
+    The local DB is registered automatically when you call
+    ALPM->localdb aka ALPM->get_opt( 'localdb' ).  ALPM::ParseConfig
+    no longer takes the 'autoregister' parameter.
+
+*** Transaction functions absorbed into install() and uninstall()
+    The two new ALPM::Transaction methods, install and uninstall,
+    replace the old sync, pkgfile, remove, and sync_from_db
+    methods.
+
+    The new methods take package objects as arguments. The old
+    methods took package names as arguments. This reflects the same
+    libalpm changes.
+
+** ALPM method aliases removed
+   For some reason I made aliases everytime I changed a function name.
+   I don't think anyone uses this module anyways so I just yanked out
+   a bunch of old method aliases I had setup. The following are
+   removed from the ALPM class, just use their alternate names.
+
+   |----------------+--------------|
+   | Removed Method | "New" Method |
+   |----------------+--------------|
+   | register_db    | register     |
+   | transaction    | trans        |
+   | action         | trans        |
+   | databases      | dbs          |
+   | repodb         | db           |
+   |----------------+--------------|
+
+** New Changelog Format
+   Ditched the old GNU-style ChangeLog format for an org-mode file. Old
+   ChangeLog entries are at the end of the file...
+
+* Previous Releases
+
+2011-03-05  Justin Davis  <juster@cpan.org>
 
 	* RELEASE (1.03)
 

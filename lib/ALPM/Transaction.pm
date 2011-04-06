@@ -338,6 +338,8 @@ noted.
 
 =item B<fileconflicts>
 
+=item B<interconflicts>
+
 =item B<resolvedeps>
 
 =item B<integrity>
@@ -345,11 +347,6 @@ noted.
 =item B<deltaintegrity>
 
 All the above events have no special keys.
-
-=item B<interconflicts>
-
-When status is 'done' there is a key named 'target' which is an
-L<ALPM::Package> object.
 
 =item B<add>
 

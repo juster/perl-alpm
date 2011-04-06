@@ -234,7 +234,6 @@ void cb_trans_event_wrapper ( pmtransevt_t event,
 	case PM_TRANS_EVT_INTERCONFLICTS_DONE:
         EVT_NAME("interconflicts")
         EVT_STATUS("done")
-        EVT_PKG("target", arg_one)
         break;
 	case PM_TRANS_EVT_ADD_START:
         EVT_NAME("add")

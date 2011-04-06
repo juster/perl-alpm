@@ -488,6 +488,8 @@ void cb_trans_progress_wrapper( pmtransprog_t type,
     case PM_TRANS_PROGRESS_UPGRADE_START:   EVT_NAME( "upgrade"   );
     case PM_TRANS_PROGRESS_REMOVE_START:    EVT_NAME( "remove"    );
     case PM_TRANS_PROGRESS_CONFLICTS_START: EVT_NAME( "conflicts" );
+    case PM_TRANS_PROGRESS_DISKSPACE_START: EVT_NAME( "diskspace" );
+    case PM_TRANS_PROGRESS_INTEGRITY_START: EVT_NAME( "integrity" );
     }
 
     EVT_INT ( "id",          type );

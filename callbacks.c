@@ -198,9 +198,9 @@ void cb_trans_event_wrapper ( pmtransevt_t event,
     sv_setref_pv( s_pkg, "ALPM::Package", (void *)pkgptr );     \
     hv_store( h_event, key, strlen(key), s_pkg, 0 );
 
-#define EVT_TEXT(key, text)    \
-    hv_store( h_event, key, 0, \
-              newSVpv( (char *)text, 0 ), 0 );
+#define EVT_TEXT(KEY, TEXT)    \
+    hv_store( h_event, KEY, strlen(KEY), \
+              newSVpv( (char *)TEXT, 0 ), 0 );
 
     switch ( event ) {
     case PM_TRANS_EVT_CHECKDEPS_START:

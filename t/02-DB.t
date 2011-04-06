@@ -23,7 +23,7 @@ is( $local->find('lskdfjkbadpkgname'), undef );
 
 ok( $local->find('perl')->isa('ALPM::Package') );
 
-ok( scalar $local->packages > 1 );
+ok( scalar $local->pkgs   > 1 );
 ok( scalar $local->groups > 1 );
 #is( ref $local->search('perl'), 'ARRAY' );
 
@@ -47,7 +47,7 @@ SKIP:
                                 'ftp://ftp.archlinux.org/$repo/os/$arch' );
     ok( $syncdb );
     is( $syncdb->name, $name );
-    ok( scalar $syncdb->packages > 1 );
+    ok( scalar $syncdb->pkgs   > 1 );
     ok( scalar $syncdb->groups > 1 );
 
     ok( $syncdb->find('perl')->isa('ALPM::Package') );

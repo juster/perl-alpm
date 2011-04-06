@@ -13,10 +13,11 @@ sub update
     my $self = shift;
 
     croak "ALPM DB Error: cannot update database with an active transaction"
-        if ( $ALPM::_Transaction );
+        if $ALPM::_Transaction;
 
     my $t = ALPM->trans();
     eval { $self->_update(1) };
+    undef $t;
     if ( $EVAL_ERROR ) {
         $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;
         croak $EVAL_ERROR;
@@ -30,7 +31,7 @@ sub url
     my $self = shift;
 
     return undef if ( $self->name eq 'local' );
-    return $self->_url;
+    return $self->_get_url;
 }
 
 # Wrapper so people don't have to use arrayrefs.
@@ -49,19 +50,17 @@ sub search
     return @{ $result };
 }
 
-sub packages
+sub pkgs
 {
     my $self = shift;
 
-    return @{ $self->_get_pkg_cache() };
+    return @{ $self->_get_pkgcache() };
 }
-
-*pkgs = \&packages;
 
 sub groups
 {
     my $self = shift;
-    return @{ $self->_get_group_cache() };
+    return @{ $self->_get_grpcache() };
 }
 
 1;

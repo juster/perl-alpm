@@ -18,7 +18,7 @@ ALPM::DB - ALPM database class.
       printf "%s %s\n", $pkg->name, $pkg->version;
   }
   
-  for my $pkg ( $syncdb->find_group('xfce4')->packages ) {
+  for my $pkg ( $syncdb->find_group('xfce4')->pkgs ) {
       print join( q{ }, $pkg->attribs('name', 'version') ), "\n";
   }
   
@@ -61,36 +61,16 @@ ALPM::DB - ALPM database class.
   Params  : A list of strings to search for.
   Returns : An array of package objects whose name matched the search.
 
-=head2 packages
+=head2 pkgs
 
-  Usage   : my @pkgs = $db->packages;
+  Usage   : my @pkgs = $db->pkgs;
   Params  : None
   Returns : An array of all packages in the DB.
-  Notes   : This is a wrapper for the C<get_pkg_cache> method.
-            It is easier if you want a list.
 
 =head2 groups
 
   Usage   : my @groups = $db->groups;
   Returns : An array of all groups in the DB.
-
-=head2 pkgs
-
-This is an alias for the C<packages> method.
-
-  Usage   : my @pkgs = $db->pkgs;
-
-=head2 get_pkg_cache
-
-  Usage    : my $cache_ref = $db->get_pkg_cache;
-  Comments : Resembles the alpm_db_get_pkgcache function.
-  Returns  : An arrayref of package objects in the DB cache.
-
-=head2 pkgs_ref
-
-This is an alias for the C<get_pkg_cache> method.
-
-  Usage   : my $pkgs_ref = $db->pkgs_ref;
 
 =head1 add_url
 

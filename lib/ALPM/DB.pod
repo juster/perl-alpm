@@ -12,7 +12,6 @@ ALPM::DB - ALPM database class.
   
   my $url       = 'ftp://ftp.archlinux.org/community/os/i686';
   my $syncdb    = ALPM->register_db( 'community' => $url );
-  $syncdb->set_server( $url );
   
   for my $pkg ( $syncdb->search( 'perl' ) ) {
       printf "%s %s\n", $pkg->name, $pkg->version;

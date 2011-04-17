@@ -146,7 +146,7 @@ static void free_fileconflict_errors ( void * ptr )
     const char       * ctarget;
 
     ctarget = alpm_fileconflict_get_ctarget( conflict );
-	if ( ctarget != NULL ) { free( (void *) ctarget ); }
+	if ( strlen( ctarget ) > 0 ) { free( (void *) ctarget ); }
 	free( (void *) alpm_fileconflict_get_file( conflict ));
 	free( (void *) alpm_fileconflict_get_target( conflict ));
 	free( (void *) conflict);

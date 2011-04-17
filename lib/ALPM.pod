@@ -15,48 +15,63 @@ This version of ALPM is compatible with pacman 3.5.
              cachedirs   => [ '/var/cache/pacman/pkg' ],
              logfile     => '/var/log/pacman.log',
              xfercommand => '/usr/bin/wget --passive-ftp -c -O %o %u' );
-
+  
   # It's easier just to load a configuration file:
   use ALPM qw(/etc/pacman.conf);
-
+  
   # My new favorite way to get/set options.  A tied hash.  (TMTOWTDI)
   my %alpm;
   tie %alpm, 'ALPM';
   $alpm{root} = '/';
   printf "Root Dir = %s\n", $alpm{root};
   my ($root, $dbpath, $cachedir) = @alpm{qw/root dbpath cachedir/};
-
+  
   # Callback options...
   $alpm{logcb} = sub { my ($lvl, $msg) = @_; print "[$lvl] $msg\n" };
-
+  
   # Querying databases & packages
   my $localdb = ALPM->localdb;
   my $pkg     = $localdb->find('perl');
-
+  
   # Lots of different ways to get package attributes...
   my $attribs_ref    = $pkg->attribs_ref;
   my $name           = $pkg->name;
   my ($size, $isize) = $pkg->attribs('size', 'isize');
   print "$name $attribs_ref->{version} $attribs_ref->{arch} $size/$isize";
-
+  
   my $syncdb   = ALPM->register( 'extra',
                                  'ftp://ftp.archlinux.org/$repo/os/$arch' );
   my @perlpkgs = $syncdb->search('perl');
   printf "%d perl packages found.\n", scalar @perlpkgs;
-
+  
   # Search all databases/repos.
   print map { sprintf "%10s: %s %s\n", $_->db->get_name, $_->name,
               $_->version } ALPM->search('perl');
-
+  
   # Find a database by name of repository.
   my $coredb = ALPM->db('core');
-
+  
   # Transactions
-  my $trans = ALPM->action( type => 'sync' );
+  my $trans = ALPM->trans( type => 'sync' );
   $trans->sync( 'perl', 'perl-alpm', 'pacman' );
   $trans->prepare;
   $trans->commit;
   undef $trans; # this forces releasing the transaction
+  
+  # Miscellanious functions
+  my $cmp = ALPM->vercmp( '0.01', '0.02' );
+  print ( $cmp == -1 ? "less than\n" :
+          $cmp ==  0 ? "equal\n"     :
+          $cmp ==  1 ? "greater than\n" );
+  
+  my @syncdbs = ALPM->syncdbs;
+  my $found   = ALPM->find_dbs_satisfier( \@syncdbs, 'findme' );
+  
+  # $found is undef or package object for findme
+  
+  $found = ALPM->find_satisfier( [ ALPM->db('extra')->pkgs ],
+                                 'findme' );
+
 
 =head1 DESCRIPTION
 
@@ -311,16 +326,11 @@ See L<ALPM::DB>
   Params  : The name of a repository.
   Returns : An ALPM::DB object matching the repo name.
 
-C<db> is a shorter alias for the method C<repodb>.
-
 =head2 dbs
 
   Usage   : my @dbs = ALPM->dbs;
-            my @dbs = ALPM->databases;
   Params  : None
   Returns : A list of each database that is registered.
-
-C<dbs> is a shorter alias for the method C<databases>.
 
 See L<ALPM::DB>
 
@@ -342,7 +352,7 @@ See L<ALPM::Package>
 
 See also L<ALPM::LoadConfig> for more advanced needs.
 
-=head2 transaction
+=head2 trans
 
   Usage   : my $t = ALPM->trans( flags    => 'nodeps force',
                                  event    => sub { ... },
@@ -356,7 +366,7 @@ See also L<ALPM::LoadConfig> for more advanced needs.
 
 See L<ALPM::Transaction>.
 
-=head3 transaction Parameters
+=head3 Parameters
 
 Transactions have many named parameters, passed as a hash.
 
@@ -421,6 +431,39 @@ of the transaction.
 Callbacks are explained in greater detail in the L<ALPM::Transaction>
 document.
 
+=head2 vercmp
+
+  Usage   : if ( ALPM->vercmp( $leftver, $rightver ) == -1 ) { ... }
+  Purpose : Compare two version strings, similiar to strcmp.
+  Returns : -1 if left version is below right version,
+             0 if both versions are equal
+             1 if left version is above right version
+
+=head2 find_satisfier
+
+  Usage   : my $found = ALPM->find_satisfier( $pkgs_ref, "pkgname>1" );
+  Purpose : Searches through the provided package objects ($pkgs_ref,
+            an arrayref) for a package that satisfies the given
+            dependency.
+  Params  : 1) An arrayref of ALPM::Package objects.
+            2) A dependency string that must be satisfied.
+  Returns : undef if no satisfier was found or an ALPM::Package object.
+  Notes   : The conversation callback of an active transaction is used
+            to ask about ignoring a package if a matching satisfier
+            is on the ignore list.
+
+=head2 find_dbs_satisfier
+
+  Usage   : my $found = ALPM->find_dbs_satisfier( $dbs_ref, "pkgname>1" );
+  Purpose : Same as find_satisfier, except we search the provided
+            databases.
+  Params  : 1) An arrayref of ALPM::DB objects.
+            2) A dependency string that must be satisfied.
+  Returns : undef if no satisfier was found or an ALPM::Package object.
+  Notes   : The conversation callback of an active transaction is used
+            to ask about ignoring a package if a matching satisfier
+            is on the ignore list.
+
 =head1 ERRORS
 
 Global ALPM errors are thrown with C<croak>.  The error messages match
@@ -439,9 +482,9 @@ TODO: Common error messages and how to fix them?
 
 Unimplemented functions:
 
-  alpm_checkdeps, alpm_find_satisfier, alpm_find_dbs_satisfier,
-  alpm_dep_compute_string, alpm_trans_interrupt, alpm_checkconflicts,
-  alpm_compute_md5sum, alpm_sync_newversion, alpm_delta_... functions
+  alpm_checkdeps, alpm_dep_compute_string, alpm_trans_interrupt,
+  alpm_checkconflicts, alpm_compute_md5sum, alpm_sync_newversion,
+  alpm_delta_... functions
 
 =head1 SEE ALSO
 

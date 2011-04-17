@@ -39,6 +39,26 @@ alpm_version ( class )
   OUTPUT:
     RETVAL
 
+ALPM_PackageOrNull
+alpm_find_satisfier ( self, pkglist, depstr )
+    SV * self
+    PackageListFree pkglist
+    const char * depstr
+  CODE:
+    RETVAL = alpm_find_satisfier( pkglist, depstr );
+  OUTPUT:
+    RETVAL
+
+ALPM_PackageOrNull
+alpm_find_dbs_satisfier ( self, dblist, depstr )
+    SV * self
+    DatabaseList dblist
+    const char * depstr
+  CODE:
+    RETVAL = alpm_find_dbs_satisfier( dblist, depstr );
+  OUTPUT:
+    RETVAL
+
 # PRIVATE ###################################################################
  
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm

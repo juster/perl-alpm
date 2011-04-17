@@ -12,6 +12,7 @@ typedef int           negative_is_error;
 typedef pmdb_t      * ALPM_DB;
 typedef pmpkg_t     * ALPM_Package;
 typedef pmpkg_t     * ALPM_PackageFree;
+typedef pmpkg_t     * ALPM_PackageOrNull;
 typedef pmgrp_t     * ALPM_Group;
 
 typedef pmdepend_t  * DependHash;

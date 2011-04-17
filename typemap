@@ -4,6 +4,7 @@ negative_is_error     I_NEG_IS_ERROR
 ALPM_DB               T_ALPM_DB
 ALPM_Package          T_ALPM_PACKAGE
 ALPM_PackageFree      T_ALPM_PACKAGEFREE
+ALPM_PackageOrNull    T_ALPM_PACKAGEORNULL
 ALPM_Group            T_ALPM_GROUP
 
 StringListFree        L_STRING_FREE
@@ -66,30 +67,64 @@ T_ALPM_GROUP
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\", \"ALPM::Group\")
 
+L_DATABASE
+    if ( SvTYPE( SvRV( $arg )) == SVt_PVAV ) {
+        AV * db_array;
+        SV ** elem, * cleanup;
+        I32 i, max;
+
+        $ntype db_list;
+        void * db;
+
+        db_array = (AV *)SvRV( $arg );
+        max      = av_len( db_array );
+        db_list  = NULL;
+
+        for ( i=0 ; i<=max; ++i ) {
+            elem = av_fetch( db_array, i, 0 );
+            
+            if ( ! sv_derived_from( *elem, \"ALPM::DB\" )) {
+                croak(\"All elements of arrayref must be ALPM::DB objects\");
+            }
+
+	        db      = INT2PTR( void *, SvIV( SvRV( *elem )));
+            db_list = alpm_list_add( db_list, db );
+        }
+
+        if ( db_list != NULL ) {
+            cleanup = sv_newmortal();
+            sv_setref_pv( cleanup, \"ALPM::ListAutoFree\", (void *)db_list );
+        }
+
+        $var = db_list;
+    }
+    else {
+	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\");
+    }
+
 L_PACKAGE_FREE
     if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
-        AV *package_array;
+        AV * package_array;
+        SV ** elem, * cleanup;
         I32 i, max;
-        SV **elem, *cleanup;
-        IV tmp;
-        STRLEN string_len;
 
         $ntype list;
-        pmpkg_t *package;
+        void * package;
 
-        package_array = (AV *)SvRV($arg);
-        max = av_len(string_array);
+        package_array = (AV *)SvRV( $arg );
+        max = av_len( package_array );
         list = NULL;
 
         for ( i=0; i<=max; ++i ) {
-            elem = av_fetch( string_array, i, 0 );
-            if ( !sv_derived_from(elem, \"ALPM::Package\") ) {
+            elem = av_fetch( package_array, i, 0 );
+            if ( ! sv_derived_from( *elem, \"ALPM::Package\" )) {
                 croak(\"All elements of arrayref must be ALPM::Package objects\");
             }
 
-            tmp     = SvIV( (SV*)SvRV(elem) );
-	        package = INT2PTR( pmpkg_t, tmp );
-            list    = alpm_list_add( list, (void *)package );
+	        package = INT2PTR( void *, SvIV( (SV *)SvRV( *elem )));
+            list    = alpm_list_add( list, package );
         }
 
         if ( list != NULL ) {
@@ -99,10 +134,11 @@ L_PACKAGE_FREE
 
         $var = list;
     }
-    else
+    else {
 	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\");
+    }
 
 L_STRING_FREE
     if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
@@ -238,6 +274,10 @@ T_ALPM_PACKAGEFREE
     if ( $var == NULL )
         croak( "ALPM Package Error: %s", alpm_strerror( pm_errno ));
     sv_setref_pv( $arg, \"ALPM::PackageFree\", (void *)$var );
+
+T_ALPM_PACKAGEORNULL
+    if ( $var == NULL ) $arg = &PL_sv_undef;
+    sv_setref_pv( $arg, \"ALPM::Package\", (void *)$var );
 
 T_ALPM_GROUP
     if ( $var == NULL ) {

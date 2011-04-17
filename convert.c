@@ -198,7 +198,7 @@ SV * convert_trans_errors ( alpm_list_t * errors )
 
 #define MAPERRLIST( TYPE )                                              \
     hv_store( error_hash, "type", 4, newSVpv( #TYPE, 0 ), 0 );          \
-    for ( iter = errors ; iter ; alpm_list_next( iter )) {              \
+    for ( iter = errors ; iter ; iter = alpm_list_next( iter )) {       \
         ref = convert_ ## TYPE ((pm ## TYPE ## _t *) iter->data );      \
         av_push( error_list, ref );                                     \
     }                                                                   \

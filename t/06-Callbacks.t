@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More tests => 11;
+use Test::More;
 use ALPM qw(t/test.conf);
 use File::Spec::Functions qw(rel2abs);
 use File::stat qw(stat);
@@ -13,7 +13,7 @@ my $log_lines = q{};
 tie my %alpm_opt, 'ALPM';
 $alpm_opt{logcb} = sub { $log_lines .= $_[1] };
 
-my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest') );
+my $db = ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest'));
 my $foopkg = $db->find('foo');
 
 ok( length $log_lines > 0 );
@@ -21,6 +21,9 @@ ok( $foopkg );
 
 $alpm_opt{logcb} = undef;
 
+# Create two closures. One is used as a callback and records the
+# name of every event fired. The other is used to check if
+# an event of the given name was fired.
 sub create_cb_checker
 {
     my $msg_fmt = shift
@@ -34,18 +37,15 @@ sub create_cb_checker
     };
 
     my $check_sub = sub {
+        my $testdesc = sprintf $msg_fmt, join ',', @_;
         ok( ( 0 == grep { ! $_ } map { delete $was_called{$_} } @_ ),
-            sprintf $msg_fmt, join ',', @_ );
+            $testdesc );
     };
     return ($cb_sub, $check_sub);
 }
 
-$alpm_opt{ignorepkgs} = [ 'baz' ];
-
-# use Data::Dumper;
-# sub dump_cb {
-#     print STDERR Dumper(\@_);
-# }
+# $alpm_opt{'logcb'} = sub { printf STDERR '[%10s] %s', @_; };
+$alpm_opt{'ignorepkgs'} = [ 'baz' ];
 
 my ($total_bytes, $bytes_count);
 
@@ -68,9 +68,14 @@ my ($progress_log, $progress_check)
 my $trans = ALPM->trans( event    => $event_log,
                          progress => $progress_log,
                          conv     => $conv_log );
-$trans->sync( 'baz' );
-$conv_check->( 'install_ignore' );
+
+my @syncdbs = ALPM->syncdbs;
+my $bazpkg  = ALPM->find_dbs_satisfier( \@syncdbs, 'baz' );
+ok $bazpkg, 'found baz package';
+$trans->install( $bazpkg );
+$trans->prepare;
 $trans->commit;
+$conv_check->( 'install_ignore' );
 $progress_check->( 'add' );
 undef $trans;
 
@@ -94,11 +99,11 @@ $alpm_opt{fetchcb} = sub {
     return stat($destfqp)->mtime;
 };
 
-ok( ALPM->unregister_all_dbs );
-ok( ALPM->register( 'local' ) );
+$db->unregister for ALPM->syncdbs;
 
 ok( $db = ALPM->register( 'upgradetest',
-                          rel2abs( 't/repos/share/upgradetest' )) );
+                          rel2abs( 't/repos/share/upgradetest' )),
+    'register upgradetest test repository' );
 ok( $db->update );
 
 $trans = ALPM->trans( conv => $conv_log );
@@ -109,6 +114,4 @@ $conv_check->( 'replace_package' );
 undef $trans;
 
 ok( $copied_files, 'Fetch callback worked' );
-
-
-
+done_testing;

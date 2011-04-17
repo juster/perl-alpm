@@ -16,7 +16,7 @@ sub update
         if $ALPM::_Transaction;
 
     my $t = ALPM->trans();
-    eval { $self->_update(1) };
+    eval { $self->_update( @_ > 0 ) };
     undef $t;
     if ( $EVAL_ERROR ) {
         $EVAL_ERROR =~ s/ at .*? line \d+[.]\n//;

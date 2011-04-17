@@ -89,6 +89,7 @@ ALPM::DB - ALPM database class.
 =head2 update
 
   Usage   : $db->update;
+  Params  : If provided a parameter, the update is forced.
   Purpose : Updates the local copy of the database's package list.
   Comment : This needs to create a transaction to work, so make sure
             you don't have any active transactions.

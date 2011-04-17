@@ -134,15 +134,16 @@ SV * convert_fileconflict ( pmfileconflict_t * fileconflict )
     return newRV_noinc( (SV *)conflict_hash );
 }
 
-void free_stringlist_errors ( char *string )
+static void free_stringlist_errors ( void * string )
 {
     free(string);
 }
 
 /* Copy/pasted from ALPM's conflict.c */
-void free_fileconflict_errors ( pmfileconflict_t *conflict )
+static void free_fileconflict_errors ( void * ptr )
 {
-    const char * ctarget;
+    pmfileconflict_t * conflict = ptr;
+    const char       * ctarget;
 
     ctarget = alpm_fileconflict_get_ctarget( conflict );
 	if ( ctarget != NULL ) { free( (void *) ctarget ); }
@@ -152,9 +153,10 @@ void free_fileconflict_errors ( pmfileconflict_t *conflict )
 }
 
 /* Copy/pasted from ALPM's deps.c */
-void free_depmissing_errors ( pmdepmissing_t *miss )
+static void free_depmissing_errors ( void * ptr )
 {
-    pmdepend_t *dep;
+    pmdepmissing_t * miss = ptr;
+    pmdepend_t * dep;
 
     dep = alpm_miss_get_dep( miss );
     if ( dep != NULL ) {
@@ -165,15 +167,16 @@ void free_depmissing_errors ( pmdepmissing_t *miss )
 
 	free( (void *) alpm_miss_get_target( miss ));
 	free( (void *) alpm_miss_get_causingpkg( miss ));
-	free( miss);
+	free( miss );
 }
 
 /* Copy/pasted from ALPM's conflict.c */
-void free_conflict_errors ( pmconflict_t *conflict )
+static void free_conflict_errors ( void * ptr )
 {
-	free( (void *) alpm_conflict_get_package2( conflict ));
-	free( (void *) alpm_conflict_get_package1( conflict ));
-    free( (void *) alpm_conflict_get_reason( conflict ));
+    pmconflict_t * conflict = ptr;
+	free( (void *)alpm_conflict_get_package1( conflict ));
+	free( (void *)alpm_conflict_get_package2( conflict ));
+    free( (void *)alpm_conflict_get_reason( conflict ));
 	free( conflict);
 }
 
@@ -200,7 +203,6 @@ SV * convert_trans_errors ( alpm_list_t * errors )
         av_push( error_list, ref );                                     \
     }                                                                   \
     alpm_list_free_inner( errors,                                       \
-                          (alpm_list_fn_free)                           \
                           free_ ## TYPE ## _errors );                   \
     alpm_list_free( errors );                                           \
     break

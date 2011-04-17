@@ -129,10 +129,6 @@ SV * convert_depend ( pmdepend_t * depend );
 SV * convert_depmissing ( pmdepmissing_t * depmiss );
 SV * convert_conflict ( pmconflict_t * conflict );
 SV * convert_fileconflict ( pmfileconflict_t * fileconflict );
-void free_stringlist_errors ( char *string );
-void free_fileconflict_errors ( pmfileconflict_t *conflict );
-void free_depmissing_errors ( pmdepmissing_t *miss );
-void free_conflict_errors ( pmconflict_t *conflict );
 SV * convert_trans_errors ( alpm_list_t * errors );
 
 #endif

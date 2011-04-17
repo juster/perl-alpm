@@ -1,4 +1,4 @@
-ALPM version 1.03
+ALPM version 2.00
 =================
 
 This is a perl XS module for the use of the libalpm C library.  libalpm
@@ -21,7 +21,7 @@ To install this module type the following:
 DEPENDENCIES
 
 This module requires the alpm library.  This module was developed for
-libalpm 5.0.0 included with pacman version 3.4.0.
+libalpm 6.0.1 included with pacman version 3.5.1.
 
 COPYRIGHT AND LICENCE
 

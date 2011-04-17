@@ -11,6 +11,11 @@ $ENV{'LANGUAGE'} = 'en_US';
 
 # TRANSACTION ERRORS
 
+sub syncpkg
+{
+    ALPM->db( 'simpletest' )->find( shift );
+}
+
 tie my %alpm_opt, 'ALPM';
 $alpm_opt{logcb} = sub { printf '[%8s] %s', @_ };
 
@@ -19,7 +24,7 @@ ALPM->register( 'simpletest' => rel2abs('t/repos/share/simpletest') );
 # File Conflict Error ########################################################
 
 my $t = ALPM->trans();
-ok( $t->sync( 'fileconflict' ) );
+ok( $t->install( syncpkg('fileconflict') ));
 eval { $t->commit };
 
 ok( $@ && $t->{error}, 'A transaction error occurred' );
@@ -40,7 +45,7 @@ undef $t;
 # Unsatisfied dependencies ###################################################
 
 $t = ALPM->trans();
-ok( $t->remove( 'foo' ));
+ok( $t->uninstall( ALPM->localdb->find( 'foo' )));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error:/
     && $t->{error}, 'A transaction error occurred' );
@@ -58,7 +63,7 @@ undef $t;
 # Conflicting Dependencies ###################################################
 
 $t = ALPM->trans();
-ok( $t->sync( 'depconflict' ));
+ok( $t->install( syncpkg( 'depconflict' )));
 eval { $t->prepare };
 ok( $@ =~ /^ALPM Transaction Error: conflicting dependencies/
     && $t->{error}, 'transaction error with conflicting deps' );
@@ -76,7 +81,7 @@ undef $t;
 # Corrupt Packages ###########################################################
 
 $t = ALPM->trans();
-ok $t->sync( 'corruptme' );
+ok $t->install( syncpkg( 'corruptme' ));
 ok $t->prepare;
 eval { $t->commit };
 like $@, qr/^ALPM Transaction Error: invalid or corrupted package/,

@@ -350,7 +350,11 @@ sub load_pkgfile
     }
 
     my $package_path = shift;
-    return _pkg_load( $package_path );
+    my $pkgobj = eval { _pkg_load( $package_path ) };
+    return $pkgobj unless $@;
+
+    $@ =~ s/ at .*? line \d+[.]\n\z//;
+    croak $@;
 }
 
 sub trans

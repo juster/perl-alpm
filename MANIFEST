@@ -22,7 +22,6 @@ t/05-Transaction.t
 t/06-Callbacks.t
 t/07-TiedOptions.t
 t/08-TransErrors.t
-t/09-PackageFree.t
 t/repos/build/upgradetest/foo/PKGBUILD
 t/repos/build/upgradetest/replacebaz/PKGBUILD
 t/repos/build/simpletest/bar/PKGBUILD

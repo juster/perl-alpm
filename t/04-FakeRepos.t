@@ -15,8 +15,22 @@ my $REPOS_BUILD = rel2abs('t/repos/build');
 my $REPOS_SHARE = rel2abs('t/repos/share');
 my $TEST_ROOT   = rel2abs('t/root');
 my $TEST_CONF   = 't/test.conf';
+my $PKGEXT;
 
 my $start_dir = cwd();
+
+sub grok_makepkg_pkgext
+{
+    die '/etc/makepkg.conf not found' unless -f '/etc/makepkg.conf';
+    my $bash = q{source /etc/makepkg.conf; echo $PKGEXT};
+    
+    # Make sure we are reading the last line.
+    my ($pkgext) = reverse qx{bash -c '$bash'};
+    chomp $pkgext;
+    
+    die 'failed to read PKGEXT from /etc/makepkg.conf' unless $pkgext;
+    return $pkgext;
+}
 
 sub create_conf
 {
@@ -42,9 +56,11 @@ sub create_adder
 {
     my ($repo_name) = @_;
     my $reposhare   = "$REPOS_SHARE/$repo_name";
+    my $ext         = quotemeta $PKGEXT;
 
     return sub {
-        return unless /[.]pkg[.]tar[.](?:xz|gz)$/;
+        return unless /${ext}$/;
+        print STDERR "*DBG* found package: $_\n";
         system 'repo-add', "$reposhare/$repo_name.db.tar.gz", $File::Find::name
                 and die "error ", $? >> 8, " with repo-add in $REPOS_SHARE";
         rename $_, "$reposhare/$_";
@@ -101,12 +117,9 @@ sub clean_root
 
 sub corrupt_package
 {
-    my ($fqp) = ( grep { -f $_ }
-                  map {
-                      catfile( rel2abs( "$REPOS_SHARE" ),
-                                q{simpletest},
-                               qq{corruptme-1.0-1-any.pkg.tar.$_} );
-                  } qw/ xz gz / );
+    my ($fqp) = catfile( rel2abs( $REPOS_SHARE ),
+                         q{simpletest},
+                         qq{corruptme-1.0-1-any$PKGEXT} );
 
     unlink $fqp or die "failed to unlink file whilst corrupting: $!";
 
@@ -122,6 +135,9 @@ SKIP:
 {
     skip 'test repositories are already created', 1
         if ( -e "$REPOS_SHARE" );
+
+    $PKGEXT = grok_makepkg_pkgext();
+    print STDERR "*DBG* PKGEXT=$PKGEXT\n";
     diag( "creating test repositories" );
     my @repos = create_repos();
     ok( @repos, 'create test package repository' );

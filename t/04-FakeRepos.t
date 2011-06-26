@@ -60,7 +60,6 @@ sub create_adder
 
     return sub {
         return unless /${ext}$/;
-        print STDERR "*DBG* found package: $_\n";
         system 'repo-add', "$reposhare/$repo_name.db.tar.gz", $File::Find::name
                 and die "error ", $? >> 8, " with repo-add in $REPOS_SHARE";
         rename $_, "$reposhare/$_";
@@ -137,7 +136,6 @@ SKIP:
         if ( -e "$REPOS_SHARE" );
 
     $PKGEXT = grok_makepkg_pkgext();
-    print STDERR "*DBG* PKGEXT=$PKGEXT\n";
     diag( "creating test repositories" );
     my @repos = create_repos();
     ok( @repos, 'create test package repository' );

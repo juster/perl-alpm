@@ -4,7 +4,7 @@ ALPM - ArchLinux Package Manager backend library.
 
 =head1 VERSION
 
-2.00
+2.01
 
 This version of ALPM is compatible with pacman 3.5.
 

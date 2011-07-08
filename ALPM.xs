@@ -59,6 +59,16 @@ alpm_find_dbs_satisfier ( self, dblist, depstr )
   OUTPUT:
     RETVAL
 
+int
+alpm_vercmp (self, a, b)
+    SV * self
+    const char *a
+    const char *b
+  CODE:
+    RETVAL = alpm_pkg_vercmp(a, b);
+  OUTPUT:
+    RETVAL
+
 # PRIVATE ###################################################################
  
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm

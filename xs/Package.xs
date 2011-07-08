@@ -49,11 +49,6 @@ alpm_pkg_checkmd5sum(pkg)
 #    const char *url
 
 int
-alpm_pkg_vercmp(a, b)
-    const char *a
-    const char *b
-
-int
 alpm_pkg_has_scriptlet(pkg)
     ALPM_Package pkg
 

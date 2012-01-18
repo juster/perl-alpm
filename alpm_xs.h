@@ -9,6 +9,7 @@
 #include <alpm.h>
 
 typedef int           negative_is_error;
+typedef alpm_handle_t * ALPM_Handle;
 typedef pmdb_t      * ALPM_DB;
 typedef pmpkg_t     * ALPM_Package;
 typedef pmpkg_t     * ALPM_PackageFree;
@@ -44,6 +45,9 @@ extern const char * log_lvl_warning;
 extern const char * log_lvl_debug;
 extern const char * log_lvl_function;
 extern const char * log_lvl_unknown;
+
+/* GENERAL PURPOSE **********************************************************/
+#define croakalpm(PRE) croak(PRE " Error: %s", alpm_strerror(self))
 
 /* CALLBACKS ****************************************************************/
 

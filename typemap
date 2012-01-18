@@ -1,6 +1,7 @@
 TYPEMAP
 
 negative_is_error     I_NEG_IS_ERROR
+ALPM_Handle           T_ALPM_HANDLE
 ALPM_DB               T_ALPM_DB
 ALPM_Package          T_ALPM_PACKAGE
 ALPM_PackageFree      T_ALPM_PACKAGEFREE
@@ -26,6 +27,13 @@ off_t                 T_INT
 INPUT
 I_NEG_IS_ERROR
     $var = SvIV($arg)
+
+T_ALPM_HANDLE
+	if(sv_derived_from($arg, \"ALPM\")){
+		$var = INT2PTR($type, SvIV((SV *)SvRV($arg)));
+	}else{
+		Perl_croak(\"error: expected an object of class ALPM\");
+	}
 
 T_ALPM_DB
 	if ( sv_derived_from($arg, \"ALPM::DB\") ) {
@@ -256,28 +264,42 @@ T_PKGREASON
 
 OUTPUT
 I_NEG_IS_ERROR
-    if ( $var != 0 )
-        croak( "ALPM Error: %s", alpm_strerror( pm_errno ));
-    $arg = newSViv( 1 );
+    if($var != 0){
+        croakalpm("ALPM");
+    }
+    $arg = newSViv(1);
+
+T_ALPM_HANDLE
+	if($var == NULL){
+		# croakalpm expects a "alpm_handle_t *self" var to exist.
+		croak(\"error: ALPM handle check failed\");
+	}else{
+		sv_setref_pv($arg, \"ALPM\", (void *)$var);
+	}
 
 T_ALPM_DB
-    if ( $var == NULL )
-        croak( "ALPM DB Error: %s", alpm_strerror( pm_errno ));
-    sv_setref_pv( $arg, \"ALPM::DB\", (void *)$var );
+    if($var == NULL){
+        croakalpm("ALPM DB");
+    }
+    sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
 
 T_ALPM_PACKAGE
-    if ( $var == NULL )
-        croak( "ALPM Package Error: %s", alpm_strerror( pm_errno ));
-    sv_setref_pv( $arg, \"ALPM::Package\", (void *)$var );
+    if($var == NULL){
+        croakalpm("ALPM Package");
+    }
+    sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 
 T_ALPM_PACKAGEFREE
-    if ( $var == NULL )
-        croak( "ALPM Package Error: %s", alpm_strerror( pm_errno ));
-    sv_setref_pv( $arg, \"ALPM::PackageFree\", (void *)$var );
+    if($var == NULL){
+        croakalpm("ALPM Package");
+    }
+    sv_setref_pv($arg, \"ALPM::PackageFree\", (void *)$var);
 
 T_ALPM_PACKAGEORNULL
-    if ( $var == NULL ) $arg = &PL_sv_undef;
-    sv_setref_pv( $arg, \"ALPM::Package\", (void *)$var );
+    if($var == NULL){
+        $arg = &PL_sv_undef;
+    }
+    sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 
 T_ALPM_GROUP
     if ( $var == NULL ) {

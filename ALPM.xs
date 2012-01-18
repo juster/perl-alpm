@@ -96,11 +96,33 @@ alpm_pkg_load ( filename, ... )
 #negative_is_error
 #alpm_db_unregister_all ()
 
-negative_is_error
-alpm_initialize ()
+ALPM_Handle
+alpm_initialize(root, dbpath)
+	char * root
+	char * dbpath
+ PREINIT:
+	enum _alpm_errno_t err;
+	ALPM_Handle h;
+ CODE:
+	h = alpm_initialize(root, dbpath, &err);
+	if(h == NULL){
+		croak("ALPM Error: %s", alpm_strerror(err));
+	}
+	RETVAL = h
+ OUTPUT:
+	RETVAL
 
-negative_is_error
-alpm_release ()
+void
+alpm_release(self)
+	ALPM_Handle self;
+ PREINIT:
+	int ret;
+ CODE:
+	ret = alpm_release(self);
+	if(ret == -1){
+		croak("ALPM Error: failed to release ALPM handle");
+	}
+	# errno is only inside a handle, which was just released...
 
 #----------------------------------------------------------------------------
 # DATABASE FUNCTIONS

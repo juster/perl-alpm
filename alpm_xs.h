@@ -8,7 +8,7 @@
 
 #include <alpm.h>
 
-typedef int           negative_is_error;
+typedef int          negative_is_error;
 typedef alpm_handle_t * ALPM_Handle;
 typedef alpm_db_t      * ALPM_DB;
 typedef alpm_pkg_t     * ALPM_Package;
@@ -114,12 +114,12 @@ int  cb_fetch_wrapper ( const char *url, const char *localpath, int force );
         cb_trans_ ## CB_NAME ## _sub = NULL;                            \
     }
 
-void cb_trans_event_wrapper ( pmtransevt_t event,
+void cb_trans_event_wrapper ( alpm_transevt_t event,
                               void *arg_one, void *arg_two );
-void cb_trans_conv_wrapper ( pmtransconv_t type,
+void cb_trans_conv_wrapper ( alpm_transconv_t type,
                              void *arg_one, void *arg_two, void *arg_three,
                              int *result );
-void cb_trans_progress_wrapper ( pmtransprog_t type,
+void cb_trans_progress_wrapper ( alpm_transprog_t type,
                                  const char * desc,
                                  int item_progress,
                                  size_t total_count,

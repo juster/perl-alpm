@@ -10,14 +10,14 @@
 
 typedef int           negative_is_error;
 typedef alpm_handle_t * ALPM_Handle;
-typedef pmdb_t      * ALPM_DB;
-typedef pmpkg_t     * ALPM_Package;
-typedef pmpkg_t     * ALPM_PackageFree;
-typedef pmpkg_t     * ALPM_PackageOrNull;
-typedef pmgrp_t     * ALPM_Group;
+typedef alpm_db_t      * ALPM_DB;
+typedef alpm_pkg_t     * ALPM_Package;
+typedef alpm_pkg_t     * ALPM_PackageFree;
+typedef alpm_pkg_t     * ALPM_PackageOrNull;
+typedef alpm_grp_t     * ALPM_Group;
 
-typedef pmdepend_t  * DependHash;
-typedef pmconflict_t * ConflictArray;
+typedef alpm_depend_t  * DependHash;
+typedef alpm_conflict_t * ConflictArray;
 
 typedef alpm_list_t * StringListFree;
 typedef alpm_list_t * StringListNoFree;
@@ -77,7 +77,7 @@ extern const char * log_lvl_unknown;
     RETVAL = ( cb_ ## CBTYPE ## _sub == NULL                \
                ? &PL_sv_undef : cb_ ## CBTYPE ## _sub );
 
-void cb_log_wrapper ( pmloglevel_t level, const char * format, va_list args );
+void cb_log_wrapper ( alpm_loglevel_t level, const char * format, va_list args );
 void cb_dl_wrapper ( const char *filename, off_t xfered, off_t total );
 void cb_totaldl_wrapper ( off_t total );
 int  cb_fetch_wrapper ( const char *url, const char *localpath, int force );
@@ -129,10 +129,10 @@ void cb_trans_progress_wrapper ( pmtransprog_t type,
 
 SV * convert_stringlist ( alpm_list_t * string_list );
 SV * convert_packagelist ( alpm_list_t * package_list );
-SV * convert_depend ( pmdepend_t * depend );
-SV * convert_depmissing ( pmdepmissing_t * depmiss );
-SV * convert_conflict ( pmconflict_t * conflict );
-SV * convert_fileconflict ( pmfileconflict_t * fileconflict );
+SV * convert_depend ( alpm_depend_t * depend );
+SV * convert_depmissing ( alpm_depissing_t * depmiss );
+SV * convert_conflict (alpm_conflict_t  * conflict );
+SV * convert_fileconflict ( alpm_fileconflict_t * fileconflict );
 SV * convert_trans_errors ( alpm_list_t * errors );
 
 #endif

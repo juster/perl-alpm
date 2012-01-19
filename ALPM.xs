@@ -1,11 +1,8 @@
 #include "alpm_xs.h"
-#include "xs/const-c.inc"
 
 MODULE = ALPM	PACKAGE = ALPM
 
 PROTOTYPES: DISABLE
-
-INCLUDE: xs/const-xs.inc
 
 # Make ALPM::PackageFree a subclass of ALPM::Package
 BOOT:

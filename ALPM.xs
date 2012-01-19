@@ -28,7 +28,7 @@ MODULE = ALPM	PACKAGE = ALPM
 
 ALPM_Handle
 new(unused, root, dbpath)
-	SV * unused 
+	SV * unused
 	char * root
 	char * dbpath
  PREINIT:
@@ -77,13 +77,9 @@ alpm_find_satisfier(self, pkglist, depstr)
 
 ALPM_PackageOrNull
 alpm_find_dbs_satisfier(self, dblist, depstr)
-	SV * self
+	ALPM_Handle self
 	DatabaseList dblist
 	const char * depstr
- CODE:
-	RETVAL = alpm_find_dbs_satisfier(dblist, depstr);
- OUTPUT:
-	RETVAL
 
 int
 alpm_vercmp(self, a, b)
@@ -92,6 +88,15 @@ alpm_vercmp(self, a, b)
 	const char *b
  CODE:
 	RETVAL = alpm_pkg_vercmp(a, b);
+ OUTPUT:
+	RETVAL
+
+StringListFree
+alpm_check_conflicts(self, plist)
+	ALPM_Handle self
+	PackageListNoFree plist
+ CODE:
+	RETVAL = alpm_checkconflicts(self, plist)
  OUTPUT:
 	RETVAL
 
@@ -142,7 +147,7 @@ const char *
 alpm_db_get_url(db)
     ALPM_DB db
 
-PackageListNoFree
+PackageList
 alpm_db_get_pkgcache(db)
     ALPM_DB db
 
@@ -251,7 +256,7 @@ name(grp)
 
 MODULE=ALPM    PACKAGE=ALPM::Group    PREFIX=alpm_grp
 
-PackageListNoFree
+PackageList
 alpm_grp_get_pkgs(grp)
     ALPM_Group grp
 

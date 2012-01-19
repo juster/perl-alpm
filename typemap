@@ -12,7 +12,7 @@ StringListFree        L_STRING_FREE
 StringListNoFree      L_STRING_NOFREE
 
 PackageListFree       L_PACKAGE_FREE
-PackageListNoFree     L_PACKAGE_NOFREE
+PackageList     L_PACKAGE_NOFREE
 DatabaseList          L_DATABASE
 DependList            L_DEPEND
 GroupList             L_GROUP

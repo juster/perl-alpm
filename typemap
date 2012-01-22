@@ -6,6 +6,7 @@ ALPM_DB				T_ALPM_DB
 ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_Group			T_ALPM_GROUP
+ALPM_SigLevel			T_SIGLEVEL
 
 PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE_NOFREE
@@ -61,6 +62,9 @@ T_ALPM_GROUP
 	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\", \"ALPM::Group\")
+
+T_SIGLEVEL
+	$var = p2c_siglevel($arg);
 
 L_DATABASE
     if ( SvTYPE( SvRV( $arg )) == SVt_PVAV ) {
@@ -219,6 +223,9 @@ T_ALPM_GROUP
     else {
         sv_setref_pv( $arg, \"ALPM::Group\", (void *)$var );
     }
+
+T_SIGLEVEL
+	$arg = c2p_siglevel($var);
 
 L_DATABASE
     $arg = newRV_noinc( (SV *) newAV() );

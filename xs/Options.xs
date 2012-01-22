@@ -246,4 +246,13 @@ alpm_option_get_syncdbs(self)
 	lst = alpm_option_get_syncdbs(self);
 	LIST2STACK(lst, c2p_db);
 
+ALPM_SigLevel
+alpm_option_get_default_siglevel(self)
+	ALPM_Handle self
+
+negative_is_error
+alpm_option_set_default_siglevel(self, siglvl)
+	ALPM_Handle self
+	ALPM_SigLevel siglvl
+
 # EOF

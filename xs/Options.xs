@@ -222,6 +222,7 @@ option_int_get(self)
 INTERFACE:
 	alpm_option_get_usesyslog
 	alpm_option_get_usedelta
+	alpm_option_get_checkspace
 
 void
 option_int_set(self, new_int)
@@ -230,6 +231,7 @@ option_int_set(self, new_int)
 INTERFACE:
 	alpm_option_set_usesyslog
 	alpm_option_set_usedelta
+	alpm_option_set_checkspace
 
 ALPM_DB
 alpm_option_get_localdb(self)

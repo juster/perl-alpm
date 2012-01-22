@@ -8,15 +8,15 @@
 
 #include <alpm.h>
 
-typedef int          negative_is_error;
+typedef int negative_is_error;
 typedef alpm_handle_t * ALPM_Handle;
-typedef alpm_db_t      * ALPM_DB;
-typedef alpm_pkg_t     * ALPM_Package;
-typedef alpm_pkg_t     * ALPM_PackageFree;
-typedef alpm_pkg_t     * ALPM_PackageOrNull;
-typedef alpm_grp_t     * ALPM_Group;
+typedef alpm_db_ * ALPM_DB;
+typedef alpm_pkg_t * ALPM_Package;
+typedef alpm_pkg_t * ALPM_PackageFree;
+typedef alpm_pkg_t * ALPM_PackageOrNull;
+typedef alpm_grp_t * ALPM_Group;
 
-typedef alpm_depend_t  * DependHash;
+typedef alpm_depend_t * DependHash;
 typedef alpm_conflict_t * ConflictArray;
 
 typedef alpm_list_t * StringListFree;
@@ -46,7 +46,8 @@ extern const char * log_lvl_debug;
 extern const char * log_lvl_function;
 extern const char * log_lvl_unknown;
 
-/* GENERAL PURPOSE **********************************************************/
+/* GENERAL PURPOSE */
+
 #define croakalpm(PRE) croak(PRE " Error: %s", alpm_strerror(self))
 
 /* CALLBACKS ****************************************************************/
@@ -125,8 +126,6 @@ void cb_trans_progress_wrapper ( alpm_transprog_t type,
                                  size_t total_count,
                                  size_t total_pos );
  
-/* CONVERSION  *************************************************************/
-
 SV * convert_stringlist ( alpm_list_t * string_list );
 SV * convert_packagelist ( alpm_list_t * package_list );
 SV * convert_depend ( alpm_depend_t * depend );

@@ -41,7 +41,7 @@ SV * convert_packagelist ( alpm_list_t * alpm_pkg_list )
 SV * convert_depend ( pmdepend_t * depend )
 {
     HV *depend_hash;
-    SV *depend_ref;
+    SV *depend_ref, *mod;
     pmdepmod_t depmod;
     const char * depver;
 
@@ -58,17 +58,10 @@ SV * convert_depend ( pmdepend_t * depend )
                   0 );
     }
     
-    depmod = alpm_dep_get_mod( depend );
-    if ( depmod != 1 ) {
-        hv_store( depend_hash, "mod", 3,
-                  newSVpv( ( depmod == 2 ? "==" :
-                             depmod == 3 ? ">=" :
-                             depmod == 4 ? "<=" :
-                             depmod == 5 ? ">"  :
-                             depmod == 6 ? "<"  :
-                             "ERROR" ), 0 ),
-                  0 );
-    }
+    mod = perl_depmod(alpm_dep_get_mod(depend));
+    hv_store(depend_hash, "mod", 3, mod, 0);
+    return depend_hash;
+}
 
     return depend_ref;
 }

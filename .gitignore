@@ -8,7 +8,7 @@ blib/*
 *.tmp
 *.bak
 *.bs
-*.c
+ALPM.c
 *.o
 ALPM-*.tar.gz
 Makefile

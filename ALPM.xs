@@ -1,4 +1,5 @@
 #include "alpm_xs.h"
+#include "types.h"
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -27,8 +28,8 @@ DESTROY(self)
 MODULE = ALPM	PACKAGE = ALPM
 
 ALPM_Handle
-new(unused, root, dbpath)
-	SV * unused
+new(class, root, dbpath)
+	SV * class
 	char * root
 	char * dbpath
  PREINIT:
@@ -70,10 +71,8 @@ alpm_find_satisfier(self, pkglist, depstr)
 	SV * self
 	PackageListFree pkglist
 	const char * depstr
- CODE:
-	RETVAL = alpm_find_satisfier(pkglist, depstr);
- OUTPUT:
-	RETVAL
+ C_ARGS:
+	pkglist, depstr
 
 ALPM_PackageOrNull
 alpm_find_dbs_satisfier(self, dblist, depstr)
@@ -91,14 +90,18 @@ alpm_vercmp(self, a, b)
  OUTPUT:
 	RETVAL
 
-StringListFree
-alpm_check_conflicts(self, plist)
+void
+alpm_check_conflicts(self, ...)
 	ALPM_Handle self
-	PackageListNoFree plist
- CODE:
-	RETVAL = alpm_checkconflicts(self, plist)
- OUTPUT:
-	RETVAL
+ PREINIT:
+	alpm_list_t *L, *clist;
+	int i;
+ PPCODE:
+	i = 1;
+	STACK2LIST(i, L, p2c_pkg);
+	L = clist = alpm_checkconflicts(self, L);
+	LIST2STACK(clist, c2p_conflict);
+	ZAPLIST(L, freeconflict);
 
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS

@@ -126,7 +126,6 @@ void cb_trans_progress_wrapper ( alpm_transprog_t type,
                                  size_t total_count,
                                  size_t total_pos );
  
-SV * convert_stringlist ( alpm_list_t * string_list );
 SV * convert_packagelist ( alpm_list_t * package_list );
 SV * convert_depend ( alpm_depend_t * depend );
 SV * convert_depmissing ( alpm_depissing_t * depmiss );

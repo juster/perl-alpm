@@ -21,6 +21,9 @@ alpm_list_t* av2list(AV*, listmap);
 
 #define ZAPLIST(L, F)\
 	alpm_list_free_inner(L, F);\
-	alpm_list_free(L)
+	alpm_list_free(L);\
+	L = NULL
+
+#define c2p_str(S) newSVpv(S, 0)
 
 #endif /*_ALPMXS_TYPES */

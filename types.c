@@ -4,8 +4,6 @@
 
 /* SCALAR CONVERSIONS */
 
-#define c2p_str(S) newSVpv(S, 0)
-
 SV*
 c2p_pkg(void *p)
 {

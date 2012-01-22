@@ -4,17 +4,6 @@
 
 /* These all convert C data structures to their Perl counterparts */
 
-SV * convert_stringlist ( alpm_list_t * string_list )
-{
-    AV *string_array = newAV();
-    alpm_list_t *iter;
-    for ( iter = string_list ; iter != NULL ; iter = alpm_list_next( iter )) {
-        SV *string = newSVpv( iter->data, strlen( iter->data ) );
-        av_push( string_array, string );
-    }
-    return newRV_noinc( (SV *)string_array );
-}
-
 SV * convert_packagelist ( alpm_list_t * alpm_pkg_list )
 {
     /* copied from the typemap */

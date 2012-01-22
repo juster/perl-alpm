@@ -7,8 +7,6 @@ ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_Group			T_ALPM_GROUP
 
-StringListFree		L_STRING_FREE
-StringListNoFree	L_STRING_NOFREE
 PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE_NOFREE
 DatabaseList		L_DATABASE
@@ -137,76 +135,6 @@ L_PACKAGE_FREE
 			\"$var\");
     }
 
-L_STRING_FREE
-    if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
-        AV *string_array;
-        I32 i, max;
-        SV **elem, *cleanup;
-        STRLEN string_len;
-
-        $ntype list;
-        char *new_string, *old_string;
-
-        string_array = (AV *)SvRV($arg);
-        max = av_len(string_array);
-        list = NULL;
-
-        for ( i=0; i<=max; ++i ) {
-            elem = av_fetch( string_array, i, 0 );
-            old_string = (char *) SvPV( *elem, string_len );
-
-            new_string = malloc( string_len+1 );
-            memcpy( new_string, old_string, string_len );
-            new_string[string_len] = 0;
-
-            list = alpm_list_add( list, new_string );
-
-        }
-
-        if ( list != NULL ) {
-            cleanup = sv_newmortal();
-            sv_setref_pv( cleanup, \"ALPM::ListAutoFree\", (void *)list );
-        }
-
-        $var = list;
-    }
-    else
-	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\");
-
-L_STRING_NOFREE
-    if ( SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV ) {
-        AV *string_array;
-        I32 i, max;
-        SV **elem, *cleanup;
-        STRLEN string_len;
-
-        $ntype list;
-        char *new_string, *old_string;
-
-        string_array = (AV *)SvRV($arg);
-        max = av_len(string_array);
-        list = NULL;
-
-        for ( i=0; i<=max; ++i ) {
-            elem = av_fetch( string_array, i, 0 );
-            old_string = (char *) SvPV( *elem, string_len );
-
-            new_string = malloc( string_len+1 );
-            memcpy( new_string, old_string, string_len );
-            new_string[string_len] = 0;
-
-            list = alpm_list_add( list, new_string );
-        }
-
-        $var = list;
-    }
-    else
-	    Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\");
-
 T_PKGREASON
     if ( SvIOK( $arg )) {
         int i_reason;
@@ -291,14 +219,6 @@ T_ALPM_GROUP
     else {
         sv_setref_pv( $arg, \"ALPM::Group\", (void *)$var );
     }
-
-
-L_STRING_FREE
-    $arg = convert_stringlist( (alpm_list_t *)$var );
-    FREELIST( $var );
-
-L_STRING_NOFREE
-    $arg = convert_stringlist( (alpm_list_t *)$var );
 
 L_DATABASE
     $arg = newRV_noinc( (SV *) newAV() );

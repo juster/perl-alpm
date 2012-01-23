@@ -311,12 +311,6 @@ sub search
     return ( map { $_->search( @search_strs ) } $class->databases );
 }
 
-sub unregister_all_dbs
-{
-    # Ignore our args since this should be called as a class method.
-    _db_unregister_all();
-}
-
 sub load_config
 {
     my ($class, $cfg_path) = @_;

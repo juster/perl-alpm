@@ -103,6 +103,12 @@ alpm_check_conflicts(self, ...)
 	LIST2STACK(clist, c2p_conflict);
 	ZAPLIST(L, freeconflict);
 
+MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
+
+negative_is_error
+alpm_db_unregister_all(self)
+	ALPM_Handle self
+
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS
 #-----------------------------------------------------------------
@@ -121,17 +127,6 @@ alpm_pkg_load(filename, ...)
 	RETVAL = pkg;
  OUTPUT:
 	RETVAL
-
-# Because this unregisters the local database and there is no
-# longer any way to re-register the local database this
-# function is now even more pointless. Removed until this
-# minor bug is fixed with libalpm.
-#
-# Should be in next pacman release. (currently 3.5.1)
-# falconindy already fixed this! :)
-#
-#negative_is_error
-#alpm_db_unregister_all ()
 
 #-----------------------------------------------------------------
 # PRIVATE DATABASE METHODS

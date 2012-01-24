@@ -142,23 +142,16 @@ alpm_db_register_sync(self, sync_name)
 # PRIVATE DATABASE METHODS
 #-----------------------------------------------------------------
 
-# Remove PREFIX
-MODULE = ALPM    PACKAGE = ALPM::DB    PREFIX = alpm_db
-
-PackageList
-alpm_db_get_pkgcache(db)
-    ALPM_DB db
+MODULE = ALPM	PACKAGE = ALPM::DB	PREFIX = alpm_db
 
 # Wrapper for this checks if a transaction is active.
 # We have to reverse the arguments because it is a method.
 negative_is_error
 alpm_db_update(db, force)
-    ALPM_DB db
-    int force
- CODE:
-    RETVAL = alpm_db_update(force, db);
- OUTPUT:
-    RETVAL
+	ALPM_DB db
+	int force
+ C_ARGS:
+	force, db
 
 GroupList
 alpm_db_get_grpcache(db)
@@ -173,6 +166,18 @@ alpm_db_search(db, needles)
 #-----------------------------------------------------------------
 # PUBLIC DATABASE METHODS
 #-----------------------------------------------------------------
+
+MODULE = ALPM	PACKAGE = ALPM::DB
+
+void
+pkgs(db)
+	ALPM_DB db
+ PREINIT:
+	alpm_list_t *L, *pkgs;
+ CODE:
+	pkgs = alpm_db_get_pkgcache(db);
+	LIST2STACK(pkgs, c2p_pkg);
+	FREELIST(pkgs);
 
 MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX = alpm_db_
 

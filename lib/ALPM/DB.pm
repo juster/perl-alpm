@@ -50,13 +50,6 @@ sub search
     return @{ $result };
 }
 
-sub pkgs
-{
-    my $self = shift;
-
-    return @{ $self->_get_pkgcache() };
-}
-
 sub groups
 {
     my $self = shift;

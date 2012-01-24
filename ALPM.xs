@@ -80,16 +80,6 @@ alpm_find_dbs_satisfier(self, dblist, depstr)
 	DatabaseList dblist
 	const char * depstr
 
-int
-alpm_vercmp(self, a, b)
-	SV * self
-	const char *a
-	const char *b
- CODE:
-	RETVAL = alpm_pkg_vercmp(a, b);
- OUTPUT:
-	RETVAL
-
 void
 alpm_check_conflicts(self, ...)
 	ALPM_Handle self
@@ -112,7 +102,7 @@ alpm_db_unregister_all(self)
 MODULE = ALPM	PACKAGE = ALPM	# No PREFIX!
 
 negative_is_error
-load_pkgfile(self, filename, full, siglevel, pkg)
+load_pkgfile(self, filename, full, siglevel)
 	ALPM_Handle self
 	const char *filename
 	int full
@@ -125,6 +115,17 @@ load_pkgfile(self, filename, full, siglevel, pkg)
 	}
  OUTPUT:
 	pkg
+
+int
+vercmp(unused, a, b)
+	SV * unused
+	const char *a
+	const char *b
+ CODE:
+	RETVAL = alpm_pkg_vercmp(a, b);
+ OUTPUT:
+	RETVAL
+
 
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS

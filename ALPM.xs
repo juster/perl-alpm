@@ -109,24 +109,28 @@ negative_is_error
 alpm_db_unregister_all(self)
 	ALPM_Handle self
 
+MODULE = ALPM	PACKAGE = ALPM	# No PREFIX!
+
+negative_is_error
+load_pkgfile(self, filename, full, siglevel, pkg)
+	ALPM_Handle self
+	const char *filename
+	int full
+	ALPM_SigLevel siglevel
+ PREINIT:
+	ALPM_PackageFree pkg
+ CODE:
+	if(alpm_pkg_load(self, filename, full, siglevel, &pkg) < 0){
+		croakalpm("ALPM");
+	}
+ OUTPUT:
+	pkg
+
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS
 #-----------------------------------------------------------------
 
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
-
-ALPM_PackageFree
-alpm_pkg_load(filename, ...)
-	const char *filename
- PREINIT:
-	pmpkg_t *pkg;
- CODE:
-	if(alpm_pkg_load(filename, 1, &pkg) != 0){
-		croak("ALPM Error: %s", alpm_strerror(pm_errno));
-	}
-	RETVAL = pkg;
- OUTPUT:
-	RETVAL
 
 #-----------------------------------------------------------------
 # PRIVATE DATABASE METHODS
@@ -139,11 +143,6 @@ alpm_db_register_sync(sync_name)
 
 # Remove PREFIX
 MODULE = ALPM    PACKAGE = ALPM::DB    PREFIX = alpm_db
-
-# We have a wrapper for this because it crashes on local db.
-const char *
-alpm_db_get_url(db)
-    ALPM_DB db
 
 PackageList
 alpm_db_get_pkgcache(db)

@@ -336,11 +336,21 @@ See L<ALPM::DB>
 
 =head2 load_pkgfile
 
-  Usage   : my $pkgfile = ALPM->load_pkgfile('perl-alpm-0.2.pkg.tar.gz');
-  Params  : The path to a package tarball.
-  Returns : An ALPM::Package object.
-  Notes   : Technically we return an ALPM::PackageFree object that will
-            automatically free itself from memory when it goes out of scope.
+	$PKG = $PM->load_pkgfile($FILE, $FULL, $SIGLEVEL);
+
+=over 4
+
+=item C<$PKG> - Package object.
+
+=item C<$PM> - ALPM object.
+
+=item C<$FILE> - Path to a package file (i.e. pkg.tar.xz).
+
+=item C<$FULL> - Full (1) or partial load (0). (trust me, don't install partial loads)
+
+=item C<$SIGLEVEL> - Signal level hashref. Keys are type and level.
+
+=back
 
 See L<ALPM::Package>
 

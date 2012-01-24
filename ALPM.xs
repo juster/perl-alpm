@@ -126,21 +126,21 @@ vercmp(unused, a, b)
  OUTPUT:
 	RETVAL
 
-
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS
 #-----------------------------------------------------------------
 
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 
+# This is used inside ALPM.pm, so it keeps its _db prefix.
+ALPM_DB
+alpm_db_register_sync(self, sync_name)
+	ALPM_Handle self
+	const char * sync_name
+
 #-----------------------------------------------------------------
 # PRIVATE DATABASE METHODS
 #-----------------------------------------------------------------
-
-# This is used inside ALPM.pm, so it keeps its _db prefix.
-ALPM_DB
-alpm_db_register_sync(sync_name)
-    const char * sync_name
 
 # Remove PREFIX
 MODULE = ALPM    PACKAGE = ALPM::DB    PREFIX = alpm_db

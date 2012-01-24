@@ -249,32 +249,26 @@ sub set_options
 
 sub register
 {
-    my $class = shift;
+	my($self, $name, $url) = @_;
+	croak 'You must supply a name and URL for the database' unless($name && $url);
 
-    croak 'Supply a repository name and a base URL to start it at'
-        if @_ != 2;
+	# Replace the literal string '$repo' with the repo's name,
+	# like in the pacman config file... bad idea maybe?
+	$url =~ s/\$repo\b/$name/g;
 
-    my ($sync_name, $sync_url) = @_;
+	if($url =~ /\$arch\b/){
+		my $arch = ALPM->get_opt( 'arch' );
+		if(!$arch || $arch eq 'auto'){
+			chomp($arch = `uname -m`);
+			die 'Failed to call uname to expand $arch' unless($? == 0);
+		}
+		$url =~ s/\$arch\b/$arch/g;
+	}
 
-    croak 'You must supply a URL for the database' unless $sync_url;
-
-    # Replace the literal string '$repo' with the repo's name,
-    # like in the pacman config file... bad idea maybe?
-    $sync_url =~ s/\$repo\b/$sync_name/g;
-
-    if ( $sync_url =~ /\$arch\b/ ) {
-        my $arch = ALPM->get_opt( 'arch' );
-        if ( !$arch || $arch eq 'auto' ) {
-            chomp( $arch = `uname -m` );
-            die 'Failed to call uname to expand $arch' if $? != 0
-        }
-        $sync_url =~ s/\$arch\b/$arch/g;
-    }
-
-    # Set the server right away because function calls break in between...
-    my $new_db = _db_register_sync($sync_name);
-    $new_db->add_url($sync_url);
-    return $new_db;
+	# Set the server right away because function calls break in between...
+	my $db = $self->_db_register_sync($name);
+	$db->add_url($url);
+	return $db;
 }
 
 sub localdb

@@ -174,10 +174,11 @@ pkgs(db)
 	ALPM_DB db
  PREINIT:
 	alpm_list_t *L, *pkgs;
- CODE:
-	pkgs = alpm_db_get_pkgcache(db);
+ PPCODE:
+	L = pkgs = alpm_db_get_pkgcache(db);
+	# If pkgs is NULL, we can't report the error because errno is in the handle object.
 	LIST2STACK(pkgs, c2p_pkg);
-	FREELIST(pkgs);
+	FREELIST(L);
 
 MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX = alpm_db_
 

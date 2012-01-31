@@ -1,5 +1,10 @@
-#include "alpm_xs.h"
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+
 #include "types.h"
+#include "alpm_xs.h"
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -141,9 +146,9 @@ set_pkg_reason(self, pkgname, pkgreason)
  OUTPUT:
 	RETVAL
 
-#-----------------------------------------------------------------
+#---------------------
 # PRIVATE ALPM METHODS
-#-----------------------------------------------------------------
+#---------------------
 
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 

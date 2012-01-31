@@ -2,10 +2,13 @@
 #include <alpm.h>
 
 /* Perl API headers. */
-#include <embed.h>
-#include <proto.h>
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
 
-#include "alpm_xs.h"
+
+#include "types.h"
 
 /* SCALAR CONVERSIONS */
 
@@ -16,7 +19,11 @@ c2p_pkg(void *p)
 	return sv_setref_pv(rv, "ALPM::Package", p);
 }
 
-#define p2c_pkg(P) SvPV(P)
+ALPM_Package
+p2c_pkg(SV *pkgobj)
+{
+	return INT2PTR(ALPM_Package, SvIV((SV*)SvRV(pkgobj)));
+}
 
 SV*
 c2p_depmod(alpm_depmod_t mod)
@@ -277,19 +284,6 @@ p2c_pkgreason(SV *sv)
 	}
 }
 
-void freedepend(void *p)
-{
-	free((alpm_depend_t*)p);
-}
-
-void freeconflict(void *p)
-{
-	alpm_conflict_t *c;
-	c = p;
-	freedepend(c->reason);
-	free(c);
-}
-
 /* LIST CONVERSIONS */
 
 AV *
@@ -313,6 +307,19 @@ av2list(AV *A, listmap F)
 		L = alpm_list_add(L, F(av_fetch(A, i, 0)));
 	}
 	return L;
+}
+
+void freedepend(void *p)
+{
+	free((alpm_depend_t*)p);
+}
+
+void freeconflict(void *p)
+{
+	alpm_conflict_t *c;
+	c = p;
+	freedepend(c->reason);
+	free(c);
 }
 
 #undef c2p_str

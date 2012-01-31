@@ -1,34 +1,7 @@
 #ifndef ALPM_XS_H
 #define ALPM_XS_H
 
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
 #include <alpm.h>
-
-typedef int negative_is_error;
-typedef alpm_handle_t * ALPM_Handle;
-typedef alpm_db_t * ALPM_DB;
-typedef alpm_db_t * ALPM_LocalDB;
-typedef alpm_db_t * ALPM_SyncDB;
-typedef alpm_pkg_t * ALPM_Package;
-typedef alpm_pkg_t * ALPM_PackageFree;
-typedef alpm_pkg_t * ALPM_PackageOrNull;
-typedef alpm_grp_t * ALPM_Group;
-
-typedef alpm_depend_t * DependHash;
-typedef alpm_conflict_t * ConflictArray;
-
-typedef alpm_list_t * StringListFree;
-typedef alpm_list_t * StringListNoFree;
-typedef alpm_list_t * PackageListFree;
-typedef alpm_list_t * PackageListNoFree;
-typedef alpm_list_t * GroupList;
-typedef alpm_list_t * DatabaseList;
-typedef alpm_list_t * DependList;
-typedef alpm_list_t * ListAutoFree;
 
 /* Code references to use as callbacks. */
 extern SV *cb_log_sub;

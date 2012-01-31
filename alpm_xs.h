@@ -10,7 +10,7 @@
 
 typedef int negative_is_error;
 typedef alpm_handle_t * ALPM_Handle;
-typedef alpm_db_ * ALPM_DB;
+typedef alpm_db_t * ALPM_DB;
 typedef alpm_pkg_t * ALPM_Package;
 typedef alpm_pkg_t * ALPM_PackageFree;
 typedef alpm_pkg_t * ALPM_PackageOrNull;

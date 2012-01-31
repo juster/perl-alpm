@@ -131,12 +131,12 @@ alpm_option_get_ignorepkgs(self)
 	ZAPLIST(lst, free)
 
 void
-alpm_option_get_ignoregrps(self)
+alpm_option_get_ignoregroups(self)
 	ALPM_Handle self
  PREINIT:
 	alpm_list_t *lst;
  PPCODE:
-	lst = alpm_option_get_ignoregrps(self);
+	lst = alpm_option_get_ignoregroups(self);
 	LIST2STACK(lst, c2p_str);
 	ZAPLIST(lst, free)
 
@@ -148,7 +148,7 @@ option_stringlist_add(self, add_string)
 	alpm_option_add_noupgrade
 	alpm_option_add_noextract
 	alpm_option_add_ignorepkg
-	alpm_option_add_ignoregrp
+	alpm_option_add_ignoregroup
 	alpm_option_add_cachedir
 
 void
@@ -197,7 +197,7 @@ alpm_option_set_ignorepkgs(self, ...)
 	alpm_option_set_ignorepkgs(self, lst);
 
 void
-alpm_option_set_ignoregrps(self, ...)
+alpm_option_set_ignoregroups(self, ...)
 	ALPM_Handle self
  PREINIT:
 	alpm_list_t *lst;
@@ -205,7 +205,7 @@ alpm_option_set_ignoregrps(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_ignoregrps(self, lst);
+	alpm_option_set_ignoregroups(self, lst);
 
 void
 option_stringlist_remove(self, badstring)
@@ -216,7 +216,7 @@ INTERFACE:
 	alpm_option_remove_noupgrade
 	alpm_option_remove_noextract
 	alpm_option_remove_ignorepkg
-	alpm_option_remove_ignoregrp
+	alpm_option_remove_ignoregroup
 
 int
 option_int_get(self)

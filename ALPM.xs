@@ -111,7 +111,7 @@ alpm_db_unregister_all(self)
 
 MODULE = ALPM	PACKAGE = ALPM	# No PREFIX!
 
-negative_is_error
+ALPM_Package
 load_pkgfile(self, filename, full, siglevel)
 	ALPM_Handle self
 	const char *filename

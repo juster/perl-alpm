@@ -93,6 +93,11 @@ alpm_check_conflicts(self, ...)
 	LIST2STACK(clist, c2p_conflict);
 	ZAPLIST(L, freeconflict);
 
+char *
+alpm_fetch_pkgurl(self, url)
+	ALPM_Handle self
+	const char * url
+
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
 
 negative_is_error

@@ -59,95 +59,178 @@ c2p_conflict(void *p)
 	return newRV_noinc((SV*)hv);
 }
 
-/* converts siglevel bitflags into a string */
+/* converts siglevel bitflags into a string (default/never) or hashref */
 SV*
 c2p_siglevel(alpm_siglevel_t sig)
 {
-	char *type, *lvl;
 	HV *hv;
-	hv = newHV();
+	AV *flags;
 
 	if(sig & ALPM_SIG_USE_DEFAULT){
-		type = "default";
-	}else if(sig & ALPM_SIG_PACKAGE_OPTIONAL){
-		type = "package";
-		lvl = "optional";
-	}else if(sig & ALPM_SIG_PACKAGE_MARGINAL_OK){
-		type = "package";
-		lvl ="marginal";
-	}else if(sig & ALPM_SIG_PACKAGE_UNKNOWN_OK){
-		type = "package";
-		lvl = "unknown";
-	}else if(sig & ALPM_SIG_DATABASE_OPTIONAL){
-		type = "database";
-		lvl = "optional";
-	}else if(sig & ALPM_SIG_DATABASE_MARGINAL_OK){
-		type = "database";
-		lvl ="marginal";
-	}else if(sig & ALPM_SIG_DATABASE_UNKNOWN_OK){
-		type = "database";
-		lvl = "unknown";
+		return newSVpv("default", 7);
+	}else if(!sig){
+		return newSVpv("never", 5);
 	}
 
-	hv_store(hv, "type", 4, newSVpv(type, 0), 0);
-	if(lvl){
-		hv_store(hv, "level", 5, newSVpv(lvl, 0), 0);
+	hv = newHV();
+
+#define PUSHFLAG(F) av_push(flags, newSVpv(F, 0))
+
+	flags = newAV();
+	if(sig & ALPM_SIG_PACKAGE){
+		if(sig & ALPM_SIG_PACKAGE_OPTIONAL){
+			PUSHFLAG("optional");
+		}else{
+			PUSHFLAG("required");
+		}
+		if(sig & ALPM_SIG_PACKAGE_MARGINAL_OK & ALPM_SIG_PACKAGE_UNKNOWN_OK){
+			PUSHFLAG("trustall");
+		}
+	}else{
+		PUSHFLAG("never");
 	}
+	hv_store(hv, "pkg", 3, newRV_noinc((SV*)flags), 0);
+
+	flags = newAV();
+	if(sig & ALPM_SIG_DATABASE){
+		if(sig & ALPM_SIG_DATABASE_OPTIONAL){
+			PUSHFLAG("optional");
+		}else{
+			PUSHFLAG("required");
+		}
+		if(sig & ALPM_SIG_DATABASE_MARGINAL_OK & ALPM_SIG_DATABASE_UNKNOWN_OK){
+			PUSHFLAG("trustall");
+		}
+	}else{
+		PUSHFLAG("never");
+	}
+	hv_store(hv, "db", 2, newRV_noinc((SV*)flags), 0);
+
+#undef PUSHFLAG
+
 	return newRV_noinc((SV*)hv);
 }
 
-/* converts a siglevel hashref into bitflags */
-alpm_siglevel_t
-p2c_siglevel(SV *href)
+#define TRUST_NEVER 0
+#define TRUST_REQ 1
+#define TRUST_OPT 2
+#define TRUST_ALL 3
+
+static int
+trustmask(HV *sig, char *lvl, int len)
 {
-	HV *hv;
 	SV **val;
+	AV *flags;
+	I32 i, x;
 	char *str;
 	STRLEN len;
-	int db;
+	int mask;
+
+	val = hv_fetch(sig, lvl, len, 0);
+	if(val == NULL || !SvROK(*val) || SvTYPE(SvRV(*val)) != Svt_PVAV)){
+		Perl_croak(aTHX_ "SigLevel hashref must contain array refs as values");
+	}
+
+	flags = (AV*)*val;
+	x = av_len(flags);
+	if(x == -1){
+		goto averr;
+	}
+
+	for(i = 0; i <= x; i++){
+		val = av_fetch(flags, i, 0);
+		if(val == NULL || !SvPOK(*val)){
+			goto averr;
+		}
+
+		str = SvPV(*val, len);
+		if(strncmp("never", str, len)){
+			if(mask & ~TRUST_NEVER){
+				goto neverr;
+			}
+			mask |= TRUST_NEVER;
+		}else if(mask & TRUST_NEVER){
+			goto neverr;
+		}else if(strncmp("optional", str, len)){
+			if(mask & TRUST_REQ){
+				goto opterr;
+			}
+			mask |= TRUST_OPT;
+		}else if(strncmp("required", str, len)){
+			if(mask & TRUST_OPT){
+				goto opterr;
+			}
+			mask |= TRUST_REQ;
+		}else if(strncmp("trustall", str, len)){
+			mask |= TRUST_ALL;
+		}
+	}
+
+	return mask;
+
+neverr:
+	Perl_croak(aTHX_ "Bad %s SigLevel: the never trust level cannot be combined.");
+
+opterr:
+	Perl_croak(aTHX_ "Bad %s SigLevel: trust cannot be both required and optional");
+
+averr:
+	Perl_croak(aTHX_ "Bad %s SigLevel: valid elements are never, required, optional, or trustall");
+}
+
+/* converts a siglevel string or hashref into bitflags */
+alpm_siglevel_t
+p2c_siglevel(SV *sig)
+{
+	HV *hv;
+	char *str;
+	STRLEN len;
+	int mask;
 	alpm_siglevel_t ret;
 
-	hv = (HV*)SvRV(href);
-
-	val = hv_fetch(hv, "type", 4, 0);
-	if(!SvPOK(*val)){
-		goto error;
-	}
-	str = SvPV(*val, len);
-	if(strncmp(str, "default", len) == 0){
-		return ALPM_SIG_USE_DEFAULT;
-	}else if(strncmp(str, "package") == 0){
-		db = 0;
-	}else if(strncmp(str, "database") == 0){
-		db = 1;
-	}else{
-		goto error;
+	if(SvPOK(sig)){
+		str = SvPV(sig, len);
+		if(strncmp(str, "default", len) == 0){
+			return ALPM_SIG_USE_DEFAULT;
+		}else if(strncmp(str, "never", len) == 0){
+			return 0;
+		}else {
+			Perl_croak(aTHX_ "Unrecognized SigLevel string: %s", str);
+		}
 	}
 
-	val = hv_fetch(hv, "level", 5, 0);
-	if(!SvPOK(*val)){
-		goto error;
-	}
-	str = SvPV(*val, len);
-	if(strncmp(str, "optional", len) == 0){
-		ret = (db ? ALPM_SIG_DATABASE_OPTIONAL
-		  : ALPM_SIG_PACKAGE_OPTIONAL);
-	}else if(strncmp(str, "marginal") == 0){
-		ret = (db ? ALPM_SIG_DATABASE_MARGINAL
-		  : ALPM_SIG_PACKAGE_MARGINAL);
-	}else if(strncmp(str, "unknown") == 0){
-		ret = (db ? ALPM_SIG_DATABASE_UNKNOWN
-		  : ALPM_SIG_PACKAGE_UNKNOWN);
-	}else{
-		goto error;
+	if(!SvROK(sig) || SvTYPE(SvRV(sig)) != SVt_PVHV){
+		Perl_croak(aTHX_ ("SigLevel must be a string or hash reference");
 	}
 
-	return ret;
-	
-error:
-	croak("ALPM Error: Invalid siglevel hashref");
-	return 0; /* unreachable */
+	hv = (HV*)SvRV(sig);
+
+#define MERGEMASK(SYM) \
+	if(~mask & TRUST_NEVER){ \
+		ret |= ALPM_SIG_ ## SYM; \
+		if(mask & TRUST_OPT){ \
+			ret |= ALPM_SIG_ ## SYM ## _OPTIONAL; \
+		} \
+		if(mask & TRUST_ALL){ \
+			ret |= ALPM_SIG_## SYM ## _MARGINAL_OK | ALPM_SIG_ ## SYM ## _UNKNOWN_OK; \
+		} \
+	}
+
+	mask = trustmask(hv, "pkg", 3);
+	MERGEMASK(PACKAGE)
+
+	mask = trustmask(hv, "db", 2);
+	MERGEMASK(DATABASE)
+
+#undef MERGEMASK
+
+	return ret;		
 }
+
+#undef TRUST_NEVER
+#undef TRUST_REQ
+#undef TRUST_OPT
+#undef TRUST_ALL
 
 void freedepend(void *p)
 {

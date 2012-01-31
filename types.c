@@ -1,5 +1,10 @@
 #include <stdlib.h>
 #include <alpm.h>
+
+/* Perl API headers. */
+#include <embed.h>
+#include <proto.h>
+
 #include "alpm_xs.h"
 
 /* SCALAR CONVERSIONS */
@@ -128,7 +133,7 @@ trustmask(HV *sig, char *lvl, int len)
 
 	val = hv_fetch(sig, lvl, len, 0);
 	if(val == NULL || !SvROK(*val) || SvTYPE(SvRV(*val)) != Svt_PVAV)){
-		Perl_croak(aTHX_ "SigLevel hashref must contain array refs as values");
+		croak("SigLevel hashref must contain array refs as values");
 	}
 
 	flags = (AV*)*val;
@@ -169,13 +174,13 @@ trustmask(HV *sig, char *lvl, int len)
 	return mask;
 
 neverr:
-	Perl_croak(aTHX_ "Bad %s SigLevel: the never trust level cannot be combined.");
+	croak("Bad %s SigLevel: the never trust level cannot be combined.");
 
 opterr:
-	Perl_croak(aTHX_ "Bad %s SigLevel: trust cannot be both required and optional");
+	croak("Bad %s SigLevel: trust cannot be both required and optional");
 
 averr:
-	Perl_croak(aTHX_ "Bad %s SigLevel: valid elements are never, required, optional, or trustall");
+	croak("Bad %s SigLevel: valid elements are never, required, optional, or trustall");
 }
 
 /* converts a siglevel string or hashref into bitflags */
@@ -195,12 +200,12 @@ p2c_siglevel(SV *sig)
 		}else if(strncmp(str, "never", len) == 0){
 			return 0;
 		}else {
-			Perl_croak(aTHX_ "Unrecognized SigLevel string: %s", str);
+			croak("Unrecognized SigLevel string: %s", str);
 		}
 	}
 
 	if(!SvROK(sig) || SvTYPE(SvRV(sig)) != SVt_PVHV){
-		Perl_croak(aTHX_ ("SigLevel must be a string or hash reference");
+		croak(("SigLevel must be a string or hash reference");
 	}
 
 	hv = (HV*)SvRV(sig);
@@ -231,6 +236,46 @@ p2c_siglevel(SV *sig)
 #undef TRUST_REQ
 #undef TRUST_OPT
 #undef TRUST_ALL
+
+SV*
+c2p_pkgreason(alpm_pkgreason_t rsn)
+{
+	switch(rsn){
+	case ALPM_PKG_REASON_EXPLICIT:
+		return newSVpv("explicit", 0);
+	case ALPM_PKG_REASON_DEPEND:
+		return newSVpv("implicit", 0);
+	}
+
+	croak("unrecognized pkgreason enum");
+}
+
+alpm_pkgreason_t
+p2c_pkgreason(SV *sv)
+{
+	alpm_pkgreason_t rsn;
+	STRLEN len;
+	char *rstr;
+
+	if(SvIOK(sv)){
+		switch(SvIV(sv)){
+		case 0: return ALPM_PKG_REASON_EXPLICIT;
+		case 1: return ALPM_PKG_REASON_DEPEND;
+		}
+		croak("integer reasons must be 0 or 1");
+	}else if(SvPOK(sv)){
+		rstr = SvPV(sv, len);
+		if(strncmp(rstr, "explicit", len) == 0){
+			return ALPM_PKG_REASON_EXPLICIT;
+		}else if(strncmp(rstr, "implicit", len) == 0
+			|| strncmp(rstr, "depend", len) == 0){
+			return ALPM_PKG_REASON_DEPEND;
+		}else{
+			croak("string reasons can only be explicit or implicit/depend");
+	}else{
+		croak("reasons can only be integers or strings");
+	}
+}
 
 void freedepend(void *p)
 {

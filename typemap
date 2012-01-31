@@ -162,44 +162,7 @@ L_PACKAGE_FREE
     }
 
 T_PKGREASON
-    if ( SvIOK( $arg )) {
-        int i_reason;
-        i_reason = SvIV( $arg );
-
-        /* if the reason arg is a number it must be 0 or 1 */
-        if ( i_reason != 0 && i_reason != 1 ) {
-            croak( \"Reason must be 0 or 1 when given as a number\" );
-        }
-
-        $var = i_reason;
-    }
-    else if ( SvPOK( $arg )) {
-        char *str_reason;
-        STRLEN length;
-
-        /* if the reason arg is a string, it must be
-           'explicit' or 'implicit|depend' */
-        str_reason = SvPV( $arg, length );
-        if ( length != 8 && length != 6) {
-            /* might be a good time to use goto */
-            croak( \"Reason must be 'explicit', 'implicit', or 'depend' \"
-                   \"when given as a string\" );
-        }
-        else if ( strcmp( \"explicit\", str_reason ) == 0 ) {
-            $var = PM_PKG_REASON_EXPLICIT;
-        }
-        else if (    strcmp( \"implicit\", str_reason ) == 0
-                  || strcmp( \"depend\",   str_reason ) == 0 ) {
-            $var = PM_PKG_REASON_DEPEND;
-        }
-        else {
-            croak( \"Reason must be 'explicit', 'implicit', or 'depend' \"
-                   \"when given as a string\" );
-        }
-    }
-    else {
-        croak( \"Reason must be 0, 1, 'explicit', 'implicit', or 'depend'\" );
-    }
+	$var = p2c_pkgreason($arg);
 
 #-----------------------------------------------------------------------------
 # OUTPUT # C ==> Perl
@@ -335,8 +298,4 @@ L_GROUP
     }
 
 T_PKGREASON
-    $arg = newSV(0);
-    sv_setpv( $arg, ( $var == 0 ? \"explicit\" :
-                      $var == 1 ? \"implicit\" :
-                      \"unknown\" ) );
-
+    $arg = c2p_pkgreason($var);

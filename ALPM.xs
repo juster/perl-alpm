@@ -131,6 +131,16 @@ vercmp(unused, a, b)
  OUTPUT:
 	RETVAL
 
+negative_is_error
+set_pkg_reason(self, pkgname, pkgreason)
+	ALPM_Handle self
+	char * pkgname
+	pmpkgreason_t pkgreason
+ CODE:
+	RETVAL = alpm_db_set_pkgreason(self, pkgname, pkgreason);
+ OUTPUT:
+	RETVAL
+
 #-----------------------------------------------------------------
 # PRIVATE ALPM METHODS
 #-----------------------------------------------------------------
@@ -209,22 +219,6 @@ find_group(db, name)
 	const char * name
  CODE:
 	RETVAL = alpm_db_readgrp(db, name);
- OUTPUT:
-	RETVAL
-
-#------------------------------
-# PUBLIC LOCAL DATABASE METHODS
-#------------------------------
-
-MODULE = ALPM	PACKAGE = ALPM::DB::Local	# NO PREFIX
-
-negative_is_error
-set_pkg_reason(self, pkgname, pkgreason)
-	ALPM_DB self
-	char * pkgname
-	pmpkgreason_t pkgreason
- CODE:
-	RETVAL = alpm_db_set_pkgreason(self, pkgname, pkgreason);
  OUTPUT:
 	RETVAL
 

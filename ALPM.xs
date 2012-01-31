@@ -137,12 +137,12 @@ vercmp(unused, a, b)
 	RETVAL
 
 negative_is_error
-set_pkg_reason(self, pkgname, pkgreason)
+set_pkg_reason(self, pkg, rsn)
 	ALPM_Handle self
-	char * pkgname
-	pmpkgreason_t pkgreason
+	ALPM_Package pkg
+	alpm_pkgreason_t rsn
  CODE:
-	RETVAL = alpm_db_set_pkgreason(self, pkgname, pkgreason);
+	RETVAL = alpm_db_set_pkgreason(self, pkg, rsn);
  OUTPUT:
 	RETVAL
 

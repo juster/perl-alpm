@@ -74,6 +74,7 @@ option_string_get(self)
 	alpm_option_get_logfile
 	alpm_option_get_lockfile
 	alpm_option_get_arch
+	alpm_option_get_gpgdir
 
 negative_is_error
 option_string_set(self, string)
@@ -85,6 +86,7 @@ option_string_set(self, string)
 	alpm_option_set_cachedirs
 	alpm_option_set_logfile
 	alpm_option_set_arch
+	alpm_option_set_gpgdir
 
 # String List Options
 

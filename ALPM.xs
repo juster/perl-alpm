@@ -138,7 +138,7 @@ vercmp(unused, a, b)
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 
 # This is used inside ALPM.pm, so it keeps its _db prefix.
-ALPM_DB
+ALPM_SyncDB
 alpm_db_register_sync(self, sync_name)
 	ALPM_Handle self
 	const char * sync_name
@@ -148,15 +148,6 @@ alpm_db_register_sync(self, sync_name)
 #-----------------------------------------------------------------
 
 MODULE = ALPM	PACKAGE = ALPM::DB	PREFIX = alpm_db
-
-# Wrapper for this checks if a transaction is active.
-# We have to reverse the arguments because it is a method.
-negative_is_error
-alpm_db_update(db, force)
-	ALPM_DB db
-	int force
- C_ARGS:
-	force, db
 
 GroupList
 alpm_db_get_grpcache(db)
@@ -185,65 +176,114 @@ pkgs(db)
 	LIST2STACK(pkgs, c2p_pkg);
 	FREELIST(L);
 
-MODULE = ALPM   PACKAGE = ALPM::DB    PREFIX = alpm_db_
-
-negative_is_error
-alpm_db_unregister(self)
-    ALPM_DB self
-
 MODULE = ALPM   PACKAGE = ALPM::DB
 
 const char *
 name(db)
-    ALPM_DB db
+	ALPM_DB db
  CODE:
-    RETVAL = alpm_db_get_name(db);
+	RETVAL = alpm_db_get_name(db);
  OUTPUT:
-    RETVAL
-
-negative_is_error
-add_url(db, url)
-    ALPM_DB db
-    const char * url
- CODE:
-    RETVAL = alpm_db_setserver(db, url);
- OUTPUT:
-    RETVAL
+	RETVAL
 
 SV *
 find(db, name)
-    ALPM_DB db
-    const char *name
+	ALPM_DB db
+	const char *name
  PREINIT:
-    pmpkg_t *pkg;
+	pmpkg_t *pkg;
  CODE:
-    pkg = alpm_db_get_pkg(db, name);
-    if ( pkg == NULL ) RETVAL = &PL_sv_undef;
-    else {
-        RETVAL = newSV(0);
-        sv_setref_pv(RETVAL, "ALPM::Package",(void *)pkg);
-    }
+	pkg = alpm_db_get_pkg(db, name);
+	if(pkg == NULL){
+		RETVAL = &PL_sv_undef;
+	}else{
+		RETVAL = newSV(0);
+		sv_setref_pv(RETVAL, "ALPM::Package", (void*)pkg);
+	}
  OUTPUT:
-    RETVAL
+	RETVAL
 
 ALPM_Group
 find_group(db, name)
-    ALPM_DB db
-    const char * name
+	ALPM_DB db
+	const char * name
  CODE:
-    RETVAL = alpm_db_readgrp(db, name);
+	RETVAL = alpm_db_readgrp(db, name);
  OUTPUT:
-    RETVAL
+	RETVAL
+
+#------------------------------
+# PUBLIC LOCAL DATABASE METHODS
+#------------------------------
+
+MODULE = ALPM	PACKAGE = ALPM::DB::Local	# NO PREFIX
 
 negative_is_error
 set_pkg_reason(self, pkgname, pkgreason)
-    ALPM_DB       self
-    char        * pkgname
-    pmpkgreason_t pkgreason
+	ALPM_DB self
+	char * pkgname
+	pmpkgreason_t pkgreason
  CODE:
-    RETVAL = alpm_db_set_pkgreason(self, pkgname, pkgreason);
+	RETVAL = alpm_db_set_pkgreason(self, pkgname, pkgreason);
  OUTPUT:
-    RETVAL
+	RETVAL
+
+#------------------------------
+# PRIVATE SYNC DATABASE METHODS
+#------------------------------
+
+MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db
+
+# Wrapper for this checks if a transaction is active.
+# We have to reverse the arguments because it is a method.
+negative_is_error
+alpm_db_update(db, force)
+	ALPM_DB db
+	int force
+ C_ARGS:
+	force, db
+
+#-----------------------------
+# PUBLIC SYNC DATABASE METHODS
+#-----------------------------
+
+MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db_
+
+negative_is_error
+alpm_db_unregister(self)
+	ALPM_DB self
+
+negative_is_error
+alpm_db_add_server(self, url)
+	ALPM_DB self
+	const char * url
+
+negative_is_error
+alpm_db_remove_server(self, url)
+	ALPM_DB self
+	const char * url
+
+void alpm_db_get_servers(self)
+	ALPM_DB self
+ PREINIT:
+	alpm_list_t *L, *i;
+ PPCODE:
+	L = i = alpm_db_get_servers(self);
+	LIST2STACK(i, c2p_str);
+	FREELIST(L);
+
+negative_is_error
+alpm_db_set_servers(self, ...)
+	ALPM_DB self
+ PREINIT:
+	alpm_list_t *L;
+	int i;
+ CODE:
+	i = 1;
+	STACK2LIST(i, lst, p2c_str);
+	RETVAL = alpm_option_set_servers(self, L);
+ OUTPUT:
+	RETVAL
 
 #-----------------------------------------------------------------
 # PUBLIC GROUP METHODS
@@ -253,11 +293,11 @@ MODULE=ALPM    PACKAGE=ALPM::Group
 
 const char *
 name(grp)
-    ALPM_Group grp
+	ALPM_Group grp
  CODE:
-    RETVAL = alpm_grp_get_name(grp);
+	RETVAL = alpm_grp_get_name(grp);
  OUTPUT:
-    RETVAL
+	RETVAL
 
 #-----------------------------------------------------------------
 # PRIVATE GROUP METHODS

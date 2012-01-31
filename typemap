@@ -3,6 +3,8 @@ TYPEMAP
 negative_is_error		I_NEG_IS_ERROR
 ALPM_Handle			T_ALPM_HANDLE
 ALPM_DB				T_ALPM_DB
+ALPM_LocalDB			T_ALPM_LOCALDB
+ALPM_SyncDB			T_ALPM_SYNCDB
 ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_Group			T_ALPM_GROUP
@@ -34,14 +36,34 @@ T_ALPM_HANDLE
 	}
 
 T_ALPM_DB
-	if ( sv_derived_from($arg, \"ALPM::DB\") ) {
-	    IV tmp = SvIV( (SV*)SvRV($arg) );
-	    $var = INT2PTR( $type,tmp );
-	}
-	else
-	    Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+	if(sv_derived_from($arg, \"ALPM::DB\")){
+		IV tmp = SvIV((SV*)SvRV($arg));
+		$var = INT2PTR($type, tmp);
+	}else{
+		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\", \"ALPM::DB\")
+	}
+
+T_ALPM_LOCALDB
+	if(sv_derived_from($arg, \"ALPM::DB::Local\")){
+		IV tmp = SvIV((SV*)SvRV($arg));
+		$var = INT2PTR($type, tmp);
+	}else{
+		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::DB::Local\")
+	}
+
+T_ALPM_SYNCDB
+	if(sv_derived_from($arg, \"ALPM::DB::Sync\")){
+		IV tmp = SvIV((SV*)SvRV($arg));
+		$var = INT2PTR($type, tmp);
+	}else{
+		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
+			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
+			\"$var\", \"ALPM::DB::Sync\")
+	}
 
 T_ALPM_PACKAGEFREE
 	if ( sv_derived_from($arg, \"ALPM::PackageFree\") ) {
@@ -199,10 +221,22 @@ T_ALPM_HANDLE
 	}
 
 T_ALPM_DB
-    if($var == NULL){
-        croakalpm("ALPM DB");
-    }
-    sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
+	if($var == NULL){
+		croakalpm("ALPM DB");
+	}
+	sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
+
+T_ALPM_LOCALDB
+	if($var == NULL){
+		croakalpm("ALPM DB");
+	}
+	sv_setref_pv($arg, \"ALPM::DB::Local\", (void *)$var);
+
+T_ALPM_SYNCDB
+	if($var == NULL){
+		croakalpm("ALPM DB");
+	}
+	sv_setref_pv($arg, \"ALPM::DB::Sync\", (void *)$var);
 
 T_ALPM_PACKAGEFREE
     if($var == NULL){

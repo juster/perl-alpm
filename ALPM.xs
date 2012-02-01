@@ -304,30 +304,6 @@ alpm_db_set_servers(self, ...)
  OUTPUT:
 	RETVAL
 
-#-----------------------------------------------------------------
-# PUBLIC GROUP METHODS
-#-----------------------------------------------------------------
-
-MODULE=ALPM    PACKAGE=ALPM::Group
-
-const char *
-name(grp)
-	ALPM_Group grp
- CODE:
-	RETVAL = alpm_grp_get_name(grp);
- OUTPUT:
-	RETVAL
-
-#-----------------------------------------------------------------
-# PRIVATE GROUP METHODS
-#-----------------------------------------------------------------
-
-MODULE=ALPM    PACKAGE=ALPM::Group    PREFIX=alpm_grp
-
-PackageList
-alpm_grp_get_pkgs(grp)
-    ALPM_Group grp
-
 INCLUDE: xs/Options.xs
 
 INCLUDE: xs/Package.xs

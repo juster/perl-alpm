@@ -72,5 +72,4 @@ alpm_list_t* av2list(AV*, listmap);
 void freedepend(void *);
 void freeconflict(void *);
 
-
 #endif /*_ALPMXS_TYPES */

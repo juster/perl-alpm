@@ -158,9 +158,9 @@ alpm_db_register_sync(self, sync_name)
 	ALPM_Handle self
 	const char * sync_name
 
-#-----------------------------------------------------------------
+#-------------------------
 # PRIVATE DATABASE METHODS
-#-----------------------------------------------------------------
+#-------------------------
 
 MODULE = ALPM	PACKAGE = ALPM::DB	PREFIX = alpm_db
 
@@ -174,9 +174,9 @@ alpm_db_search(db, needles)
     ALPM_DB db
     StringListFree needles
 
-#-----------------------------------------------------------------
+#------------------------
 # PUBLIC DATABASE METHODS
-#-----------------------------------------------------------------
+#------------------------
 
 MODULE = ALPM	PACKAGE = ALPM::DB
 
@@ -189,6 +189,26 @@ pkgs(db)
 	L = pkgs = alpm_db_get_pkgcache(db);
 	# If pkgs is NULL, we can't report the error because errno is in the handle object.
 	LIST2STACK(pkgs, c2p_pkg);
+	FREELIST(L);
+
+# groups returns a list of pairs. Each pair is a group name followed by
+# an array ref of packages belonging to the group.
+
+void
+groups(db)
+	ALPM_DB db
+ PREINIT:
+	alpm_list_t *L, *grps, *pkglst;
+	alpm_group_t *grp;
+	AV *pkgarr;
+ PPCODE:
+	L = grps = alpm_db_get_groupcache(db);
+	while(grps){
+		grp = grps->data;
+		XPUSHs(newSVpv(grp->name));
+		pkgarr = list2av(grp->packages, c2p_pkg);
+		XPUSHs(newRV_noinc(pkgarr));
+	}
 	FREELIST(L);
 
 MODULE = ALPM   PACKAGE = ALPM::DB

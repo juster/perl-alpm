@@ -238,14 +238,19 @@ find(db, name)
  OUTPUT:
 	RETVAL
 
-ALPM_Group
+void
 find_group(db, name)
 	ALPM_DB db
 	const char * name
- CODE:
-	RETVAL = alpm_db_readgrp(db, name);
- OUTPUT:
-	RETVAL
+ PREINIT:
+	alpm_group_t *grp;
+	alpm_list_t *pkgs;
+ PPCODE:
+	grp = alpm_db_readgroup(db, name);
+	if(grp){
+		pkgs = grp->packages;
+		LIST2STACK(pkgs, c2p_pkg);
+	}
 
 #------------------------------
 # PRIVATE SYNC DATABASE METHODS

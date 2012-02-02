@@ -7,6 +7,38 @@
 : /_/   \_\_____|_|   |_|  |_|  \____|_| |_|\__,_|_| |_|\__, |\___||___/
 :                                                       |___/           
 
+* Release 3.00
+
+** Major rewrite to continue compatibility with Pacman 4.
+
+I rewrote quit a bit of code in order to continue compatibility with the
+new pacman 4. This release comes a bit late after pacman 4 but I was
+seriously considering not updating this module anymore. I no longer use
+ArchLinux as much as I used to. I tried to keep things as backwards
+compatible as possible but there were many changes to the API that reflect
+libalpm's many API changes.
+
+** ALPM "handle" objects.
+
+The ALPM class now creates objects when an instance of ALPM is
+initialized. In libalpm these are called handles. Here they are simply
+objects. You will have to change every class method (ALPM->foo) to use
+an ALPM object method instead ($alpm->foo). Luckily I decided to use
+class methods years ago so this will be less painful.
+
+*** ALPM errors are stored inside handles.
+
+This makes things more difficult for me. Given an ALPM::DB object, if you
+call a method on that object and the method fails, I cannot croak an error
+message internally because the ALPM handle is not available.
+
+** ALPM::Group is no longer a class.
+
+Packages groups are now simply lists of packages. When you lookup one
+specific group then a list is returned. When querying every single
+group (i.e. with ALPM::DB's groups method) a list of name/value pairs
+is returned to store it into a hash.
+
 * Release 2.01
 
 ** Fix tests to work with custom PKGEXT                              :BUGFIX:

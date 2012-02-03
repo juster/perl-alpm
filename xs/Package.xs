@@ -1,4 +1,6 @@
-# PUBLIC ####################################################################
+#-----------------------
+# PUBLIC PACKAGE METHODS
+#-----------------------
 
 MODULE = ALPM    PACKAGE = ALPM::Package
 
@@ -42,11 +44,6 @@ MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_
 negative_is_error
 alpm_pkg_checkmd5sum(pkg)
     ALPM_Package pkg
-
-# TODO: implement this in perl with LWP
-#char *
-#alpm_fetch_pkgurl(url)
-#    const char *url
 
 int
 alpm_pkg_has_scriptlet(pkg)

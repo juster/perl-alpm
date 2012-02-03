@@ -102,6 +102,13 @@ char *
 alpm_fetch_pkgurl(self, url)
 	ALPM_Handle self
 	const char * url
+ CODE:
+	RETVAL = alpm_fetch_pkgurl(self, url);
+	if(RETVAL == NULL){
+		croakalpm("ALPM");
+	}
+ OUTPUT:
+	RETVAL
 
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
 

@@ -246,7 +246,7 @@ alpm_option_get_syncdbs(self)
 	alpm_list_t *lst;
  PPCODE:
 	lst = alpm_option_get_syncdbs(self);
-	LIST2STACK(lst, c2p_db);
+	LIST2STACK(lst, c2p_syncdb);
 
 ALPM_SigLevel
 alpm_option_get_default_siglevel(self)

@@ -321,5 +321,3 @@ void freeconflict(void *p)
 	freedepend(c->reason);
 	free(c);
 }
-
-#undef c2p_str

@@ -16,6 +16,8 @@ DatabaseList		L_DATABASE
 DependList		L_DEPEND
 GroupList			L_GROUP
 ConflictListFree	L_CONFLICT_FREE
+StringList			L_STRING
+StringListFree		L_STRING_FREE
 
 pmpkgreason_t	T_PKGREASON
 off_t				T_INT
@@ -87,6 +89,9 @@ T_ALPM_GROUP
 
 T_SIGLEVEL
 	$var = p2c_siglevel($arg);
+
+T_PKGREASON
+	$var = p2c_pkgreason($arg);
 
 L_DATABASE
     if ( SvTYPE( SvRV( $arg )) == SVt_PVAV ) {
@@ -161,9 +166,6 @@ L_PACKAGE_FREE
 			\"$var\");
     }
 
-T_PKGREASON
-	$var = p2c_pkgreason($arg);
-
 #-----------------------------------------------------------------------------
 # OUTPUT # C ==> Perl
 #-----------------------------------------------------------------------------
@@ -223,6 +225,9 @@ T_ALPM_GROUP
 
 T_SIGLEVEL
 	$arg = c2p_siglevel($var);
+
+T_PKGREASON
+    $arg = c2p_pkgreason($var);
 
 L_DATABASE
     $arg = newRV_noinc( (SV *) newAV() );
@@ -297,5 +302,9 @@ L_GROUP
         }
     }
 
-T_PKGREASON
-    $arg = c2p_pkgreason($var);
+L_STRING
+	$arg = newRV_noinc((SV*)list2av($var, c2p_str));
+
+L_STRINGFREE
+	$arg = newRV_noinc((SV*)list2av($var, c2p_str));
+	ZAPLIST($var, free);

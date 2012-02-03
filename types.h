@@ -33,6 +33,8 @@ typedef void* (*listmap)(SV*)
 SV* c2p_pkg(void*);
 ALPM_Package p2c_pkg(SV*);
 
+SV* p2c_db(SV*);
+
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);
 SV* c2p_conflict(void *);

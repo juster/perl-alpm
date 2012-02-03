@@ -25,6 +25,12 @@ p2c_pkg(SV *pkgobj)
 	return INT2PTR(ALPM_Package, SvIV((SV*)SvRV(pkgobj)));
 }
 
+ALPM_DB
+p2c_db(SV *db)
+{
+	return INT2PTR(ALPM_DB, SvIV((SV*)SvRV(pkgobj)));
+}
+
 SV*
 c2p_depmod(alpm_depmod_t mod)
 {

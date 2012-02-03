@@ -72,18 +72,34 @@ alpm_version(class)
 	RETVAL
 
 ALPM_PackageOrNull
-alpm_find_satisfier(self, pkglist, depstr)
+alpm_find_satisfier(self, depstr, ...)
 	SV * self
-	PackageListFree pkglist
 	const char * depstr
- C_ARGS:
-	pkglist, depstr
+ PREINIT:
+	alpm_list_t *pkgs;
+	int i;
+ CODE:
+	i = 0;
+	STACK2LIST(i, pkgs, p2c_pkg);
+	RETVAL = alpm_find_satisfier(self, pkgs, depstr);
+	FREELIST(pkgs);
+ OUTPUT:
+	RETVAL
 
 ALPM_PackageOrNull
-alpm_find_dbs_satisfier(self, dblist, depstr)
+alpm_find_dbs_satisfier(self, depstr, ...)
 	ALPM_Handle self
-	DatabaseList dblist
 	const char * depstr
+ PREINIT:
+	alpm_list_t *dbs;
+	int i;
+ CODE:
+	i = 0;
+	STACK2LIST(i, dbs, p2c_db);
+	RETVAL = alpm_find_dbs_satisfier(self, dbs, depstr);
+	FREELIST(dbs);
+ OUTPUT:
+	RETVAL
 
 void
 alpm_check_conflicts(self, ...)

@@ -21,7 +21,6 @@ typedef alpm_list_t * StringListNoFree;
 typedef alpm_list_t * PackageListFree;
 typedef alpm_list_t * PackageListNoFree;
 typedef alpm_list_t * GroupList;
-typedef alpm_list_t * DatabaseList;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
 

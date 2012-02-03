@@ -12,7 +12,6 @@ ALPM_SigLevel			T_SIGLEVEL
 
 PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE_NOFREE
-DatabaseList		L_DATABASE
 DependList		L_DEPEND
 GroupList			L_GROUP
 ConflictListFree	L_CONFLICT_FREE
@@ -92,42 +91,6 @@ T_SIGLEVEL
 
 T_PKGREASON
 	$var = p2c_pkgreason($arg);
-
-L_DATABASE
-	if(SvTYPE(SvRV($arg)) == SVt_PVAV){
-		AV * db_array;
-		SV ** elem, * cleanup;
-		I32 i, max;
-
-		$ntype db_list;
-		void * db;
-
-		db_array = (AV *)SvRV($arg);
-		max      = av_len(db_array);
-		db_list  = NULL;
-
-		for(i=0 ; i<=max; ++i){
-			elem = av_fetch(db_array, i, 0);
-			
-			if(!sv_derived_from(*elem, \"ALPM::DB\")){
-				croak(\"All elements of arrayref must be ALPM::DB objects\");
-			}
-
-			db = INT2PTR(void *, SvIV(SvRV(*elem)));
-			db_list = alpm_list_add(db_list, db);
-		}
-
-		if (db_list != NULL) {
-			cleanup = sv_newmortal();
-			sv_setref_pv(cleanup, \"ALPM::ListAutoFree\", (void *)db_list);
-		}
-
-		$var = db_list;
-	}else{
-		Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\");
-	}
 
 L_PACKAGE_FREE
 	if(SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV){
@@ -226,21 +189,6 @@ T_SIGLEVEL
 
 T_PKGREASON
 	$arg = c2p_pkgreason($var);
-
-L_DATABASE
-	$arg = newRV_noinc( (SV *) newAV() );
-	{
-		AV *string_array = (AV *) SvRV($arg);
-		PackageListNoFree iter;
-		iter = $var;
-		while ( iter != NULL ) {
-			SV *package;
-			package = newSV(0);
-			sv_setref_pv( package, \"ALPM::DB\", (void *)iter->data );
-			av_push( string_array, package );
-			iter = iter->next;
-		}
-	}
 
 L_PACKAGE_NOFREE
 	$arg = newRV_noinc( (SV *) newAV() );

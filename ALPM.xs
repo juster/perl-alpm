@@ -211,8 +211,6 @@ groups(db)
 	}
 	FREELIST(L);
 
-MODULE = ALPM   PACKAGE = ALPM::DB
-
 const char *
 name(db)
 	ALPM_DB db
@@ -306,6 +304,16 @@ alpm_db_set_servers(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_servers(self, L);
+ OUTPUT:
+	RETVAL
+
+MODULE = ALPM	PACKAGE = ALPM::DB::Sync	# NO PREFIX
+
+int
+is_valid(db)
+	ALPM_DB db
+ CODE:
+	RETVAL = alpm_db_get_valid(db);
  OUTPUT:
 	RETVAL
 

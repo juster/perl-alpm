@@ -26,9 +26,9 @@ DESTROY(self)
  OUTPUT:
 	RETVAL
 
-#-----------------------------------------------------------------
+#---------------------
 # PUBLIC ALPM METHODS
-#-----------------------------------------------------------------
+#---------------------
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -307,15 +307,15 @@ alpm_db_set_servers(self, ...)
  OUTPUT:
 	RETVAL
 
-MODULE = ALPM	PACKAGE = ALPM::DB::Sync	# NO PREFIX
+MODULE = ALPM	PACKAGE = ALPM::DB::Sync	PREFIX = alpm_db_get_
 
 int
-is_valid(db)
+alpm_db_get_valid(db
 	ALPM_DB db
- CODE:
-	RETVAL = alpm_db_get_valid(db);
- OUTPUT:
-	RETVAL
+
+ALPM_SigLevel
+alpm_db_get_siglevel(db)
+	ALPM_DB db
 
 INCLUDE: xs/Options.xs
 

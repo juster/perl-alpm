@@ -261,15 +261,15 @@ void
 search(db, ...)
 	ALPM_DB db
  PREINIT:
-	alpm_list_t *terms, *fnd;
+	alpm_list_t *L, *terms, *fnd;
 	int i;
  CODE:
 	i = 1;
 	STACK2LIST(i, terms, p2c_str);
-	fnd = alpm_db_search(db, terms);
+	L = fnd = alpm_db_search(db, terms);
 	ZAPLIST(terms, free);
 	LIST2STACK(fnd, c2p_pkg);
-	FREELIST(fnd);
+	FREELIST(L);
 
 #------------------------------
 # PRIVATE SYNC DATABASE METHODS

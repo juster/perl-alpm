@@ -15,7 +15,7 @@ DependList		L_DEPEND
 StringList			L_STRING
 StringListFree		L_STRING_FREE
 
-pmpkgreason_t	T_PKGREASON
+alpm_pkgreason_t	T_PKGREASON
 off_t				T_INT
 
 #--------------------

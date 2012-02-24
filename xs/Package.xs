@@ -82,7 +82,7 @@ INTERFACE:
 	alpm_pkg_get_size
 	alpm_pkg_get_isize
 
-pmpkgreason_t
+alpm_pkgreason_t
 alpm_pkg_get_reason(pkg)
 	ALPM_Package pkg
 

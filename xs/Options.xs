@@ -1,66 +1,66 @@
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 ## CALLBACKS
-
-SV *
-alpm_option_get_logcb(self)
-	ALPM_Handle self
- CODE:
-	DEF_GET_CALLBACK(log)
- OUTPUT:
-	RETVAL
-
-void
-alpm_option_set_logcb(self, callback)
-	ALPM_Handle self
-	SV * callback
- CODE:
-	DEF_SET_CALLBACK(log)
-
-SV *
-alpm_option_get_dlcb(self)
-	ALPM_Handle self
- CODE:
-	DEF_GET_CALLBACK(dl)
- OUTPUT:
-	RETVAL
-
-void
-alpm_option_set_dlcb(self, callback)
-	ALPM_Handle self
-	SV * callback
- CODE:
-	DEF_SET_CALLBACK(dl)
-
-SV *
-alpm_option_get_totaldlcb(self)
-	ALPM_Handle self
- CODE:
-	DEF_GET_CALLBACK(totaldl)
- OUTPUT:
-	RETVAL
-
-void
-alpm_option_set_totaldlcb(self, callback)
-	ALPM_Handle self
-	SV * callback
- CODE:
-	DEF_SET_CALLBACK(totaldl)
-
-SV *
-alpm_option_get_fetchcb(self)
-	ALPM_Handle self
- CODE:
-	DEF_GET_CALLBACK(fetch)
- OUTPUT:
-	RETVAL
-
-void
-alpm_option_set_fetchcb(self, callback)
-	ALPM_Handle self
-	SV * callback
-  CODE:
-	DEF_SET_CALLBACK(fetch)
+#
+#SV *
+#alpm_option_get_logcb(self)
+#	ALPM_Handle self
+# CODE:
+#	DEF_GET_CALLBACK(log)
+# OUTPUT:
+#	RETVAL
+#
+#void
+#alpm_option_set_logcb(self, callback)
+#	ALPM_Handle self
+#	SV * callback
+# CODE:
+#	DEF_SET_CALLBACK(log)
+#
+#SV *
+#alpm_option_get_dlcb(self)
+#	ALPM_Handle self
+# CODE:
+#	DEF_GET_CALLBACK(dl)
+# OUTPUT:
+#	RETVAL
+#
+#void
+#alpm_option_set_dlcb(self, callback)
+#	ALPM_Handle self
+#	SV * callback
+# CODE:
+#	DEF_SET_CALLBACK(dl)
+#
+#SV *
+#alpm_option_get_totaldlcb(self)
+#	ALPM_Handle self
+# CODE:
+#	DEF_GET_CALLBACK(totaldl)
+# OUTPUT:
+#	RETVAL
+#
+#void
+#alpm_option_set_totaldlcb(self, callback)
+#	ALPM_Handle self
+#	SV * callback
+# CODE:
+#	DEF_SET_CALLBACK(totaldl)
+#
+#SV *
+#alpm_option_get_fetchcb(self)
+#	ALPM_Handle self
+# CODE:
+#	DEF_GET_CALLBACK(fetch)
+# OUTPUT:
+#	RETVAL
+#
+#void
+#alpm_option_set_fetchcb(self, callback)
+#	ALPM_Handle self
+#	SV * callback
+#  CODE:
+#	DEF_SET_CALLBACK(fetch)
 
 ## REGULAR OPTIONS
 
@@ -70,7 +70,6 @@ option_string_get(self)
  INTERFACE:
 	alpm_option_get_root
 	alpm_option_get_dbpath
-	alpm_option_get_cachedirs
 	alpm_option_get_logfile
 	alpm_option_get_lockfile
 	alpm_option_get_arch
@@ -83,7 +82,6 @@ option_string_set(self, string)
  INTERFACE:
 	alpm_option_set_root
 	alpm_option_set_dbpath
-	alpm_option_set_cachedirs
 	alpm_option_set_logfile
 	alpm_option_set_arch
 	alpm_option_set_gpgdir

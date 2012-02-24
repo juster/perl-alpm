@@ -5,6 +5,7 @@ ALPM_Handle			T_ALPM_HANDLE
 ALPM_DB				T_ALPM_DB
 ALPM_LocalDB			T_ALPM_LOCALDB
 ALPM_SyncDB			T_ALPM_SYNCDB
+ALPM_Package			T_ALPM_PACKAGE
 ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_Group			T_ALPM_GROUP
@@ -64,6 +65,13 @@ T_ALPM_SYNCDB
 		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
 			\"$var\", \"ALPM::DB::Sync\")
+	}
+
+T_ALPM_PACKAGE
+	if(sv_derived_from($arg, \"ALPM::Package\")){
+		$var = INT2PTR($type, SvIV((SV *)SvRV($arg)));
+	}else{
+		Perl_croak(\"error: expected an ALPM::Package object\");
 	}
 
 T_ALPM_PACKAGEFREE
@@ -163,6 +171,12 @@ T_ALPM_SYNCDB
 		croakalpm("ALPM DB");
 	}
 	sv_setref_pv($arg, \"ALPM::DB::Sync\", (void *)$var);
+
+T_ALPM_PACKAGE
+	if($var == NULL){
+		croakalpm("ALPM Package");
+	}
+	sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 
 T_ALPM_PACKAGEFREE
 	if($var == NULL){

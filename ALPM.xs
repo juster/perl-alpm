@@ -132,7 +132,7 @@ negative_is_error
 alpm_db_unregister_all(self)
 	ALPM_Handle self
 
-MODULE = ALPM	PACKAGE = ALPM	# No PREFIX!
+MODULE = ALPM	PACKAGE = ALPM
 
 ALPM_Package
 load_pkgfile(self, filename, full, siglevel)
@@ -143,11 +143,11 @@ load_pkgfile(self, filename, full, siglevel)
  PREINIT:
 	ALPM_PackageFree pkg
  CODE:
-	if(alpm_pkg_load(self, filename, full, siglevel, &pkg) < 0){
+	if(alpm_pkg_load(self, filename, full, siglevel, &RETVAL) < 0){
 		croakalpm("ALPM");
 	}
  OUTPUT:
-	pkg
+	RETVAL
 
 int
 vercmp(unused, a, b)

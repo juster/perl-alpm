@@ -58,7 +58,7 @@ alpm_list_t* av2list(AV*, listmap);
 
 #define STACK2LIST(C, L, F)\
 	while(C < items){\
-		L = alpm_list_add(L, (void*)F(ST(C++));\
+		L = alpm_list_add(L, (void*)F(ST(C++)));\
 	}
 
 #define ZAPLIST(L, F)\

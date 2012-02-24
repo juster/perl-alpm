@@ -153,7 +153,7 @@ L_PACKAGE
 
 L_PACKAGE_FREE
 	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
-	ZAPLIST($var);
+	FREELIST($var);
 
 L_DEPEND
 	$arg = newRV_noinc((SV*)list2av($var, c2p_depend));

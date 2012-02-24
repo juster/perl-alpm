@@ -264,7 +264,7 @@ search(db, ...)
  PREINIT:
 	alpm_list_t *L, *terms, *fnd;
 	int i;
- CODE:
+ PPCODE:
 	i = 1;
 	STACK2LIST(i, terms, p2c_str);
 	L = fnd = alpm_db_search(db, terms);

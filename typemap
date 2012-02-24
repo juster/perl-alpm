@@ -173,20 +173,8 @@ L_PACKAGE
 	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
 
 L_PACKAGE_FREE
-	$arg = newRV_noinc( (SV *) newAV() );
-	{
-		AV *string_array = (AV *) SvRV($arg);
-		PackageListNoFree iter;
-		iter = $var;
-		while ( iter != NULL ) {
-			SV *package;
-			package = newSV(0);
-			sv_setref_pv( package, \"ALPM::Package\", (void *)iter->data );
-			av_push( string_array, package );
-			iter = iter->next;
-		}
-	}
-	if ( $var != NULL ) alpm_list_free($var);
+	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
+	ZAPLIST($var);
 
 L_DEPEND
 	$arg = newRV_noinc( (SV*) newAV() );

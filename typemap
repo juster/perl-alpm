@@ -40,7 +40,7 @@ T_ALPM_DB
 	}else{
 		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB\")
+			\"$var\", \"ALPM::DB\");
 	}
 
 T_ALPM_LOCALDB
@@ -50,7 +50,7 @@ T_ALPM_LOCALDB
 	}else{
 		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB::Local\")
+			\"$var\", \"ALPM::DB::Local\");
 	}
 
 T_ALPM_SYNCDB
@@ -60,7 +60,7 @@ T_ALPM_SYNCDB
 	}else{
 		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB::Sync\")
+			\"$var\", \"ALPM::DB::Sync\");
 	}
 
 T_ALPM_PACKAGE

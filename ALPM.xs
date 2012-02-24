@@ -331,7 +331,7 @@ alpm_db_set_servers(self, ...)
 MODULE = ALPM	PACKAGE = ALPM::DB::Sync	PREFIX = alpm_db_get_
 
 int
-alpm_db_get_valid(db
+alpm_db_get_valid(db)
 	ALPM_DB db
 
 ALPM_SigLevel

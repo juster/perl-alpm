@@ -12,7 +12,7 @@ ALPM_Group			T_ALPM_GROUP
 ALPM_SigLevel			T_SIGLEVEL
 
 PackageListFree	L_PACKAGE_FREE
-PackageList		L_PACKAGE_NOFREE
+PackageList		L_PACKAGE
 DependList		L_DEPEND
 GroupList			L_GROUP
 ConflictListFree	L_CONFLICT_FREE
@@ -169,20 +169,8 @@ T_SIGLEVEL
 T_PKGREASON
 	$arg = c2p_pkgreason($var);
 
-L_PACKAGE_NOFREE
-	$arg = newRV_noinc( (SV *) newAV() );
-	{
-		AV *string_array = (AV *) SvRV($arg);
-		PackageListNoFree iter;
-		iter = $var;
-		while ( iter != NULL ) {
-			SV *package;
-			package = newSV(0);
-			sv_setref_pv( package, \"ALPM::Package\", (void *)iter->data );
-			av_push( string_array, package );
-			iter = iter->next;
-		}
-	}
+L_PACKAGE
+	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
 
 L_PACKAGE_FREE
 	$arg = newRV_noinc( (SV *) newAV() );

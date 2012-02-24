@@ -187,10 +187,6 @@ alpm_db_register_sync(self, sync_name)
 
 MODULE = ALPM	PACKAGE = ALPM::DB	PREFIX = alpm_db
 
-GroupList
-alpm_db_get_grpcache(db)
-    ALPM_DB db
-
 # Wrapped to avoid arrayrefs (which are much easier in typemap)
 PackageListFree
 alpm_db_search(db, needles)

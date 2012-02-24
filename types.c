@@ -44,6 +44,13 @@ p2c_db(SV *db)
 }
 
 SV*
+c2p_syncdb(ALPM_SyncDB *db)
+{
+	SV *rv = sv_newmortal();
+	return sv_setref_pv(rv, "ALPM::SyncDB", db);
+}
+
+SV*
 c2p_depmod(alpm_depmod_t mod)
 {
 	SV *sv;

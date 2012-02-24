@@ -14,7 +14,6 @@ ALPM_SigLevel			T_SIGLEVEL
 PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE
 DependList		L_DEPEND
-ConflictListFree	L_CONFLICT_FREE
 StringList			L_STRING
 StringListFree		L_STRING_FREE
 

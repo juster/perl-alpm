@@ -14,7 +14,6 @@ ALPM_SigLevel			T_SIGLEVEL
 PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE
 DependList		L_DEPEND
-GroupList			L_GROUP
 ConflictListFree	L_CONFLICT_FREE
 StringList			L_STRING
 StringListFree		L_STRING_FREE
@@ -178,21 +177,6 @@ L_PACKAGE_FREE
 
 L_DEPEND
 	$arg = newRV_noinc((SV*)list2av($var, c2p_depend));
-
-L_GROUP
-	$arg = newRV_noinc( (SV *) newAV() );
-	{
-		AV *group_array = (AV *) SvRV($arg);
-		GroupList iter;
-		iter = $var;
-		while ( iter != NULL ) {
-			SV *group;
-			group = newSV(0);
-			sv_setref_pv( group, \"ALPM::Group\", (void *)iter->data );
-			av_push( group_array, group );
-			iter = iter->next;
-		}
-	}
 
 L_STRING
 	$arg = newRV_noinc((SV*)list2av($var, c2p_str));

@@ -178,9 +178,10 @@ MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
 
 # This is used inside ALPM.pm, so it keeps its _db prefix.
 ALPM_SyncDB
-alpm_db_register_sync(self, sync_name)
+alpm_db_register_sync(self, sync_name, siglvl)
 	ALPM_Handle self
 	const char * sync_name
+	ALPM_SigLevel siglvl
 
 #------------------------
 # PUBLIC DATABASE METHODS

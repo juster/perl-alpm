@@ -249,8 +249,9 @@ sub set_options
 
 sub register
 {
-	my($self, $name, $url) = @_;
+	my($self, $name, $url, $siglvl) = @_;
 	croak 'You must supply a name and URL for the database' unless($name && $url);
+	$siglvl ||= 'default';
 
 	# Replace the literal string '$repo' with the repo's name,
 	# like in the pacman config file... bad idea maybe?
@@ -266,7 +267,7 @@ sub register
 	}
 
 	# Set the server right away because function calls break in between...
-	my $db = $self->_db_register_sync($name);
+	my $db = $self->_db_register_sync($name, $siglvl);
 	$db->add_url($url);
 	return $db;
 }

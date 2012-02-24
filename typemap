@@ -13,7 +13,7 @@ ALPM_SigLevel			T_SIGLEVEL
 PackageList		L_PACKAGE
 DependList		L_DEPEND
 StringList			L_STRING
-StringListFree		L_STRING_FREE
+StringListFree		L_STRINGFREE
 
 alpm_pkgreason_t	T_PKGREASON
 off_t				T_INT

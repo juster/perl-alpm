@@ -17,7 +17,7 @@ typedef alpm_depend_t * DependHash;
 typedef alpm_conflict_t * ConflictArray;
 
 typedef alpm_list_t * StringListFree;
-typedef alpm_list_t * StringListNoFree;
+typedef alpm_list_t * StringList;
 typedef alpm_list_t * PackageListNoFree;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;

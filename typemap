@@ -10,7 +10,6 @@ ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_SigLevel			T_SIGLEVEL
 
-PackageListFree	L_PACKAGE_FREE
 PackageList		L_PACKAGE
 DependList		L_DEPEND
 StringList			L_STRING
@@ -150,10 +149,6 @@ T_PKGREASON
 
 L_PACKAGE
 	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
-
-L_PACKAGE_FREE
-	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));
-	FREELIST($var);
 
 L_DEPEND
 	$arg = newRV_noinc((SV*)list2av($var, c2p_depend));

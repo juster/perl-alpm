@@ -28,12 +28,12 @@ typedef void* (*listmap)(SV*)
 /* CONVERTER FUNC PROTOS */
 
 #define c2p_str(S) newSVpv(S, 0)
-void *p2c_str(SV*);
+const char* p2c_str(SV*);
 
 SV* c2p_pkg(void*);
 ALPM_Package p2c_pkg(SV*);
 
-SV* p2c_db(SV*);
+ALPM_DB p2c_db(SV*);
 
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);

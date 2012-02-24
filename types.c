@@ -11,7 +11,7 @@
 
 /* SCALAR CONVERSIONS */
 
-void*
+const char*
 p2c_str(SV *sv)
 {
 	char *pstr, *cstr;

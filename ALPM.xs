@@ -233,15 +233,11 @@ find(db, name)
 	ALPM_DB db
 	const char *name
  PREINIT:
-	pmpkg_t *pkg;
+	ALPM_Package pkg;
  CODE:
 	pkg = alpm_db_get_pkg(db, name);
-	if(pkg == NULL){
-		RETVAL = &PL_sv_undef;
-	}else{
-		RETVAL = newSV(0);
-		sv_setref_pv(RETVAL, "ALPM::Package", (void*)pkg);
-	}
+	RETVAL = (pkg == NULL ? &PL_sv_undef
+		: c2p_pkg(pkg));
  OUTPUT:
 	RETVAL
 

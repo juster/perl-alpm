@@ -28,6 +28,9 @@ typedef void* (*listmap)(SV*)
 
 /* CONVERTER FUNC PROTOS */
 
+#define c2p_str(S) newSVpv(S, 0)
+void *p2c_str(SV*);
+
 SV* c2p_pkg(void*);
 ALPM_Package p2c_pkg(SV*);
 
@@ -63,8 +66,6 @@ alpm_list_t* av2list(AV*, listmap);
 	alpm_list_free_inner(L, F);\
 	alpm_list_free(L);\
 	L = NULL
-
-#define c2p_str(S) newSVpv(S, 0)
 
 /* MEMORY DEALLOCATION */
 

@@ -181,18 +181,6 @@ alpm_db_register_sync(self, sync_name)
 	ALPM_Handle self
 	const char * sync_name
 
-#-------------------------
-# PRIVATE DATABASE METHODS
-#-------------------------
-
-MODULE = ALPM	PACKAGE = ALPM::DB	PREFIX = alpm_db
-
-# Wrapped to avoid arrayrefs (which are much easier in typemap)
-PackageListFree
-alpm_db_search(db, needles)
-    ALPM_DB db
-    StringListFree needles
-
 #------------------------
 # PUBLIC DATABASE METHODS
 #------------------------
@@ -268,6 +256,20 @@ find_group(db, name)
 		pkgs = grp->packages;
 		LIST2STACK(pkgs, c2p_pkg);
 	}
+
+void
+search(db, ...)
+	ALPM_DB db
+ PREINIT:
+	alpm_list_t *terms, *fnd;
+	int i;
+ CODE:
+	i = 1;
+	STACK2LIST(i, terms, p2c_str);
+	fnd = alpm_db_search(db, terms);
+	ZAPLIST(terms, free);
+	LIST2STACK(fnd, c2p_pkg);
+	FREELIST(fnd);
 
 #------------------------------
 # PRIVATE SYNC DATABASE METHODS

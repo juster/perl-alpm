@@ -7,10 +7,22 @@
 #include "XSUB.h"
 #include "ppport.h"
 
-
 #include "types.h"
 
 /* SCALAR CONVERSIONS */
+
+void*
+p2c_str(SV *sv)
+{
+	char *pstr, *cstr;
+	STRLEN len;
+
+	/* pstr is not guaranteed to be NULL terminated so make a copy */
+	pstr = SvPV(sv, len);
+	cstr = calloc(len + 1, sizeof(char));
+	memcpy(cstr, pstr, len);
+	return cstr;
+}
 
 SV*
 c2p_pkg(void *p)

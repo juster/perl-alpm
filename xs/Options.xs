@@ -96,7 +96,7 @@ alpm_option_get_cachedirs(self)
  PPCODE:
 	lst = alpm_option_get_cachedirs(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free)
+	ZAPLIST(lst, free);
 
 void
 alpm_option_get_noupgrades(self)
@@ -106,7 +106,7 @@ alpm_option_get_noupgrades(self)
  PPCODE:
 	lst = alpm_option_get_noupgrades(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free)
+	ZAPLIST(lst, free);
 
 void
 alpm_option_get_noextracts(self)
@@ -116,7 +116,7 @@ alpm_option_get_noextracts(self)
  PPCODE:
 	lst = alpm_option_get_noextracts(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free)
+	ZAPLIST(lst, free);
 
 void
 alpm_option_get_ignorepkgs(self)
@@ -126,7 +126,7 @@ alpm_option_get_ignorepkgs(self)
  PPCODE:
 	lst = alpm_option_get_ignorepkgs(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free)
+	ZAPLIST(lst, free);
 
 void
 alpm_option_get_ignoregroups(self)
@@ -136,7 +136,7 @@ alpm_option_get_ignoregroups(self)
  PPCODE:
 	lst = alpm_option_get_ignoregroups(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free)
+	ZAPLIST(lst, free);
 
 negative_is_error
 option_stringlist_add(self, add_string)

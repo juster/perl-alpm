@@ -321,7 +321,7 @@ alpm_db_set_servers(self, ...)
 	int i;
  CODE:
 	i = 1;
-	STACK2LIST(i, lst, p2c_str);
+	STACK2LIST(i, L, p2c_str);
 	RETVAL = alpm_option_set_servers(self, L);
  OUTPUT:
 	RETVAL

@@ -142,7 +142,7 @@ load_pkgfile(self, filename, full, siglevel)
 	int full
 	ALPM_SigLevel siglevel
  PREINIT:
-	ALPM_PackageFree pkg
+	ALPM_PackageFree pkg;
  CODE:
 	if(alpm_pkg_load(self, filename, full, siglevel, &RETVAL) < 0){
 		croakalpm("ALPM");

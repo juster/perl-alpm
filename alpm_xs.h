@@ -1,8 +1,6 @@
 #ifndef ALPM_XS_H
 #define ALPM_XS_H
 
-#include <alpm.h>
-
 /* Code references to use as callbacks. */
 extern SV *cb_log_sub;
 extern SV *cb_dl_sub;

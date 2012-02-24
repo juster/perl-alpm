@@ -22,8 +22,8 @@ typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
 
 /* these are for list converter functions */
-typedef SV* (*scalarmap)(void*)
-typedef void* (*listmap)(SV*)
+typedef SV* (*scalarmap)(void*);
+typedef void* (*listmap)(SV*);
 
 /* CONVERTER FUNC PROTOS */
 

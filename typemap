@@ -77,7 +77,7 @@ T_ALPM_PACKAGEFREE
 	}else{
 		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
 			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::PackageFree\")
+			\"$var\", \"ALPM::PackageFree\");
 	}
 
 T_SIGLEVEL

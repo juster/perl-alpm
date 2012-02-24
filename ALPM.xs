@@ -3,8 +3,9 @@
 #include "XSUB.h"
 #include "ppport.h"
 
+#include <alpm.h>
 #include "types.h"
-#include "alpm_xs.h"
+/* #include "alpm_xs.h" */
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -45,7 +46,7 @@ new(class, root, dbpath)
 	if(h == NULL){
 		croak("ALPM Error: %s", alpm_strerror(err));
 	}
-	RETVAL = h
+	RETVAL = h;
  OUTPUT:
 	RETVAL
 
@@ -342,6 +343,6 @@ INCLUDE: xs/Options.xs
 
 INCLUDE: xs/Package.xs
 
-INCLUDE: xs/Transaction.xs
+# INCLUDE: xs/Transaction.xs
 
 # EOF

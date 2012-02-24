@@ -177,16 +177,7 @@ L_PACKAGE_FREE
 	ZAPLIST($var);
 
 L_DEPEND
-	$arg = newRV_noinc( (SV*) newAV() );
-	{
-		AV *depend_array = (AV*) SvRV($arg);
-		DependList iter = $var;
-		while ( iter != NULL ) {
-			av_push( depend_array,
-					 convert_depend( (pmdepend_t *)iter->data ) );
-			iter = iter->next;
-		}
-	}
+	$arg = newRV_noinc((SV*)list2av($var, c2p_depend));
 
 L_GROUP
 	$arg = newRV_noinc( (SV *) newAV() );

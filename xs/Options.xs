@@ -68,8 +68,6 @@ const char *
 option_string_get(self)
 	ALPM_Handle self
  INTERFACE:
-	alpm_option_get_root
-	alpm_option_get_dbpath
 	alpm_option_get_logfile
 	alpm_option_get_lockfile
 	alpm_option_get_arch
@@ -80,8 +78,6 @@ option_string_set(self, string)
 	ALPM_Handle self
 	const char * string
  INTERFACE:
-	alpm_option_set_root
-	alpm_option_set_dbpath
 	alpm_option_set_logfile
 	alpm_option_set_arch
 	alpm_option_set_gpgdir

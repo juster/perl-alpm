@@ -11,6 +11,12 @@
 
 /* SCALAR CONVERSIONS */
 
+SV*
+c2p_str(char *str)
+{
+	return newSVpv(str, 0);
+}
+
 const char*
 p2c_str(SV *sv)
 {

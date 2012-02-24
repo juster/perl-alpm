@@ -28,7 +28,7 @@ typedef void* (*listmap)(SV*);
 
 /* CONVERTER FUNC PROTOS */
 
-#define c2p_str(S) newSVpv(S, 0)
+SV* c2p_str(void*);
 const char* p2c_str(SV*);
 
 SV* c2p_pkg(void*);

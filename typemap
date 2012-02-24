@@ -100,41 +100,6 @@ T_SIGLEVEL
 T_PKGREASON
 	$var = p2c_pkgreason($arg);
 
-L_PACKAGE_FREE
-	if(SvROK($arg) && SvTYPE(SvRV($arg)) == SVt_PVAV){
-		AV * package_array;
-		SV ** elem, * cleanup;
-		I32 i, max;
-
-		$ntype list;
-		void * package;
-
-		package_array = (AV *)SvRV($arg);
-		max = av_len(package_array);
-		list = NULL;
-
-		for(i=0; i<=max; ++i){
-			elem = av_fetch(package_array, i, 0);
-			if(!sv_derived_from(*elem, \"ALPM::Package\")){
-				croak(\"All elements of arrayref must be ALPM::Package objects\");
-			}
-
-			package = INT2PTR(void *, SvIV((SV *)SvRV(*elem)));
-			list = alpm_list_add(list, package);
-		}
-
-		if(list != NULL){
-			cleanup = sv_newmortal();
-			sv_setref_pv(cleanup, \"ALPM::ListAutoFree\", (void *)list);
-		}
-
-		$var = list;
-	}else{
-		Perl_croak(aTHX_ \"%s: %s is not an arrayref\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\");
-	}
-
 #---------------------
 # OUTPUT # C ==> Perl
 #---------------------

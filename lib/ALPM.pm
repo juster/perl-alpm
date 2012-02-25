@@ -16,30 +16,6 @@ use ALPM::DB;
 
 our $VERSION = '2.01';
 
-# constants are only used internally... they are ugly.
-sub AUTOLOAD {
-    # This AUTOLOAD is used to 'autoload' constants from the constant()
-    # XS function.
-
-    my $constname;
-    our $AUTOLOAD;
-    ($constname = $AUTOLOAD) =~ s/.*:://;
-    croak "&ALPM::constant not defined" if $constname eq 'constant';
-    my ($error, $val) = constant($constname);
-    if ($error) { croak $error; }
-    {
-	no strict 'refs';
-	# Fixed between 5.005_53 and 5.005_61
-#XXX	if ($] >= 5.00561) {
-#XXX	    *$AUTOLOAD = sub () { $val };
-#XXX	}
-#XXX	else {
-	    *$AUTOLOAD = sub { $val };
-#XXX	}
-    }
-    goto &$AUTOLOAD;
-}
-
 require XSLoader;
 XSLoader::load('ALPM', $VERSION);
 
@@ -61,23 +37,24 @@ our %_IS_GETOPTION = ( map { ( $_ => 1 ) } @GET_SET_OPTS,
                        qw/ lockfile localdb syncdbs / );
 
 ### Transaction Constants ###
-our %_TRANS_FLAGS = ( 'nodeps'      => PM_TRANS_FLAG_NODEPS(),
-                      'force'       => PM_TRANS_FLAG_FORCE(),
-                      'nosave'      => PM_TRANS_FLAG_NOSAVE(),
-                      'nodepver'    => PM_TRANS_FLAG_NODEPVERSION(),
-                      'cascade'     => PM_TRANS_FLAG_CASCADE(),
-                      'recurse'     => PM_TRANS_FLAG_RECURSE(),
-                      'dbonly'      => PM_TRANS_FLAG_DBONLY(),
-                      'alldeps'     => PM_TRANS_FLAG_ALLDEPS(),
-                      'dlonly'      => PM_TRANS_FLAG_DOWNLOADONLY(),
-                      'noscriptlet' => PM_TRANS_FLAG_NOSCRIPTLET(),
-                      'noconflicts' => PM_TRANS_FLAG_NOCONFLICTS(),
-                      'needed'      => PM_TRANS_FLAG_NEEDED(),
-                      'allexplicit' => PM_TRANS_FLAG_ALLEXPLICIT(),
-                      'unneeded'    => PM_TRANS_FLAG_UNNEEDED(),
-                      'recurseall'  => PM_TRANS_FLAG_RECURSEALL(),
-                      'nolock'      => PM_TRANS_FLAG_NOLOCK(),
-                     );
+our %_TRANS_FLAGS = (
+	'nodeps' => (1 << 0),
+	'force' => (1 << 1),
+	'nosave' => (1 << 2),
+	'nodepver' => (1 << 3),
+	'cascade' => (1 << 4),
+	'recurse' => (1 << 5),
+	'dbonly' => (1 << 6),
+	'alldeps' => (1 << 8),
+	'dlonly' => (1 << 9),
+	'noscriptlet' => (1 << 10),
+	'noconflicts' => (1 << 11),
+	'needed' => (1 << 13),
+	'allexplicit' => (1 << 14),
+	'unneeded' => (1 << 15),
+	'recurseall' => (1 << 16),
+	'nolock' => (1 << 17),
+);
 
 
 ####----------------------------------------------------------------------

@@ -12,7 +12,7 @@
 /* SCALAR CONVERSIONS */
 
 SV*
-c2p_str(char *str)
+c2p_str(void *str)
 {
 	return newSVpv(str, 0);
 }
@@ -46,11 +46,11 @@ p2c_pkg(SV *pkgobj)
 ALPM_DB
 p2c_db(SV *db)
 {
-	return INT2PTR(ALPM_DB, SvIV((SV*)SvRV(pkgobj)));
+	return INT2PTR(ALPM_DB, SvIV((SV*)SvRV(db)));
 }
 
 SV*
-c2p_syncdb(ALPM_SyncDB *db)
+c2p_syncdb(void *db)
 {
 	SV *rv = sv_newmortal();
 	return sv_setref_pv(rv, "ALPM::SyncDB", db);

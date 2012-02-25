@@ -36,7 +36,6 @@ lib/ALPM/DB.pod
 lib/ALPM/Package.pm
 lib/ALPM/LoadConfig.pm
 lib/ALPM/Transaction.pm
-lib/ALPM/Group.pm
 ex/ownzors
 ex/dangles
 ex/lspkg

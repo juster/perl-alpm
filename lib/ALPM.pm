@@ -12,7 +12,6 @@ use Carp         qw(carp croak confess);
 
 use ALPM::Transaction;
 use ALPM::Package;
-use ALPM::Group;
 use ALPM::DB;
 
 our $VERSION = '2.01';

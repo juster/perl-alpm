@@ -32,6 +32,6 @@ WriteMakefile
       clean             => { FILES  => 't/root t/repos/share const-*.inc' },
 	# Un-comment this if you add C files to link with later:
      # OBJECT            => '$(O_FILES)', # link all the C files too
-      OBJECT            => 'ALPM.o',
+      OBJECT            => 'ALPM.o types.o',
       XS                => { 'ALPM.xs' => 'ALPM.c' },
 );

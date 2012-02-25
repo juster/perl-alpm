@@ -166,11 +166,11 @@ trustmask(HV *sig, char *lvl, int len)
 	AV *flags;
 	I32 i, x;
 	char *str;
-	STRLEN len;
+	STRLEN svlen;
 	int mask;
 
 	val = hv_fetch(sig, lvl, len, 0);
-	if(val == NULL || !SvROK(*val) || SvTYPE(SvRV(*val)) != Svt_PVAV)){
+	if(val == NULL || !SvROK(*val) || SvTYPE(SvRV(*val)) != SVt_PVAV){
 		croak("SigLevel hashref must contain array refs as values");
 	}
 
@@ -186,25 +186,25 @@ trustmask(HV *sig, char *lvl, int len)
 			goto averr;
 		}
 
-		str = SvPV(*val, len);
-		if(strncmp("never", str, len)){
+		str = SvPV(*val, svlen);
+		if(strncmp("never", str, svlen)){
 			if(mask & ~TRUST_NEVER){
 				goto neverr;
 			}
 			mask |= TRUST_NEVER;
 		}else if(mask & TRUST_NEVER){
 			goto neverr;
-		}else if(strncmp("optional", str, len)){
+		}else if(strncmp("optional", str, svlen)){
 			if(mask & TRUST_REQ){
 				goto opterr;
 			}
 			mask |= TRUST_OPT;
-		}else if(strncmp("required", str, len)){
+		}else if(strncmp("required", str, svlen)){
 			if(mask & TRUST_OPT){
 				goto opterr;
 			}
 			mask |= TRUST_REQ;
-		}else if(strncmp("trustall", str, len)){
+		}else if(strncmp("trustall", str, svlen)){
 			mask |= TRUST_ALL;
 		}
 	}
@@ -243,7 +243,7 @@ p2c_siglevel(SV *sig)
 	}
 
 	if(!SvROK(sig) || SvTYPE(SvRV(sig)) != SVt_PVHV){
-		croak(("SigLevel must be a string or hash reference");
+		croak("SigLevel must be a string or hash reference");
 	}
 
 	hv = (HV*)SvRV(sig);
@@ -310,6 +310,7 @@ p2c_pkgreason(SV *sv)
 			return ALPM_PKG_REASON_DEPEND;
 		}else{
 			croak("string reasons can only be explicit or implicit/depend");
+		}
 	}else{
 		croak("reasons can only be integers or strings");
 	}
@@ -320,10 +321,10 @@ p2c_pkgreason(SV *sv)
 AV *
 list2av(alpm_list_t *L, scalarmap F)
 {
-	AV av;
+	AV *av;
 	av = newAV();
 	while(L){
-		av_push(av, F(L->data);
+		av_push(av, F(L->data));
 		L = alpm_list_next(L);
 	}
 	return av;
@@ -334,18 +335,23 @@ av2list(AV *A, listmap F)
 {
 	alpm_list_t *L;
 	int i;
+	SV **sv;
+
 	for(i = 0; i < av_len(A); i++){
-		L = alpm_list_add(L, F(av_fetch(A, i, 0)));
+		sv = av_fetch(A, i, 0);
+		L = alpm_list_add(L, F(*sv));
 	}
 	return L;
 }
 
-void freedepend(void *p)
+void
+freedepend(void *p)
 {
 	free((alpm_depend_t*)p);
 }
 
-void freeconflict(void *p)
+void
+freeconflict(void *p)
 {
 	alpm_conflict_t *c;
 	c = p;

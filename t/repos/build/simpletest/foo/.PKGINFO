@@ -1,0 +1,8 @@
+pkgdesc = Foo!
+pkgrel = 1
+pkgver = 1.0
+arch = any
+pkgname = foo
+license = GPL
+builddate = 1334101425
+size = 11

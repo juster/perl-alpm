@@ -1,0 +1,9 @@
+arch = any
+pkgname = bar
+license = GPL
+builddate = 1334101424
+size = 15
+pkgdesc = Bar!
+pkgver = 1.0
+pkgrel = 1
+depends = foo

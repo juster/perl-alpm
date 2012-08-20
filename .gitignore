@@ -14,6 +14,7 @@ ALPM-*.tar.gz
 Makefile
 *.inc
 pm_to_blib
+t/repos/build
 t/repos/share
 t/test.conf
 t/root

@@ -6,6 +6,7 @@ ppport.h
 ALPM.xs
 xs/Options.xs
 xs/Package.xs
+xs/DB.xs
 xs/Transaction.xs
 alpm_xs.h
 convert.c

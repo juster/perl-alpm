@@ -101,12 +101,16 @@ sub buildpkg
 		exit 1;
 	}
 
+	unlink("$td/.PKGINFO") or die "unlink: $!";
+	updatepi($pi, $td);
+	writepi($pi, "$td/.PKGINFO");
+
 	my $fname = pkgfname($pi);
 	my $oldwd = getcwd();
 	chdir $td or die "chdir: $!";
 	system qq{bsdtar -cf - .PKGINFO * | xz -z > ../$fname};
 	if($?){
-		printf STDERR "$PROG: bsdtar or xz returned %d\n", $? >> 8;
+		printf STDERR "$PROG: xz returned %d\n", $? >> 8;
 		exit 1;
 	}
 	chdir $oldwd or die "chdir: $!";
@@ -153,26 +157,20 @@ sub findbuilt
 	return "$td/$fname";
 }
 
+my $wd = getcwd();
 my $bd = 'build';
 my $td = mktmpdir($bd);
 my $repos = readrepos($bd);
 my @pkgfiles;
 
-for (keys %$repos){
-	my $rd = "$bd/$_";
-
-	PKGLOOP:
-	for my $p (sort @{$repos->{$_}}){
+for my $repo (sort keys %$repos){
+	my $rd = "$bd/$repo";
+	for my $p (sort @{$repos->{$repo}}){
 		my $srcd = "$rd/$p";
 		my $destd = "$td/$p";
-		my $pipath = "$srcd/.PKGINFO";
-		my $pi = readpi($pipath);
-
+		my $pi = readpi("$srcd/.PKGINFO");
 		my $pkgp = findbuilt($pi, $srcd, $rd);
 		unless($pkgp){
-			updatepi($pi, $srcd);
-			writepi($pi, $pipath);
-
 			my $tmpp = buildpkg($pi, $srcd, $destd);
 			$pkgp = "$rd/" . basename($tmpp);
 			unless(copy($tmpp, $pkgp)){
@@ -180,6 +178,6 @@ for (keys %$repos){
 				exit 1;
 			}
 		}
-		print "$pkgp\n";
+		print "$repo\t$wd/$pkgp\n";
 	}
 }

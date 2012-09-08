@@ -4,5 +4,3 @@ pkgrel = 1
 arch = any
 pkgname = foo
 license = GPL
-builddate = 1334101425
-size = 9

@@ -23,8 +23,6 @@ off_t				T_INT
 #--------------------
 
 INPUT
-I_NEG_IS_ERROR
-	$var = SvIV($arg)
 
 T_ALPM_HANDLE
 	if(sv_derived_from($arg, \"ALPM\")){
@@ -91,11 +89,9 @@ T_PKGREASON
 #---------------------
 
 OUTPUT
+
 I_NEG_IS_ERROR
-	if($var != 0){
-		croakalpm("ALPM");
-	}
-	$arg = newSViv(1);
+	$arg = ($var == 0 ? &PL_sv_yes : &PL_sv_no);
 
 T_ALPM_HANDLE
 	if($var == NULL){
@@ -107,39 +103,45 @@ T_ALPM_HANDLE
 
 T_ALPM_DB
 	if($var == NULL){
-		croakalpm("ALPM DB");
+		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
 
 T_ALPM_LOCALDB
 	if($var == NULL){
-		croakalpm("ALPM DB");
+		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::DB::Local\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::DB::Local\", (void *)$var);
 
 T_ALPM_SYNCDB
 	if($var == NULL){
-		croakalpm("ALPM DB");
+		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::DB::Sync\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::DB::Sync\", (void *)$var);
 
 T_ALPM_PACKAGE
 	if($var == NULL){
-		croakalpm("ALPM Package");
+		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 
 T_ALPM_PACKAGEFREE
 	if($var == NULL){
-		croakalpm("ALPM Package");
+		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::PackageFree\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::PackageFree\", (void *)$var);
 
 T_ALPM_PACKAGEORNULL
 	if($var == NULL){
 		$arg = &PL_sv_undef;
+	}else{
+		sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 	}
-	sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 
 T_SIGLEVEL
 	$arg = c2p_siglevel($var);

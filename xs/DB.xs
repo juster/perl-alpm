@@ -29,9 +29,9 @@ groups(db)
 	L = grps = alpm_db_get_groupcache(db);
 	while(grps){
 		grp = grps->data;
-		XPUSHs(newSVpv(grp->name, 0));
+		XPUSHs(sv_2mortal(newSVpv(grp->name, strlen(grp->name))));
 		pkgarr = list2av(grp->packages, c2p_pkg);
-		XPUSHs(newRV_noinc((SV*)pkgarr));
+		XPUSHs(sv_2mortal(newRV_noinc((SV*)pkgarr)));
 	}
 	FREELIST(L);
 

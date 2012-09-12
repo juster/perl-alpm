@@ -122,7 +122,7 @@ alpm_db_remove_server(self, url)
 void alpm_db_get_servers(self)
 	ALPM_DB self
  PREINIT:
-	alpm_list_t *L, *servers;
+	alpm_list_t *L, *srvs;
  PPCODE:
 	L = srvs = alpm_db_get_servers(self);
 	LIST2STACK(srvs, c2p_str);

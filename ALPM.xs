@@ -115,14 +115,18 @@ alpm_check_conflicts(self, ...)
 	LIST2STACK(clist, c2p_conflict);
 	ZAPLIST(L, freeconflict);
 
-char *
+SV *
 alpm_fetch_pkgurl(self, url)
 	ALPM_Handle self
 	const char * url
+ PREINIT:
+	char * path;
  CODE:
-	RETVAL = alpm_fetch_pkgurl(self, url);
-	if(RETVAL == NULL){
-		croakalpm("ALPM");
+	path = alpm_fetch_pkgurl(self, url);
+	if(path == NULL){
+		RETVAL = &PL_sv_undef;
+	}else{
+		RETVAL = sv_2mortal(newSVpv(path, strlen(path)));
 	}
  OUTPUT:
 	RETVAL
@@ -135,18 +139,18 @@ alpm_db_unregister_all(self)
 
 MODULE = ALPM	PACKAGE = ALPM
 
-ALPM_Package
+# Packages created with load_pkgfile must be freed by the caller.
+# Hence we use ALPM_PackageFree. NULL pointers are converted
+# into undef by the typemap.
+
+ALPM_PackageFree
 load_pkgfile(self, filename, full, siglevel)
 	ALPM_Handle self
 	const char *filename
 	int full
 	ALPM_SigLevel siglevel
- PREINIT:
-	ALPM_PackageFree pkg;
  CODE:
-	if(alpm_pkg_load(self, filename, full, siglevel, &RETVAL) < 0){
-		croakalpm("ALPM");
-	}
+	alpm_pkg_load(self, filename, full, siglevel, &RETVAL);
  OUTPUT:
 	RETVAL
 

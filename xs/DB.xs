@@ -59,7 +59,7 @@ find(db, name)
 void
 find_group(db, name)
 	ALPM_DB db
-	const char * name
+	const char *name
  PREINIT:
 	alpm_group_t *grp;
 	alpm_list_t *pkgs;
@@ -112,20 +112,20 @@ alpm_db_unregister(self)
 negative_is_error
 alpm_db_add_server(self, url)
 	ALPM_DB self
-	const char * url
+	const char *url
 
 negative_is_error
 alpm_db_remove_server(self, url)
 	ALPM_DB self
-	const char * url
+	const char *url
 
 void alpm_db_get_servers(self)
 	ALPM_DB self
  PREINIT:
-	alpm_list_t *L, *i;
+	alpm_list_t *L, *servers;
  PPCODE:
-	L = i = alpm_db_get_servers(self);
-	LIST2STACK(i, c2p_str);
+	L = srvs = alpm_db_get_servers(self);
+	LIST2STACK(srvs, c2p_str);
 	FREELIST(L);
 
 negative_is_error

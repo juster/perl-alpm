@@ -33,7 +33,7 @@ t/repos/build/upgradetest/replacebaz/usr/foo/bar/baz
 t/repos/repoadd.pl
 t/repos/repofin.pl
 t/repos/package.pl
-t/preptests.PL
+t/preptests.pl
 lib/ALPM.pm
 lib/ALPM.pod
 lib/ALPM/DB.pm

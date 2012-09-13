@@ -8,12 +8,14 @@ use File::Find;
 use File::Copy;
 use File::Path qw(make_path remove_tree);
 use File::Spec::Functions qw(rel2abs catfile);
+use File::Basename qw(dirname);
 
 my $PROG = 'preptests';
-my $REPOS_SHARE = rel2abs('repos/share');
-my $TEST_ROOT = rel2abs('root');
-my $TEST_CONF = 'test.conf';
-my $PKGEXT;
+my $REPODIR = 'repos';
+
+## Variables inside the test.conf need absolute paths, assigned later.
+my ($REPOSHARE, $TESTROOT);
+my $TESTCONF = 'test.conf';
 
 sub createconf
 {
@@ -62,15 +64,14 @@ sub remkdir
 
 sub mkroot
 {
-	remkdir($TEST_ROOT);
-	make_path("$TEST_ROOT/db/local",
-		"$TEST_ROOT/db/sync",
-		"$TEST_ROOT/cache", { mode => 0755 });
+	remkdir($TESTROOT);
+	make_path(glob("$TESTROOT/{cache,{db/{local,cache}}}"),
+		{ mode => 0755 });
 }
 
 sub corruptpkg
 {
-	my $fqp = "$REPOS_SHARE/simpletest/corruptme-1.0-1-any.pkg.tar.xz";
+	my $fqp = "$REPOSHARE/simpletest/corruptme-1.0-1-any.pkg.tar.xz";
 	unlink $fqp or die "unlink: $!";
 
 	open my $fh, '>', $fqp or die "open: $!";
@@ -80,17 +81,16 @@ sub corruptpkg
 	return;
 }
 
-if(-e $REPOS_SHARE){
-	print STDERR "$PROG: Warning: test repositories are already created!\n";
-}else{
+sub buildrepos
+{
+	my($sharedir) = @_;
 	my $repos = buildpkgs();
-	chdir 'repos' or die "chdir: $!";
+	my $wd = getcwd();
+	chdir($REPODIR) or die "chdir: $!";
 
-	mkdir $REPOS_SHARE or die "mkdir: $!";
 	for my $r (sort keys %$repos){
-		my $rd = "$REPOS_SHARE/$r";
-		mkdir $rd or die "mkdir: $!";
-		mkdir "$rd/contents" or die "mkdir: $!";
+		my $rd = "$sharedir/$r";
+		make_path("$rd/contents");
 
 		for my $pkg (@{$repos->{$r}}){
 			system 'perl' => 'repoadd.pl', $rd, $pkg;
@@ -99,23 +99,36 @@ if(-e $REPOS_SHARE){
 				exit 1;
 			}
 		}
-
 		system 'perl' => 'repofin.pl', $rd;
 		if($?){
 			print STDERR "$PROG: repofin.pl failed\n";
 			exit 1;
 		}
 	}
-	chdir '..' or die "chdir: $!";
+
+	chdir $wd or die "chdir: $!";
+	return;
+}
+
+sub main
+{
+	chdir(dirname($0)) or die "chdir: $!";
+
+	$REPOSHARE = rel2abs('repos/share');
+	$TESTROOT = rel2abs('root');
+	if(-d $REPOSHARE){
+		print STDERR "$PROG: warning: test repositories are already created!\n";
+	}else{
+		buildrepos($REPOSHARE);
+	}
 
 	#corruptpkg();
+
+	# Allows me to tweak the test.conf file and not have it overwritten...
+	createconf($TESTCONF) unless(-e $TESTCONF);
+	mkroot();
+
+	return 0;
 }
 
-# MakeMaker passes our path name (sans .PL) as an argument.
-if(@ARGV){
-	chdir(dirname(shift)) or die "chdir: $!";
-}
-
-# Allows me to tweak the test.conf file and not have it overwritten...
-createconf($TEST_CONF) unless(-e $TEST_CONF);
-mkroot();
+exit main(@ARGV);

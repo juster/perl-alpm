@@ -29,3 +29,5 @@ WriteMakefile(
 	'OBJECT' => 'ALPM.o types.o',
 	'XS' => { 'ALPM.xs' => 'ALPM.c' },
 );
+
+system 'perl' => 't/preptests.pl';

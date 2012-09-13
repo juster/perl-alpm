@@ -19,7 +19,7 @@ my $TESTCONF = 'test.conf';
 
 sub createconf
 {
-	my($path, $root) = @_;
+	my($path, $root, $repos) = @_;
 	open my $of, '>', $path
 		or die "failed to open t/test.conf file: $!";
 	print $of <<"END_CONF";
@@ -28,7 +28,42 @@ RootDir = $root
 DBPath = $root/db
 CacheDir = $root/cache
 LogFile = $root/test.log
+#GPGDir      = $root/gnupg/
+HoldPkg     = pacman glibc
+SyncFirst   = pacman
+#XferCommand = /usr/bin/curl -C - -f %u > %o
+#XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u
+CleanMethod = KeepInstalled
+Architecture = auto
+
+# Pacman won't upgrade packages listed in IgnorePkg and members of IgnoreGroup
+#IgnorePkg   =
+#IgnoreGroup =
+
+#NoUpgrade   =
+#NoExtract   =
+
+# Misc options
+#UseSyslog
+#UseDelta
+#TotalDownload
+CheckSpace
+#VerbosePkgLists
+
+# PGP signature checking
+#SigLevel = Optional
+
 END_CONF
+
+	while(my($repo, $path) = each %$repos){
+		print $of <<"END_CONF"
+[$repo]
+SigLevel = Optional TrustAll
+Server = file://$path
+
+END_CONF
+	}
+
 	close $of;
 }
 
@@ -65,8 +100,8 @@ sub remkdir
 sub mkroot
 {
 	remkdir($TESTROOT);
-	make_path(glob("$TESTROOT/{cache,{db/{local,cache}}}"),
-		{ mode => 0755 });
+	my @dirs = glob("$TESTROOT/{gnupg,cache,{db/{local,cache}}}");
+	make_path(@dirs, { mode => 0755 });
 }
 
 sub corruptpkg
@@ -88,6 +123,7 @@ sub buildrepos
 	my $wd = getcwd();
 	chdir($REPODIR) or die "chdir: $!";
 
+	my %paths;
 	for my $r (sort keys %$repos){
 		my $rd = "$sharedir/$r";
 		make_path("$rd/contents");
@@ -104,10 +140,12 @@ sub buildrepos
 			print STDERR "$PROG: repofin.pl failed\n";
 			exit 1;
 		}
+
+		$paths{$r} = $rd;
 	}
 
 	chdir $wd or die "chdir: $!";
-	return;
+	return \%paths;
 }
 
 sub main
@@ -119,13 +157,13 @@ sub main
 	if(-d $REPOSHARE){
 		print STDERR "$PROG: warning: test repositories are already created!\n";
 	}else{
-		buildrepos($REPOSHARE);
+		my $repos = buildrepos($REPOSHARE);
+		createconf($TESTCONF, $TESTROOT, $repos);
 	}
 
 	#corruptpkg();
 
 	# Allows me to tweak the test.conf file and not have it overwritten...
-	createconf($TESTCONF) unless(-e $TESTCONF);
 	mkroot();
 
 	return 0;

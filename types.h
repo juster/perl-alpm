@@ -59,6 +59,7 @@ alpm_list_t* av2list(AV*, listmap);
 	}
 
 #define STACK2LIST(I, L, F)\
+	L = NULL;\
 	while(I < items){\
 		L = alpm_list_add(L, (void*)F(ST(I++)));\
 	}

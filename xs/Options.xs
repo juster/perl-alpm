@@ -64,7 +64,7 @@ MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 ## REGULAR OPTIONS
 
-const char *
+StringOption
 option_string_get(self)
 	ALPM_Handle self
  INTERFACE:
@@ -73,7 +73,7 @@ option_string_get(self)
 	alpm_option_get_arch
 	alpm_option_get_gpgdir
 
-negative_is_error
+SetOption
 option_string_set(self, string)
 	ALPM_Handle self
 	const char * string
@@ -92,7 +92,6 @@ alpm_option_get_cachedirs(self)
  PPCODE:
 	lst = alpm_option_get_cachedirs(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free);
 
 void
 alpm_option_get_noupgrades(self)
@@ -102,7 +101,6 @@ alpm_option_get_noupgrades(self)
  PPCODE:
 	lst = alpm_option_get_noupgrades(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free);
 
 void
 alpm_option_get_noextracts(self)
@@ -112,7 +110,6 @@ alpm_option_get_noextracts(self)
  PPCODE:
 	lst = alpm_option_get_noextracts(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free);
 
 void
 alpm_option_get_ignorepkgs(self)
@@ -122,7 +119,6 @@ alpm_option_get_ignorepkgs(self)
  PPCODE:
 	lst = alpm_option_get_ignorepkgs(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free);
 
 void
 alpm_option_get_ignoregroups(self)
@@ -132,9 +128,8 @@ alpm_option_get_ignoregroups(self)
  PPCODE:
 	lst = alpm_option_get_ignoregroups(self);
 	LIST2STACK(lst, c2p_str);
-	ZAPLIST(lst, free);
 
-negative_is_error
+SetOption
 option_stringlist_add(self, add_string)
 	ALPM_Handle self
 	const char *add_string
@@ -145,7 +140,7 @@ option_stringlist_add(self, add_string)
 	alpm_option_add_ignoregroup
 	alpm_option_add_cachedir
 
-void
+SetOption
 alpm_option_set_cachedirs(self, ...)
 	ALPM_Handle self
  PREINIT:
@@ -154,9 +149,10 @@ alpm_option_set_cachedirs(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_cachedirs(self, lst);
+	RETVAL = alpm_option_set_cachedirs(self, lst);
+	alpm_list_free(lst);
 
-void
+SetOption
 alpm_option_set_noupgrades(self, ...)
 	ALPM_Handle self
  PREINIT:
@@ -165,10 +161,10 @@ alpm_option_set_noupgrades(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_noupgrades(self, lst);
+	RETVAL = alpm_option_set_noupgrades(self, lst);
 	alpm_list_free(lst);
 
-void
+SetOption
 alpm_option_set_noextracts(self, ...)
 	ALPM_Handle self
  PREINIT:
@@ -177,9 +173,10 @@ alpm_option_set_noextracts(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_noextracts(self, lst);
+	RETVAL = alpm_option_set_noextracts(self, lst);
+	alpm_list_free(lst);
 
-void
+SetOption
 alpm_option_set_ignorepkgs(self, ...)
 	ALPM_Handle self
  PREINIT:
@@ -188,9 +185,10 @@ alpm_option_set_ignorepkgs(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_ignorepkgs(self, lst);
+	RETVAL = alpm_option_set_ignorepkgs(self, lst);
+	alpm_list_free(lst);
 
-void
+SetOption
 alpm_option_set_ignoregroups(self, ...)
 	ALPM_Handle self
  PREINIT:
@@ -199,9 +197,12 @@ alpm_option_set_ignoregroups(self, ...)
  CODE:
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
-	alpm_option_set_ignoregroups(self, lst);
+	RETVAL = alpm_option_set_ignoregroups(self, lst);
+	alpm_list_free(lst);
 
-void
+# Use IntOption to return the number of items removed (0 or 1).
+
+IntOption
 option_stringlist_remove(self, badstring)
 	ALPM_Handle self
 	const char * badstring
@@ -212,7 +213,7 @@ INTERFACE:
 	alpm_option_remove_ignorepkg
 	alpm_option_remove_ignoregroup
 
-int
+IntOption
 option_int_get(self)
 	ALPM_Handle self
 INTERFACE:
@@ -220,7 +221,7 @@ INTERFACE:
 	alpm_option_get_usedelta
 	alpm_option_get_checkspace
 
-void
+SetOption
 option_int_set(self, new_int)
 	ALPM_Handle self
 	int new_int
@@ -240,13 +241,14 @@ alpm_option_get_syncdbs(self)
 	alpm_list_t *lst;
  PPCODE:
 	lst = alpm_option_get_syncdbs(self);
+	if(lst == NULL) alpm_croak(self);
 	LIST2STACK(lst, c2p_syncdb);
 
 ALPM_SigLevel
 alpm_option_get_default_siglevel(self)
 	ALPM_Handle self
 
-negative_is_error
+SetOption
 alpm_option_set_default_siglevel(self, siglvl)
 	ALPM_Handle self
 	ALPM_SigLevel siglvl

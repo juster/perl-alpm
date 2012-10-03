@@ -3,6 +3,11 @@
 
 /* TYPEDEFS */
 
+/* Used in typemap and xs/Options.xs. */
+typedef int SetOption;
+typedef int IntOption;
+typedef char * StringOption;
+
 typedef int negative_is_error;
 typedef alpm_handle_t * ALPM_Handle;
 typedef alpm_db_t * ALPM_DB;

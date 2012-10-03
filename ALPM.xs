@@ -7,6 +7,9 @@
 #include "types.h"
 /* #include "alpm_xs.h" */
 
+#define alpm_croak(HND)\
+	croak("ALPM Error: %s", alpm_strerror(alpm_errno(HND)));
+
 MODULE = ALPM	PACKAGE = ALPM
 
 PROTOTYPES: DISABLE

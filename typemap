@@ -1,5 +1,9 @@
 TYPEMAP
 
+SetOption		T_SETOPT
+IntOption		T_INTOPT
+StringOption	T_STROPT
+
 negative_is_error		I_NEG_IS_ERROR
 ALPM_Handle			T_ALPM_HANDLE
 ALPM_DB				T_ALPM_DB
@@ -89,6 +93,27 @@ T_PKGREASON
 #---------------------
 
 OUTPUT
+
+T_STROPT
+	if($var == NULL){
+		alpm_croak(self);
+	}else{
+		$arg = newSVpv($var, strlen($var));
+	}
+
+T_SETOPT
+	if($var == -1){
+		alpm_croak(self);
+	}else{
+		$arg = &PL_sv_yes;
+	}
+
+T_INTOPT
+	if($var == -1){
+		alpm_croak(self);
+	}else{
+		$arg = newSViv($var);
+	}
 
 I_NEG_IS_ERROR
 	$arg = ($var == 0 ? &PL_sv_yes : &PL_sv_no);

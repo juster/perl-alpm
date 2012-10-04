@@ -65,6 +65,22 @@ DESTROY(self)
 	}
 	# errno is only inside a handle, which was just released...
 
+MODULE = ALPM    PACKAGE = ALPM
+
+void
+caps(class)
+	SV * class
+ PREINIT:
+	enum alpm_caps c;
+ PPCODE:
+	c = alpm_capabilities();
+	if(c & ALPM_CAPABILITY_DOWNLOADER){
+		XPUSHs(sv_2mortal(newSVpv("download", 0)));
+	}
+	if(c & ALPM_CAPABILITY_SIGNATURES){
+		XPUSHs(sv_2mortal(newSVpv("signatures", 0)));
+	}
+
 MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
 
 const char *

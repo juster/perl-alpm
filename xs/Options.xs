@@ -244,13 +244,23 @@ alpm_option_get_syncdbs(self)
 	if(lst == NULL) alpm_croak(self);
 	LIST2STACK(lst, c2p_syncdb);
 
+MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
+
 ALPM_SigLevel
-alpm_option_get_default_siglevel(self)
+get_defsiglvl(self)
 	ALPM_Handle self
+ CODE:
+	RETVAL = alpm_option_get_default_siglevel(self);
+ OUTPUT:
+	RETVAL
 
 SetOption
-alpm_option_set_default_siglevel(self, siglvl)
+set_defsiglvl(self, siglvl)
 	ALPM_Handle self
 	ALPM_SigLevel siglvl
+ CODE:
+	RETVAL = alpm_option_set_default_siglevel(self, siglvl);
+ OUTPUT:
+	RETVAL
 
 # EOF

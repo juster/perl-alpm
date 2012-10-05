@@ -56,19 +56,19 @@ for $k (sort keys %opts){
 }
 
 # TODO: Test SigLevels more in a later test.
-is $alpm->get_default_siglevel, 'never';
-ok $alpm->set_default_siglevel('default');
+is $alpm->get_defsiglvl, 'never';
+ok $alpm->set_defsiglvl('default');
 
 if(grep { /signatures/ } @caps){
-	is $alpm->get_default_siglevel, 'default';
-	ok $alpm->set_default_siglevel({ 'pkg' => ['never'], 'db' => ['required'] });
-	$siglvl = $alpm->get_default_siglevel;
+	is $alpm->get_defsiglvl, 'default';
+	ok $alpm->set_defsiglvl({ 'pkg' => ['never'], 'db' => ['required'] });
+	$siglvl = $alpm->get_defsiglvl;
 	is $siglvl->{'pkg'}[0], 'never';
 	is $isglvl->{'db'}[0], 'required';
 }else{
-	is $alpm->get_default_siglevel, 'never';
+	is $alpm->get_defsiglvl, 'never';
 	$siglvl = { 'pkg' => ['never'], 'db' => ['required'] };
-	eval { $alpm->set_default_siglevel($siglvl); };
+	eval { $alpm->set_defsiglvl($siglvl); };
 	if($@ =~ /^ALPM Error: wrong or NULL argument passed/){
 		pass q{can set siglevel to "default" or "never" without GPGME};
 	}else{

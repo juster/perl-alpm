@@ -160,33 +160,35 @@ c2p_siglevel(alpm_siglevel_t sig)
 #define TRUST_ALL 3
 
 static int
-trustmask(HV *sig, char *lvl, int len)
+trustmask(HV *lvlhash, char *lvl, int len)
 {
-	SV **val;
+	SV **ref, **flag;
 	AV *flags;
 	I32 i, x;
 	char *str;
 	STRLEN svlen;
 	int mask;
 
-	val = hv_fetch(sig, lvl, len, 0);
-	if(val == NULL || !SvROK(*val) || SvTYPE(SvRV(*val)) != SVt_PVAV){
+	ref = hv_fetch(lvlhash, lvl, len, 0);
+	if(ref == NULL || !SvROK(*ref) || SvTYPE(SvRV(*ref)) != SVt_PVAV){
 		croak("SigLevel hashref must contain array refs as values");
 	}
 
-	flags = (AV*)*val;
+	flags = (AV*)SvRV(*ref);
 	x = av_len(flags);
 	if(x == -1){
-		goto averr;
+		croak("Bad %s SigLevel value: array is empty");
 	}
 
 	for(i = 0; i <= x; i++){
-		val = av_fetch(flags, i, 0);
-		if(val == NULL || !SvPOK(*val)){
+		flag = av_fetch(flags, i, 0);
+		if(!SvPOK(*flag)){
+			fprintf(stderr, "DBG: *flag = %X\n", *flag);
+			croak("WTF?");
 			goto averr;
 		}
 
-		str = SvPV(*val, svlen);
+		str = SvPV(*flag, svlen);
 		if(strncmp("never", str, svlen)){
 			if(mask & ~TRUST_NEVER){
 				goto neverr;
@@ -212,13 +214,13 @@ trustmask(HV *sig, char *lvl, int len)
 	return mask;
 
 neverr:
-	croak("Bad %s SigLevel: the never trust level cannot be combined.");
+	croak("Bad %s SigLevel: the never trust level cannot be combined.", lvl);
 
 opterr:
-	croak("Bad %s SigLevel: trust cannot be both required and optional");
+	croak("Bad %s SigLevel: trust cannot be both required and optional", lvl);
 
 averr:
-	croak("Bad %s SigLevel: valid elements are never, required, optional, or trustall");
+	croak("Bad %s SigLevel: valid elements are never, required, optional, or trustall", lvl);
 }
 
 /* converts a siglevel string or hashref into bitflags */
@@ -238,6 +240,7 @@ p2c_siglevel(SV *sig)
 		}else if(strncmp(str, "never", len) == 0){
 			return 0;
 		}else {
+			/* XXX: might not be null terminated? */
 			croak("Unrecognized SigLevel string: %s", str);
 		}
 	}

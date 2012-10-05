@@ -13,6 +13,9 @@ $r = 't/root';
 $alpm = ALPM->new($r, "$r/db");
 ok $alpm;
 
+ok $alpm->version; # just checks it works
+@caps = $alpm->caps;
+
 %opts = (
 	'arch' => 'i686',
 	'logfile' => "$r/log",
@@ -52,16 +55,25 @@ for $k (sort keys %opts){
 	ok scalar meth("get_${k}s") == (@v - 1), "$v[0] removed from ${k}s";
 }
 
-use Data::Dumper;
-print STDERR Dumper($alpm->get_default_siglevel);
-
-# Test SigLevels more in a later test.
+# TODO: Test SigLevels more in a later test.
 is $alpm->get_default_siglevel, 'never';
 ok $alpm->set_default_siglevel('default');
-is $alpm->get_default_siglevel, 'default';
-ok $alpm->set_default_siglevel({ 'pkg' => ['never'], 'db' => ['required'] });
-$siglvl = $alpm->get_default_siglevel;
-is $siglvl->{'pkg'}[0], 'never';
-is $isglvl->{'db'}[0], 'required';
+
+if(grep { /signatures/ } @caps){
+	is $alpm->get_default_siglevel, 'default';
+	ok $alpm->set_default_siglevel({ 'pkg' => ['never'], 'db' => ['required'] });
+	$siglvl = $alpm->get_default_siglevel;
+	is $siglvl->{'pkg'}[0], 'never';
+	is $isglvl->{'db'}[0], 'required';
+}else{
+	is $alpm->get_default_siglevel, 'never';
+	$siglvl = { 'pkg' => ['never'], 'db' => ['required'] };
+	eval { $alpm->set_default_siglevel($siglvl); };
+	if($@ =~ /^ALPM Error: wrong or NULL argument passed/){
+		pass q{can set siglevel to "default" or "never" without GPGME};
+	}else{
+		fail 'should not be able to set complicated siglevel without GPGME';
+	}
+}
 
 done_testing;

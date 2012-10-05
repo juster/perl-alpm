@@ -182,29 +182,19 @@ trustmask(HV *lvlhash, char *lvl, int len)
 
 	for(i = 0; i <= x; i++){
 		flag = av_fetch(flags, i, 0);
-		if(!SvPOK(*flag)){
-			fprintf(stderr, "DBG: *flag = %X\n", *flag);
-			croak("WTF?");
-			goto averr;
-		}
+		if(!SvPOK(*flag)) goto averr;
 
 		str = SvPV(*flag, svlen);
 		if(strncmp("never", str, svlen)){
-			if(mask & ~TRUST_NEVER){
-				goto neverr;
-			}
+			if(mask & ~TRUST_NEVER) goto neverr;
 			mask |= TRUST_NEVER;
 		}else if(mask & TRUST_NEVER){
 			goto neverr;
 		}else if(strncmp("optional", str, svlen)){
-			if(mask & TRUST_REQ){
-				goto opterr;
-			}
+			if(mask & TRUST_REQ) goto opterr;
 			mask |= TRUST_OPT;
 		}else if(strncmp("required", str, svlen)){
-			if(mask & TRUST_OPT){
-				goto opterr;
-			}
+			if(mask & TRUST_OPT) goto opterr;
 			mask |= TRUST_REQ;
 		}else if(strncmp("trustall", str, svlen)){
 			mask |= TRUST_ALL;

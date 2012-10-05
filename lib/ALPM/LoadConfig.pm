@@ -3,115 +3,113 @@ package ALPM::LoadConfig;
 use warnings;
 use strict;
 
-use List::Util qw();
 use IO::Handle qw();
-use English    qw(-no_match_vars);
-use Carp       qw();
-use ALPM       qw();
+use List::Util qw();
+use English qw(-no_match_vars);
+use ALPM qw();
+use Carp qw();
 
 ##------------------------------------------------------------------------
 ## GLOBALS
 ##------------------------------------------------------------------------
 
-my %_CFG_OPTS =
-    qw{ RootDir   root       CacheDir     cachedirs    DBPath       dbpath
-        LogFile   logfile    UseSyslog    usesyslog    UseDelta     usedelta
-        IgnorePkg ignorepkgs IgnoreGroup  ignoregrps   NoUpgrade    noupgrades
-        NoExtract noextracts NoPassiveFtp nopassiveftp Architecture arch};
+my %CFG_OPTS = (
+	'RootDir' => 'root',
+	'DBPath' => 'dbpath',
+	'CacheDir' => 'cachedirs',
+	'GPGDir' => 'gpgdir',
+	'LogFile' => 'logfile',
+	'UseSyslog' => 'usesyslog',
+	'UseDelta' => 'usedelta',
+	'CheckSpace' => 'checkspace',
+	'IgnorePkg' => 'ignorepkgs',
+	'IgnoreGroup' => 'ignoregrps',
+	'NoUpgrade' => 'noupgrades',
+	'NoExtract' => 'noextracts',
+	'NoPassiveFtp' => 'nopassiveftp',
+	'Architecture' => 'arch',
+);
 
-# The following options are implemented in pacman and not ALPM so are ignored:
-my @NULL_OPTS = qw{ HoldPkg SyncFirst CleanMethod XferCommand
-                    ShowSize TotalDownload };
+# The following options are implemented in pacman and not ALPM so they are ignored.
+my @NULL_OPTS = qw{HoldPkg SyncFirst CleanMethod XferCommand
+	TotalDownload VerbosePkgLists};
 
 my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
 my $SECTION_MATCH = qr/ \A \s* \[ ([^\]]+) \] \s* \z /xms;
-my $FIELD_MATCH   = qr/ \A \s* ([^=\s]+) (?: \s* = \s* ([^\n]*))? /xms;
+my $FIELD_MATCH = qr/ \A \s* ([^=\s]+) (?: \s* = \s* ([^\n]*))? /xms;
 
 ##------------------------------------------------------------------------
 ## PRIVATE FUNCTIONS
 ##------------------------------------------------------------------------
 
-sub _null_sub
+sub _null
 {
-    1;
+	1;
 }
 
 sub _make_parser
 {
-    my ($path, $hooks) = @_;
+	my($path, $hooks) = @_;
 
-    open my $cfg_file, '<', $path
-        or die "Could not open config file $path: $OS_ERROR\n";
+	my $parser = sub {
+		local $_ = shift;
 
-    my $parse_line_ref =
-        sub {
-            my $line = shift;
+		# Trim any extra whitespace...
+		s/\A\s+//; s/\s+\z//;
 
-            # Trim any extra whitespace...
-            $line =~ s/\A\s+//;
-            $line =~ s/\s+\z//;
+		return unless(length);
+		eval {
+			# Call the appropriate hook for each type of token...
+			if(/$COMMENT_MATCH/){
+				;
+			}elseif(/$SECTION_MATCH/){
+				$hooks->{'section'}->($1);
+			}elsif(/$FIELD_MATCH/){
+				my($name, $val) = ($1, $2);
+				if($val){
+					my $apply = $hooks->{'field'}{$name};
+					$apply->($val) if($apply);
+				}
+			}else{
+				die "Invalid line in config file, not a comment, section, or field\n";
+			}
+		};
 
-            # Ignore empty lines & comments...
-            return unless ( length $line );
-            return if ( $line =~ /$COMMENT_MATCH/xms );
+		if($@){
+			# Print the offending file and line number along with any errors...
+			# (This is why we use dies with newlines, for cascading error msgs)
+			my $lineno = $if->input_line_number();
+			die "$EVAL_ERROR$path:$lineno $line\n"
+		}
+	};
 
-            eval {
-                # Call the appropriate hook for each type of token...
-                if ( my ($section_name) = $line =~ /$SECTION_MATCH/) {
-                    $hooks->{section}->($section_name);
-                    return;
-                }
-                elsif ( my ($field_name, $field_val) =
-                        $line =~ /$FIELD_MATCH/ ) {
-                    return unless $field_val;
-
-                    # Not sure if I should warn or not...
-                    # warn qq{Unrecognized field named "$field_name"\n}
-                    my $field_store = $hooks->{field}{$field_name}
-                        or return;
-
-                    # Some fields are enabled merely by having the field
-                    # name appear on a line.
-                    $field_val = 1 unless defined $field_val;
-
-                    $field_store->( $field_val );
-                    return;
-                }
-                die "Invalid line in config file, not a comment, section, " .
-                    "or field\n";
-            };
-
-            # Print the offending file and line number along with any errors...
-            # (This is why we use dies with newlines, for cascading error msgs)
-            die "$EVAL_ERROR$path:${\$cfg_file->input_line_number()} $line\n"
-                if ( $EVAL_ERROR );
-        };
-
-    return
-        sub {
-            while ( my $cfg_line = <$cfg_file> ) {
-                chomp $cfg_line;
-                $parse_line_ref->($cfg_line);
-            }
-            close $cfg_file;
-        };
+	open my $if, '<', $path or die "open $path: $!\n";
+	return sub {
+		while(my $ln = <$if>){
+			chomp $ln;
+			$parser->($ln);
+		}
+		close $if;
+	};
 }
 
 sub _register
 {
-    my ($url, $section) = @_;
-    die qq{Section has not previously been declared, cannot set URL\n}
-        unless ( $section );
-    ALPM->register( $section => $url );
-    return;
+	my($url, $section) = @_;
+	die qq{Section has not previously been declared, cannot set URL\n}
+		unless($section);
+	ALPM->register($section => $url);
+	return;
 }
 
 sub _set_defaults
 {
-    ALPM->set_options({ root        => '/',
-                        dbpath      => '/var/lib/pacman/',
-                        cachedirs   => [ '/var/cache/pacman/pkg' ],
-                        logfile     => '/var/log/pacman.log', });
+	ALPM->set_options({
+		'root' => '/',
+		'dbpath' => '/var/lib/pacman/',
+		'cachedirs' => [ '/var/cache/pacman/pkg' ],
+		'logfile' => '/var/log/pacman.log',
+	});
 }
 
 ##------------------------------------------------------------------------
@@ -120,100 +118,99 @@ sub _set_defaults
 
 sub new
 {
-    my $class = shift;
+	my $class = shift;
+	unless(@_ % 2 == 0){
+		Carp::croak('Arguments to ALPM::LoadConfig->new must be a hash');
+	}
 
-    Carp::croak( "Invalid arguments to ALPM::LoadConfig::new.\n" .
-                 'Arguments must be a hash' )
-        unless @_ % 2 == 0;
+	my %params = @_;
+	my $cfields = $params{'cfields'};
 
-    my %params = @_;
-    my $custom_fields_ref = $params{ custom_fields };
+	if(grep { ref $_ ne 'CODE' } values %$cfields){
+		Carp::croak('Hash arg to ALPM::LoadConfig->new must have coderefs as values' )
+	}
 
-    Carp::croak( "Invalid arguments to ALPM::LoadConfig::new.\n" .
-                 'Hash argument must have coderefs as values' )
-        if grep { ref $_ ne 'CODE' } values %{ $custom_fields_ref };
-
-    bless { custom_fields => $custom_fields_ref }, $class;
+	bless { 'cfields' => $cfields }, $class;
 }
 
 sub load_file
 {
-    my ($self, $cfg_path) = @_;
+	my($self, $cfg_path) = @_;
 
-    my $current_section; # used for state in our closures
+	my $current_section; # used for state in our closures
 
-    # Setup hooks for 'Include'ed file parsers...
-    my $include_hooks =
-    { section => sub {
-          my $file = shift;
-          die  q{Section declaration is not allowed in } .
-              qq{Include-ed file\n($file)\n};
-      },
-      field   => { Server => sub {
-                       my $server_url = shift;
-                       _register( $server_url, $current_section )
-                   } },
-     };
+	# Setup hooks for 'Include'ed file parsers...
+	my $include_hooks =
+	{ section => sub {
+		  my $file = shift;
+		  die  q{Section declaration is not allowed in } .
+			  qq{Include-ed file\n($file)\n};
+	  },
+	  field   => { Server => sub {
+					   my $server_url = shift;
+					   _register( $server_url, $current_section )
+				   } },
+	 };
 
-    my $field_hooks =
-    {
-     ( map {
-         my $field_name = $_;
-         my $opt_name   = $_CFG_OPTS{$_};
-         # create hash of field names to hooks
-         $_ => ( $opt_name =~ /s\z/ ? 
+	my $field_hooks =
+	{
+	 ( map {
+		 my $field_name = $_;
+		 my $opt_name   = $CFG_OPTS{$_};
+		 # create hash of field names to hooks
+		 $_ => ( $opt_name =~ /s\z/ ? 
 
-                 # plural options get set arrayref values
-                 sub { 
-                     my $cfg_value = shift;
-                     die qq{$field_name can only be set in the} .
-                         qq{[options] section\n}
-                             unless ( $current_section eq 'options' );
-                     ALPM->set_opt( $opt_name, [ split /\s+/, $cfg_value ] );
-                 }
+				 # plural options get set arrayref values
+				 sub { 
+					 my $cfg_value = shift;
+					 die qq{$field_name can only be set in the} .
+						 qq{[options] section\n}
+							 unless ( $current_section eq 'options' );
+					 ALPM->set_opt( $opt_name, [ split /\s+/, $cfg_value ] );
+				 }
 
-                 :
+				 :
 
-                 # singular options get scalar values
-                 sub {
-                     my $cfg_value = shift;
-                     die qq{$field_name can only be set in the } .
-                         qq{[options] section\n}
-                             unless ( $current_section eq 'options' );
-                     ALPM->set_opt( $opt_name, $cfg_value );
-                 }
-                )
-     } keys %_CFG_OPTS ),
+				 # singular options get scalar values
+				 sub {
+					 my $cfg_value = shift;
+					 die qq{$field_name can only be set in the } .
+						 qq{[options] section\n}
+							 unless ( $current_section eq 'options' );
+					 ALPM->set_opt( $opt_name, $cfg_value );
+				 }
+				)
+	 } keys %CFG_OPTS ),
 
-     # these fields do nothing, for now...
-     ( map { ( $_ => \&_null_sub ) } @NULL_OPTS ),
+	 # these fields do nothing
+	 ( map { ( $_ => \&_null ) } @NULL_OPTS ),
 
-     Server  => sub { _register( shift, $current_section ) },
-     Include => sub {
-         die "Cannot have an Include directive in the [options] section\n"
-             if ( $current_section eq 'options' );
+	 Server  => sub { _register( shift, $current_section ) },
+	 Include => sub {
+		 die "Cannot have an Include directive in the [options] section\n"
+			 if ( $current_section eq 'options' );
 
-         # An include directive spawns its own little parser...
-         my $inc_path   = shift;
-         my $parser_ref = _make_parser( $inc_path, $include_hooks );
-         $parser_ref->();
-     },
+		 # An include directive spawns its own little parser...
+		 my $inc_path   = shift;
+		 my $parser_ref = _make_parser( $inc_path, $include_hooks );
+		 $parser_ref->();
+	 },
 
-     # aaaand SHAZAM! customize!
-     %{ $self->{'custom_fields'} },
-    }; # end of field_hooks hashref brackets
+	 # aaaand SHAZAM! customize!
+	 %{ $self->{'cfields'} },
+	}; # end of field_hooks hashref brackets
 
-    # Now we have hooks for parsing the main config file...
-    my $parser_hooks = { field   => $field_hooks,
-                         section => sub { $current_section = shift;}
-                        };
+	# Now we have hooks for parsing the main config file...
+	my $parser_hooks = { field   => $field_hooks,
+						 section => sub { $current_section = shift;}
+						};
 
-    # Load default values like pacman does...
-    _set_defaults();
+	# Load default values like pacman does...
+	_set_defaults();
 
-    _make_parser( $cfg_path, $parser_hooks )->();
+	_make_parser( $cfg_path, $parser_hooks )->();
 
-    return;
+	return;
 }
 
 1;
@@ -235,7 +232,7 @@ ALPM::LoadConfig - pacman.conf config file parsing class.
   # Load custom fields as well:
   my $value;
   my %fields = ( 'CustomField' => sub { $value = shift } );
-  my $loader = ALPM::LoadConfig->new( custom_fields => \%fields );
+  my $loader = ALPM::LoadConfig->new('cfields' => \%fields );
   $loader->load_file( '/etc/pacman.conf' );
 
 =head1 DESCRIPTION
@@ -248,7 +245,7 @@ need to use this module directly.
 
 =head2 new
 
- $OBJ = ALPM::LoadConfig->new( custom_fields => \%FIELDS_REF? );
+ $OBJ = ALPM::LoadConfig->new('cfields' => \%FIELDS_REF? );
 
 =over 4
 

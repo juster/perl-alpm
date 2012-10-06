@@ -94,9 +94,12 @@ T_PKGREASON
 
 OUTPUT
 
+# The handle should never be NULL. This is the only error condition
+# but hopefully doesn't affect us. However, the string is sometimes NULL
+# so we should convert it to undef.
 T_STROPT
 	if($var == NULL){
-		alpm_croak(self);
+		$arg = &PL_sv_undef;
 	}else{
 		$arg = newSVpv($var, strlen($var));
 	}

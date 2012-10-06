@@ -1,0 +1,85 @@
+=head1 NAME
+
+ALPM::PacmanConf - pacman.conf config file parsing class
+
+=head1 SYNOPSIS
+
+	use ALPM::PacmanConf;
+	use ALPM;
+	
+	my $conf = ALPM::PacmanConf->new('/etc/pacman.conf');
+	my $alpm = ALPM->new('/', '/var/db');
+	$conf->parse_options($alpm);
+	
+	# Try again with custom fields:
+	my $value;
+	my %fields = ('CustomField' => sub { $value = shift });
+	$conf->custom_fields(%fields);
+	$conf->parse_options($alpm);
+
+=head1 DESCRIPTION
+
+This class is used to parse pacman.conf which are used by ArchLinux's pacman
+for config files.  The configuration fields are used to set ALPM options.  You
+probably don't need to use this module directly but you can as you wish.
+
+=head1 CONSTRUCTOR
+
+=head2 new
+
+ $OBJ = ALPM::LoadConfig->new('cfields' => \%FIELDS_REF? );
+
+=over 4
+
+=item B<Parameters>
+
+=over 4
+
+=item C<\%FIELDS_REF> B<(Hash Reference) (Optional)>
+
+Keys are field names from the C</etc/pacman.conf> configuration file.
+Values are code references.  When a field is found inside the
+configuration file with the I<exact same> name, then the code
+reference is called, passed the value of the entry as the only
+argument.
+
+=back
+
+=head1 METHODS
+
+=head2 load_config
+
+ undef = $OBJ->load_config( $CFG_FILE_PATH )
+
+This method will read a configuration file, setting ALPM options as it
+goes.
+
+=over 4
+
+=item B<Parameters>
+
+=over 4
+
+=item C<$CFG_FILE_PATH>
+
+The path to the configuration file to read.
+
+=back
+
+=back
+
+=head1 SEE ALSO
+
+L<ALPM>
+
+=head1 AUTHOR
+
+Justin Davis, C<< <juster at cpan dot org> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2011 by Justin Davis
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.

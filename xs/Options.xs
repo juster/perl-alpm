@@ -232,7 +232,7 @@ INTERFACE:
 
 # Why have get_localdb when there is no set_localdb? s/get_//;
 
-ALPM_DB
+ALPM_LocalDB
 alpm_option_localdb(self)
 	ALPM_Handle self
  CODE:

@@ -133,28 +133,28 @@ T_ALPM_DB
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		sv_setref_pv($arg, \"ALPM::DB\", (void *)$var);
+		$arg = c2p_db($var);
 	}
 
 T_ALPM_LOCALDB
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		sv_setref_pv($arg, \"ALPM::DB::Local\", (void *)$var);
+		$arg = c2p_localdb($var);
 	}
 
 T_ALPM_SYNCDB
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		sv_setref_pv($arg, \"ALPM::DB::Sync\", (void *)$var);
+		$arg = c2p_syncdb($var);
 	}
 
 T_ALPM_PACKAGE
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
+		$arg = c2p_pkg($var);
 	}
 
 T_ALPM_PACKAGEFREE

@@ -33,7 +33,7 @@ p2c_str(SV *sv)
 SV*
 c2p_pkg(void *p)
 {
-	SV *rv = sv_newmortal();
+	SV *rv = newSV(0);
 	return sv_setref_pv(rv, "ALPM::Package", p);
 }
 
@@ -50,10 +50,19 @@ p2c_db(SV *db)
 }
 
 SV*
+c2p_localdb(void *db)
+{
+	SV *rv = newSV(0);
+	sv_setref_pv(rv, "ALPM::DB::Local", db);
+	return rv;
+}
+
+SV*
 c2p_syncdb(void *db)
 {
-	SV *rv = sv_newmortal();
-	return sv_setref_pv(rv, "ALPM::SyncDB", db);
+	SV *rv = newSV(0);
+	sv_setref_pv(rv, "ALPM::DB::Sync", db);
+	return rv;
 }
 
 SV*
@@ -61,7 +70,7 @@ c2p_depmod(alpm_depmod_t mod)
 {
 	SV *sv;
 	char *cmp;
-         switch(mod){
+	switch(mod){
 	case ALPM_DEP_MOD_ANY: cmp = ""; break; /* ? */
 	case ALPM_DEP_MOD_EQ: cmp = "="; break;
 	case ALPM_DEP_MOD_GE: cmp = ">="; break;

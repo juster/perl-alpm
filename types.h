@@ -41,6 +41,8 @@ ALPM_Package p2c_pkg(SV*);
 
 ALPM_DB p2c_db(SV*);
 
+SV* c2p_db(void*);
+SV* c2p_localdb(void*);
 SV* c2p_syncdb(void*);
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);

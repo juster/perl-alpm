@@ -36,11 +36,12 @@ t/repos/package.pl
 t/preptests.pl
 lib/ALPM.pm
 lib/ALPM.pod
-lib/ALPM/DB.pm
 lib/ALPM/DB.pod
-lib/ALPM/Package.pm
+lib/ALPM/Package.pod
 lib/ALPM/Conf.pm
+lib/ALPM/Conf.pod
 lib/ALPM/Transaction.pm
+lib/ALPM/Transaction.pod
 ex/ownzors
 ex/dangles
 ex/lspkg

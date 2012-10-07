@@ -7,8 +7,6 @@ BEGIN {
 	$VERSION = '2.01';
 	require Carp;
 	require ALPM::Transaction;
-	require ALPM::Package;
-	require ALPM::DB;
 	require XSLoader;
 	XSLoader::load(__PACKAGE__, $VERSION);
 }

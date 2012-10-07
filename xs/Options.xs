@@ -150,7 +150,7 @@ alpm_option_set_cachedirs(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_cachedirs(self, lst);
-	alpm_list_free(lst);
+	ZAPLIST(lst, free);
 
 SetOption
 alpm_option_set_noupgrades(self, ...)
@@ -162,7 +162,7 @@ alpm_option_set_noupgrades(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_noupgrades(self, lst);
-	alpm_list_free(lst);
+	ZAPLIST(lst, free);
 
 SetOption
 alpm_option_set_noextracts(self, ...)
@@ -174,7 +174,7 @@ alpm_option_set_noextracts(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_noextracts(self, lst);
-	alpm_list_free(lst);
+	ZAPLIST(lst, free);
 
 SetOption
 alpm_option_set_ignorepkgs(self, ...)
@@ -186,7 +186,7 @@ alpm_option_set_ignorepkgs(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_ignorepkgs(self, lst);
-	alpm_list_free(lst);
+	ZAPLIST(lst, free);
 
 SetOption
 alpm_option_set_ignoregroups(self, ...)
@@ -198,7 +198,7 @@ alpm_option_set_ignoregroups(self, ...)
 	i = 1;
 	STACK2LIST(i, lst, p2c_str);
 	RETVAL = alpm_option_set_ignoregroups(self, lst);
-	alpm_list_free(lst);
+	ZAPLIST(lst, free);
 
 # Use IntOption to return the number of items removed (0 or 1).
 

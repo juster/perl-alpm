@@ -14,10 +14,12 @@ MODULE = ALPM	PACKAGE = ALPM
 
 PROTOTYPES: DISABLE
 
-# Make ALPM::PackageFree a subclass of ALPM::Package
+# ALPM::PackageFree is a subclass of ALPM::Package.
+# ALPM::DB::Sync and ALPM::DB::Local are a subclass of ALPM::DB.
 BOOT:
-	av_push(get_av("ALPM::PackageFree::ISA", GV_ADD),
-	  newSVpvn("ALPM::Package", 13));
+	av_push(get_av("ALPM::PackageFree::ISA", GV_ADD), newSVpv("ALPM::Package", 0));
+	av_push(get_av("ALPM::DB::Sync::ISA", GV_ADD), newSVpv("ALPM::DB", 0));
+	av_push(get_av("ALPM::DB::Local::ISA", GV_ADD), newSVpv("ALPM::DB", 0));
 
 MODULE = ALPM	PACKAGE = ALPM::PackageFree
 
@@ -152,6 +154,18 @@ alpm_fetch_pkgurl(self, url)
 
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
 
+# Why name this register_sync when there is no register_local? Redundant.
+
+ALPM_SyncDB
+alpm_db_register(self, name, siglvl)
+	ALPM_Handle self
+	const char * name
+	ALPM_SigLevel siglvl
+ CODE:
+	RETVAL = alpm_db_register_sync(self, name, siglvl);
+ OUTPUT:
+	RETVAL
+
 negative_is_error
 alpm_db_unregister_all(self)
 	ALPM_Handle self
@@ -192,19 +206,6 @@ set_pkg_reason(self, pkg, rsn)
 	RETVAL = alpm_db_set_pkgreason(self, pkg, rsn);
  OUTPUT:
 	RETVAL
-
-#---------------------
-# PRIVATE ALPM METHODS
-#---------------------
-
-MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm
-
-# This is used inside ALPM.pm, so it keeps its _db prefix.
-ALPM_SyncDB
-alpm_db_register_sync(self, sync_name, siglvl)
-	ALPM_Handle self
-	const char * sync_name
-	ALPM_SigLevel siglvl
 
 INCLUDE: xs/Options.xs
 

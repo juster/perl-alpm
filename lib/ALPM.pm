@@ -223,31 +223,6 @@ sub set_options
     return 1;
 }
 
-sub register
-{
-	my($self, $name, $url, $siglvl) = @_;
-	croak 'You must supply a name and URL for the database' unless($name && $url);
-	$siglvl ||= 'default';
-
-	# Replace the literal string '$repo' with the repo's name,
-	# like in the pacman config file... bad idea maybe?
-	$url =~ s/\$repo\b/$name/g;
-
-	if($url =~ /\$arch\b/){
-		my $arch = ALPM->get_opt( 'arch' );
-		if(!$arch || $arch eq 'auto'){
-			chomp($arch = `uname -m`);
-			die 'Failed to call uname to expand $arch' unless($? == 0);
-		}
-		$url =~ s/\$arch\b/$arch/g;
-	}
-
-	# Set the server right away because function calls break in between...
-	my $db = $self->_db_register_sync($name, $siglvl);
-	$db->add_url($url);
-	return $db;
-}
-
 sub localdb
 {
     my $class = shift;

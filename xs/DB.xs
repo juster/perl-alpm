@@ -94,7 +94,7 @@ MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db
 # We have to reverse the arguments because it is a method.
 negative_is_error
 alpm_db_update(db, force)
-	ALPM_DB db
+	ALPM_SyncDB db
 	int force
  C_ARGS:
 	force, db
@@ -107,30 +107,29 @@ MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db_
 
 negative_is_error
 alpm_db_unregister(self)
-	ALPM_DB self
+	ALPM_SyncDB self
 
 negative_is_error
 alpm_db_add_server(self, url)
-	ALPM_DB self
+	ALPM_SyncDB self
 	const char *url
 
 negative_is_error
 alpm_db_remove_server(self, url)
-	ALPM_DB self
+	ALPM_SyncDB self
 	const char *url
 
 void alpm_db_get_servers(self)
-	ALPM_DB self
+	ALPM_SyncDB self
  PREINIT:
 	alpm_list_t *L, *srvs;
  PPCODE:
 	L = srvs = alpm_db_get_servers(self);
 	LIST2STACK(srvs, c2p_str);
-	FREELIST(L);
 
 negative_is_error
 alpm_db_set_servers(self, ...)
-	ALPM_DB self
+	ALPM_SyncDB self
  PREINIT:
 	alpm_list_t *L;
 	int i;
@@ -145,8 +144,8 @@ MODULE = ALPM	PACKAGE = ALPM::DB::Sync	PREFIX = alpm_db_get_
 
 int
 alpm_db_get_valid(db)
-	ALPM_DB db
+	ALPM_SyncDB db
 
 ALPM_SigLevel
 alpm_db_get_siglevel(db)
-	ALPM_DB db
+	ALPM_SyncDB db

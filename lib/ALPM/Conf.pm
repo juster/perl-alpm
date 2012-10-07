@@ -1,10 +1,12 @@
 package ALPM::Conf;
-
 use warnings;
 use strict;
 
-use IO::Handle qw();
-use Carp qw();
+BEGIN {
+	require IO::Handle;
+	require Carp;
+	require ALPM;
+}
 
 ## Private functions.
 
@@ -244,6 +246,22 @@ sub parse_options
 
 	_parse($self->{'path'}, \%hooks);
 	return _applyopts(\%opts, \@dbs);
+}
+
+## Import magic used for quick scripting.
+# e.g: perl -MALPM::Conf=/etc/pacman.conf -le 'print $alpm->root'
+
+sub import
+{
+	my($pkg, $path) = @_;
+	my($dest) = caller;
+	return unless($path);
+
+	my $conf = $pkg->new($path);
+	my $alpm = $conf->parse_options;
+	no strict 'refs';
+	*{"${dest}::alpm"} = \$alpm;
+	return;
 }
 
 1;

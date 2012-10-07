@@ -1,66 +1,3 @@
-package ALPM::Package;
-
-use warnings;
-use strict;
-
-use English qw(-no_match_vars);
-use base qw(Exporter);
-use Carp qw(croak);
-
-my %_PKG_ATTRIBS = map { /^has_(.*)$/ ? ( $1 => $_ ) : ( $_ => $_ ) }
-    qw { filename name version desc url
-         builddate installdate packager md5sum
-         arch size isize reason licenses requiredby
-         groups depends optdepends conflicts
-         provides deltas replaces files backup
-         has_scriptlet download_size };
-
-
-#---HELPER METHOD---
-#  Usage   : my $name = $pkg->attr('name');
-#  Purpose : This is used by attribs().
-#  Params  : The name of the attribute.
-#  Returns : The attribute value.
-#-------------------
-sub _attr
-{
-    croak "Invalid arguments to attrib method" if (@_ != 2);
-    my ($self, $attrib_name) = @_;
-
-    croak qq{Unknown package attribute "$attrib_name"}
-        unless ( exists $_PKG_ATTRIBS{$attrib_name} );
-
-    my $method_name = $_PKG_ATTRIBS{$attrib_name};
-
-    my $method_ref = $ALPM::Package::{$method_name};
-    my $result = eval { $method_ref->($self) };
-    if ($EVAL_ERROR) {
-        # For ALPM errors, show the line number of the calling script...
-        croak $1 if ( $EVAL_ERROR =~ /^(ALPM .*) at .*? line \d+[.]$/ );
-        croak $EVAL_ERROR;
-    }
-
-    return $result;
-}
-
-sub attribs
-{
-    my $self = shift;
-
-    return map { $self->_attr($_) } @_ if ( @_ > 0 );
-
-    return map { ( $_ => $self->_attr($_) ) } keys %_PKG_ATTRIBS;
-}
-
-sub attribs_ref
-{
-    my $self = shift;
-
-    return ( @_ == 0 ? { $self->attribs(@_) } : [ $self->attribs(@_) ] );
-}
-
-1;
-
 =head1 NAME
 
 ALPM::Package - ALPM package class.
@@ -224,4 +161,3 @@ it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
-

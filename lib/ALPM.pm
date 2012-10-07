@@ -223,18 +223,6 @@ sub set_options
     return 1;
 }
 
-sub localdb
-{
-    my $class = shift;
-    return $class->get_opt('localdb');
-}
-
-sub syncdbs
-{
-    my $class = shift;
-    return @{ $class->get_opt('syncdbs') };
-}
-
 sub dbs
 {
     my $class = shift;

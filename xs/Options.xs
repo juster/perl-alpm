@@ -230,18 +230,26 @@ INTERFACE:
 	alpm_option_set_usedelta
 	alpm_option_set_checkspace
 
+# Why have get_localdb when there is no set_localdb? s/get_//;
+
 ALPM_DB
-alpm_option_get_localdb(self)
+alpm_option_localdb(self)
 	ALPM_Handle self
+ CODE:
+	RETVAL = alpm_option_get_localdb(self);
+ OUTPUT:
+	RETVAL
+
+# Ditto.
 
 void
-alpm_option_get_syncdbs(self)
+alpm_option_syncdbs(self)
 	ALPM_Handle self
  PREINIT:
 	alpm_list_t *lst;
  PPCODE:
 	lst = alpm_option_get_syncdbs(self);
-	if(lst == NULL) alpm_croak(self);
+	if(lst == NULL && alpm_errno(self)) alpm_croak(self);
 	LIST2STACK(lst, c2p_syncdb);
 
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_

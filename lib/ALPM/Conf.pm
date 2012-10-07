@@ -72,18 +72,6 @@ sub _parse
 	return;
 }
 
-sub _set_defaults
-{
-	my($alpm) = @_;
-	unless($alpm->get_cachedirs){
-		$alpm->set_cachedirs('/var/cache/pacman/pkg');
-	}
-	unless(eval { $alpm->get_logfile }){
-		$alpm->set_logfile('/var/log/pacman.log');
-
-	}
-}
-
 ## Public methods.
 
 sub new
@@ -158,7 +146,7 @@ sub _nullhooks
 my $ARCH;
 sub _addmirror
 {
-	my($dbs, $sect, $url) = @_;
+	my($dbs, $url, $sect) = @_;
 	die "Section has not previously been declared, cannot set URL\n" unless($sect);
 
 	# Expand $arch like pacman would do.

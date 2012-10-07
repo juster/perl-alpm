@@ -99,6 +99,7 @@ sub custom_fields
 		Carp::croak('Hash argument must have coderefs as values' )
 	}
 	$self->{'cfields'} = \%cfields;
+	return;
 }
 
 sub _mlisthooks
@@ -218,7 +219,7 @@ sub _applyopts
 	return $alpm;
 }
 
-sub parse_options
+sub parse
 {
 	my($self) = @_;
 
@@ -258,7 +259,7 @@ sub import
 	return unless($path);
 
 	my $conf = $pkg->new($path);
-	my $alpm = $conf->parse_options;
+	my $alpm = $conf->parse;
 	no strict 'refs';
 	*{"${dest}::alpm"} = \$alpm;
 	return;

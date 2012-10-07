@@ -1,72 +1,109 @@
 =head1 NAME
 
-ALPM::PacmanConf - pacman.conf config file parsing class
+ALPM::Conf - pacman.conf config file parser and ALPM loader
 
 =head1 SYNOPSIS
 
-	use ALPM::PacmanConf;
-	use ALPM;
-	
-	my $conf = ALPM::PacmanConf->new('/etc/pacman.conf');
-	my $alpm = ALPM->new('/', '/var/db');
-	$conf->parse_options($alpm);
+	use ALPM::Conf;	
+	my $conf = ALPM::Conf->new('/etc/pacman.conf');
+	my $alpm = $conf->parse;
 	
 	# Try again with custom fields:
 	my $value;
 	my %fields = ('CustomField' => sub { $value = shift });
 	$conf->custom_fields(%fields);
-	$conf->parse_options($alpm);
+	$alpm = $conf->parse();
+	print "$value\n";
+
+	# When imported with an argument, a conf file is loaded and
+	# an alpm instance (named $alpm) is imported into the caller's
+	# namespace.
+	use ALPM::Conf '/etc/pacman.conf';
+	print $alpm->get_arch, "\n";
+
+	# This is handy for the command line or shell scripts.
+	% perl -MALPM::Conf=/etc/pacman.conf -e '
+	for $p ($alpm->localdb->pkgs){
+		print $p->name, " ", $p->version, "\n";
+	}
+	'
 
 =head1 DESCRIPTION
 
-This class is used to parse pacman.conf which are used by ArchLinux's pacman
-for config files.  The configuration fields are used to set ALPM options.  You
-probably don't need to use this module directly but you can as you wish.
+This class is used to parse the pacman.conf files which are used by ArchLinux's
+pacman for config files.  The configuration fields are used to set ALPM options.
+A new I<ALPM> object instance is created with corresponding options set.
 
 =head1 CONSTRUCTOR
 
 =head2 new
 
- $OBJ = ALPM::LoadConfig->new('cfields' => \%FIELDS_REF? );
+	$OBJ = ALPM::Conf->new($CONF_PATH);
 
 =over 4
 
-=item B<Parameters>
+=item C<$CONF_PATH>
 
-=over 4
+The path to the configuration file that should be parsed.
 
-=item C<\%FIELDS_REF> B<(Hash Reference) (Optional)>
+=item C<$OBJ>
 
-Keys are field names from the C</etc/pacman.conf> configuration file.
-Values are code references.  When a field is found inside the
-configuration file with the I<exact same> name, then the code
-reference is called, passed the value of the entry as the only
-argument.
+A new I<ALPM::Conf> object.
 
 =back
 
 =head1 METHODS
 
-=head2 load_config
+=head2 parse
 
- undef = $OBJ->load_config( $CFG_FILE_PATH )
+	$ALPM_OBJ = $OBJ->parse()
 
-This method will read a configuration file, setting ALPM options as it
-goes.
-
-=over 4
-
-=item B<Parameters>
+Parses the configuration file that is located at the path provided by the
+constructor argument. Options and servers are applied to a newly
+created ALPM object.
 
 =over 4
 
-=item C<$CFG_FILE_PATH>
+=item C<$ALPM_OBJ>
 
-The path to the configuration file to read.
+A new instance of an L<ALPM> object.
+
+=back
+
+=head2 custom_fields
+
+	undef = $OBJ->custom_fields(%CFIELDS);
+
+=over 4
+
+=item C<%CFIELDS>
+
+A hash that describes custom fields and the actions that should
+be performed when a matching field is scanned. The keys of the hash
+are the field names (case sensitive) and the values are code references.
+When a field is scanned the code reference is called with the entire line
+of the field's value as the only argument.
 
 =back
 
-=back
+=head1 IMPORT MAGIC
+
+When an import argument is given then special magic is performed. The
+argument should be the path to a pacman configuration file to load. This
+.conf file is parsed by a newly created I<ALPM::Conf> instance. The result
+of the parsing is stored in the importing package's namespace under the
+name of the C<$alpm> scalar. See the synopsis for an example. If you are
+not familiar, you can give import arguments the following ways:
+
+	# Using use:
+	use ALPM::Conf '/etc/pacman.conf';
+	
+	# Require is more transparent:
+	require ALPM::Conf;
+	ALPM::Conf->import('/etc/pacman.conf');
+	
+	# On the command-line (see perlrun(1) manpage):
+	perl -MALPM::Conf=/etc/pacman.conf -e '...'
 
 =head1 SEE ALSO
 
@@ -78,7 +115,7 @@ Justin Davis, C<< <juster at cpan dot org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011 by Justin Davis
+Copyright (C) 2012 by Justin Davis
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,

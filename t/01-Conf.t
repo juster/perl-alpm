@@ -4,7 +4,6 @@ use_ok 'ALPM';
 use_ok 'ALPM::Conf';
 
 $conf = ALPM::Conf->new('t/test.conf');
-$alpm = ALPM->new('t/root', 't/root/db');
-$conf->parse_options($alpm);
+ok $alpm = $conf->parse_options();
 
 done_testing;

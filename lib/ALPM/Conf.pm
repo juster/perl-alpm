@@ -4,36 +4,30 @@ use warnings;
 use strict;
 
 use IO::Handle qw();
-use English qw(-no_match_vars);
 use Carp qw();
 
-# The following options are implemented in pacman and not ALPM so they are ignored.
+## Private functions.
+
+# These options are implemented in pacman, not libalpm, and are ignored.
 my @NULL_OPTS = qw{HoldPkg SyncFirst CleanMethod XferCommand
 	TotalDownload VerbosePkgLists};
-
-my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
-my $SECTION_MATCH = qr/ \A \s* \[ ([^\]]+) \] \s* \z /xms;
-my $FIELD_MATCH = qr/ \A \s* ([^=\s]+) (?: \s* = \s* ([^\n]*))? /xms;
-
-##------------------------------------------------------------------------
-## PRIVATE FUNCTIONS
-##------------------------------------------------------------------------
 
 sub _null
 {
 	1;
 }
 
+my $COMMENT_MATCH = qr/ \A \s* [#] /xms;
+my $SECTION_MATCH = qr/ \A \s* \[ ([^\]]+) \] \s* \z /xms;
+my $FIELD_MATCH = qr/ \A \s* ([^=\s]+) (?: \s* = \s* ([^\n]*))? /xms;
 sub _mkparser
 {
 	my($path, $hooks) = @_;
 	sub {
 		local $_ = shift;
-
-		# Trim any extra whitespace...
-		s/\A\s+//; s/\s+\z//;
-
+		s/^\s+//; s/\s+$//; # trim whitespace
 		return unless(length);
+
 		# Call the appropriate hook for each type of token...
 		if(/$COMMENT_MATCH/){
 			;
@@ -41,7 +35,7 @@ sub _mkparser
 			$hooks->{'section'}->($1);
 		}elsif(/$FIELD_MATCH/){
 			my($name, $val) = ($1, $2);
-			if($val){
+			if(length $val){
 				my $apply = $hooks->{'field'}{$name};
 				$apply->($val) if($apply);
 			}
@@ -71,17 +65,8 @@ sub _parse
 		# Print the offending file and line number along with any errors...
 		# (This is why we use dies with newlines, for cascading error msgs)
 		my $lineno = $if->input_line_number();
-		die "$EVAL_ERROR$path:$lineno $line\n"
+		die "$@$path:$lineno $line\n"
 	}
-
-	return;
-}
-
-sub _register
-{
-	my($alpm, $url, $section) = @_;
-	die "Section has not previously been declared, cannot set URL\n" unless($section);
-	$alpm->register($section => $url);
 	return;
 }
 
@@ -97,9 +82,7 @@ sub _set_defaults
 	}
 }
 
-##------------------------------------------------------------------------
-## PUBLIC METHODS
-##------------------------------------------------------------------------
+## Public methods.
 
 sub new
 {
@@ -118,7 +101,7 @@ sub custom_fields
 
 sub _mlisthooks
 {
-	my($sect) = @_;
+	my($dbsref, $sectref) = @_;
 
 	# Setup hooks for 'Include'ed file parsers...
 	return {
@@ -127,7 +110,7 @@ sub _mlisthooks
 			die q{Section declaration is not allowed in Include-ed file\n($file)\n};
 	  	},
 		'field' => {
-			'Server' => sub { _register(shift, $sect) }
+			'Server' => sub { _addmirror($dbsref, shift, $$sectref) }
 		},
 	 };
 }
@@ -149,26 +132,16 @@ my %CFGOPTS = (
 	'Architecture' => 'arch',
 );
 
-sub _setopt
-{
-	my $alpm = shift;
-	my $opt = shift;
-	no strict 'refs';
-	my $meth = *{"ALPM::set_$opt"}{'CODE'};
-	die "set_$opt method is missing" unless($meth);
-	$meth->($alpm, @_);
-}
-
 sub _confhooks
 {
-	my($alpm, $sectref) = @_;
+	my($optsref, $sectref) = @_;
 	my %hooks;
 	while(my($fld, $opt) = each %CFGOPTS){
 		$hooks{$fld} = sub { 
 			my $val = shift;
 			die qq{$fld can only be set in the [options] section\n}
 				unless($$sectref eq 'options');
-			_setopt($alpm, $opt, map { split } $val);
+			$optsref->{$opt} = $val;
 		};
 	 }
 	return %hooks;
@@ -179,26 +152,89 @@ sub _nullhooks
 	map { ($_ => \&_null) } @_
 }
 
+my $ARCH;
+sub _addmirror
+{
+	my($dbs, $sect, $url) = @_;
+	die "Section has not previously been declared, cannot set URL\n" unless($sect);
+
+	# Expand $arch like pacman would do.
+	$url =~ s{\$arch(/|\$)}{$ARCH}g;
+
+	# The order databases are added must be preserved as must the order of URLs.
+	my $fnd;
+	for my $db (@$dbs){
+		if($db->{'name'} eq $sect){
+			$fnd = $db;
+			last;
+		}
+	}
+	unless($fnd){
+		$fnd = { 'name' => $sect };
+		push @$dbs, $fnd;
+	}
+	push @{$fnd->{'mirrors'}}, $url;
+	return;
+}
+
+
+sub _setopt
+{
+	my($alpm, $opt, $valstr) = @_;
+	no strict 'refs';
+	my $meth = *{"ALPM::set_$opt"}{'CODE'};
+	die "The ALPM::set_$opt method is missing" unless($meth);
+
+	my @val = ($opt =~ /s$/ ? map { split } $valstr : $valstr);
+	$meth->($alpm, @val);
+}
+
+
+sub _applyopts
+{
+	my($opts, $dbs) = @_;
+	my ($root, $dbpath) = delete @{$opts}{'root', 'dbpath'};
+	unless($root && $dbpath){
+		Carp::croak 'RootDir and DBPath must be defined in .conf file';
+	}
+
+	my $alpm = ALPM->new($root, $dbpath);
+	while(my ($opt, $val) = each %$opts){
+		_setopt($alpm, $opt, $val);
+	}
+
+	for my $db (@$dbs){
+		my $name = $db->{'name'};
+		my $mirs = $db->{'mirrors'};
+		next unless(@$mirs);
+
+		my $db = $alpm->register($name, 'default');
+		for my $url (@$mirs){
+			$db->add_server($url);
+		}
+	}
+	return $alpm;
+}
+
 sub parse_options
 {
-	my($self, $alpm) = @_;
+	my($self) = @_;
 
-	my $currsect;
-	my %cfields;
-	%cfields = %{$self->{'cfields'}} if($self->{'cfields'});
+	chomp ($ARCH = `uname -m`); # used by _addmirror
 
+	my (%opts, @dbs, $currsect);
 	my %fldhooks = (
-		_confhooks($alpm, \$currsect),
+		_confhooks(\%opts, \$currsect),
 		_nullhooks(@NULL_OPTS),
-		'Server'  => sub { _register( shift, $currsect ) },
+		'Server'  => sub { _addmirror(\@dbs, shift, $currsect) },
 		'Include' => sub {
 			die "Cannot have an Include directive in the [options] section\n"
 				if($currsect eq 'options');
 
 			# An include directive spawns its own little parser...
-			_parse(shift, _mlisthooks($currsect));
+			_parse(shift, _mlisthooks(\@dbs, \$currsect));
 		},
-		%cfields,
+		($self->{'cfields'} ? %{$self->{'cfields'}} : ()),
 	);
 
 	my %hooks = (
@@ -206,11 +242,8 @@ sub parse_options
 		'section' => sub { $currsect = shift }
 	);
 
-	# Load default values like pacman does...
-	_set_defaults($alpm);
-	_parse($self->{'path'}, \%hooks)->();
-
-	return;
+	_parse($self->{'path'}, \%hooks);
+	return _applyopts(\%opts, \@dbs);
 }
 
 1;

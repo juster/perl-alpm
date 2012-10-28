@@ -21,8 +21,8 @@ unless(-d $dir){
 }
 
 chdir $dir or die "chdir: $!";
-system "bsdtar -cf - * | gzip -c > ../$name.db.tar.gz";
-if($? || !-f "../$name.db.tar.gz"){
+system "bsdtar -cf - * | gzip -c > ../$name.db";
+if($? || !-f "../$name.db"){
 	print STDERR "$0: failed to create tarball\n";
 	exit 1;
 }

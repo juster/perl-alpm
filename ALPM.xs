@@ -76,6 +76,9 @@ caps(class)
 	enum alpm_caps c;
  PPCODE:
 	c = alpm_capabilities();
+	if(c & ALPM_CAPABILITY_NLS){
+		XPUSHs(sv_2mortal(newSVpv("nls", 0)));
+	}	
 	if(c & ALPM_CAPABILITY_DOWNLOADER){
 		XPUSHs(sv_2mortal(newSVpv("download", 0)));
 	}
@@ -92,6 +95,18 @@ alpm_version(class)
 	RETVAL = alpm_version();
  OUTPUT:
 	RETVAL
+
+const char *
+alpm_errstr(self)
+	ALPM_Handle self;
+ CODE:
+	RETVAL = alpm_strerror(alpm_errno(self));
+ OUTPUT:
+	RETVAL
+
+int
+alpm_errno(self)
+	ALPM_Handle self
 
 ALPM_PackageOrNull
 alpm_find_satisfier(self, depstr, ...)

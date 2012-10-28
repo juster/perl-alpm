@@ -5,7 +5,7 @@
 
 #include <alpm.h>
 #include "types.h"
-/* #include "alpm_xs.h" */
+#include "cb.h"
 
 #define alpm_croak(HND)\
 	croak("ALPM Error: %s", alpm_strerror(alpm_errno(HND)));

@@ -1,22 +1,14 @@
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 ## CALLBACKS
-#
-#SV *
-#alpm_option_get_logcb(self)
-#	ALPM_Handle self
-# CODE:
-#	DEF_GET_CALLBACK(log)
-# OUTPUT:
-#	RETVAL
-#
-#void
-#alpm_option_set_logcb(self, callback)
-#	ALPM_Handle self
-#	SV * callback
-# CODE:
-#	DEF_SET_CALLBACK(log)
-#
+
+void
+alpm_option_set_logcb(self, cb)
+	ALPM_Handle self
+	SV * cb
+ CODE:
+	DEFSETCB(log, self, cb)
+
 #SV *
 #alpm_option_get_dlcb(self)
 #	ALPM_Handle self

@@ -26,7 +26,7 @@ WriteMakefile(
 	'LIBS' => [ '-lalpm' ],
 	'META_MERGE' => \%meta,
 	'clean' => { 'FILES' => 't/root t/repos/share const-*.inc' },
-	'OBJECT' => 'ALPM.o types.o',
+	'OBJECT' => 'ALPM.o types.o cb.o',
 	'XS' => { 'ALPM.xs' => 'ALPM.c' },
 );
 

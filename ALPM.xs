@@ -23,14 +23,11 @@ BOOT:
 
 MODULE = ALPM	PACKAGE = ALPM::PackageFree
 
-negative_is_error
+void
 DESTROY(self)
 	ALPM_PackageFree self;
- CODE:
-#   fprintf(stderr, "DEBUG Freeing memory for ALPM::PackageFree object\n");
-	RETVAL = alpm_pkg_free(self);
- OUTPUT:
-	RETVAL
+ PPCODE:
+	alpm_pkg_free(self);
 
 #---------------------
 # PUBLIC ALPM METHODS

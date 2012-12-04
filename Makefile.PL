@@ -15,6 +15,12 @@ my %breqs = map { ($_ => 0) } qw{File::Spec::Functions File::Copy File::Find Fil
 $breqs{'File::Path'} = '2.06_05';
 my %meta = ('resources' => { 'repository' => 'http://github.com/juster/perl-alpm' });
 
+sub MY::postamble {
+    return <<'END_MAKE';
+ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs xs/Transaction.xs
+END_MAKE
+}
+
 WriteMakefile(
 	'NAME' => 'ALPM',
 	'VERSION_FROM' => 'lib/ALPM.pm',

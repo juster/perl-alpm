@@ -1,5 +1,7 @@
 use Test::More;
 
+use ALPM;
+
 use ALPM::Conf 't/test.conf';
 ok $alpm;
 
@@ -18,28 +20,26 @@ sub checkpkgs
 	}
 	if(keys %set){
 		fail "missing packages in $dbname: " . join q{ }, keys %set;
+	}else{
+		pass "all expected packages exist in $dbname";
 	}
-	pass "all expected packages exist in $dbname";
 }
 
-use Devel::Peek;
+sub checkdb
+{
+	my $dbname = shift;
+	my $db = $alpm->db($dbname);
+	is $db->name, $dbname, 'dbname matches db() arg';
+	checkpkgs($db, @_);
+}
 
 $db = $alpm->localdb;
 is $db->name, 'local';
 
-@dbs = $alpm->syncdbs;
-for $d (@dbs){
-	print STDERR "DBG: ", $d->name, "\n";
-	for $p ($d->pkgs){
-		print STDERR "DBG: %s\t%s\n", $d->name, $p->name;
-	}
-}
+## Make sure DBs are synced.
+$_->update or die $alpm->errstr for ($alpm->syncdbs);
 
-$db = $alpm->db('simpletest');
-$db->_update(1);
-for $p ($db->pkgs){
-	print STDERR "DBG: %s\t%s\n", $d->name, $p->name;
-}
-checkpkgs($db, qw/foo bar/);
+checkdb('simpletest', qw/foo bar/);
+checkdb('upgradetest', qw/foo replacebaz/);
 
 done_testing;

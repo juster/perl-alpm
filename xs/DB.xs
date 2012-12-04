@@ -84,20 +84,22 @@ search(db, ...)
 	LIST2STACK(fnd, c2p_pkg);
 	FREELIST(L);
 
-#------------------------------
-# PRIVATE SYNC DATABASE METHODS
-#------------------------------
-
-MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db
-
-# Wrapper for this checks if a transaction is active.
 # We have to reverse the arguments because it is a method.
 negative_is_error
-alpm_db_update(db, force)
+update(db)
 	ALPM_SyncDB db
-	int force
- C_ARGS:
-	force, db
+ CODE:
+	RETVAL = alpm_db_update(0, db);
+ OUTPUT:
+	RETVAL
+
+negative_is_error
+force_update(db)
+	ALPM_SyncDB db
+ CODE:
+	RETVAL = alpm_db_update(1, db);
+ OUTPUT:
+	RETVAL
 
 #-----------------------------
 # PUBLIC SYNC DATABASE METHODS

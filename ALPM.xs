@@ -195,6 +195,7 @@ load_pkgfile(self, filename, full, siglevel)
 	int full
 	ALPM_SigLevel siglevel
  CODE:
+	RETVAL = NULL;
 	alpm_pkg_load(self, filename, full, siglevel, &RETVAL);
  OUTPUT:
 	RETVAL

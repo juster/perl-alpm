@@ -55,6 +55,7 @@ sub updatepi
 	my($pi, $pd) = @_;
 	$pi->{'builddate'} = [ time ];
 	$pi->{'size'} = [ sumfiles($pd) ];
+	$pi->{'packager'} = [ 'ALPM Module' ];
 	return;
 }
 

@@ -5,3 +5,4 @@ pkgdesc = Bar!
 pkgver = 1.0
 pkgrel = 1
 depends = foo
+url = http://www.bar.com

@@ -4,3 +4,4 @@ pkgver = 1.0
 arch = any
 pkgname = foo
 license = GPL
+url = http://www.foo.com

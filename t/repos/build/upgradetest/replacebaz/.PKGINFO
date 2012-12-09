@@ -6,3 +6,4 @@ pkgdesc = Replaces Baz
 pkgver = 1.0
 pkgrel = 1
 depends = bar
+url = http://www.baz.com/replaced

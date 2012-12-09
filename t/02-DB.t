@@ -1,7 +1,5 @@
 use Test::More;
 
-use ALPM;
-
 use ALPM::Conf 't/test.conf';
 ok $alpm;
 

@@ -1,21 +1,28 @@
-#!perl
+use Test::More;
+use ALPM::Conf 't/test.conf';
 
-use warnings;
-use strict;
-
-use Test::More tests => 51;
-
-BEGIN { use_ok('ALPM', root        => '/',
-                       dbpath      => '/var/lib/pacman/',
-                       cachedirs   => '/var/cache/pacman/pkg',
-                       logfile     => '/var/log/pacman.log',
-               );
+sub pkgpath
+{
+	my($dbname, $pkgname) = @_;
+	$db = $alpm->db($dbname);
+	my($url) = $db->get_servers;
+	$pkg = $db->find($pkgname);
+	$url .= q{/} . $pkg->filename;
+	print "$url\n";
+	if(($url =~ s{^file://}{}) != 1){
+		die 'package files are not locally hosted as expected';
+	}
+	return $url;
 }
 
-
-ok( my $local = ALPM->localdb );
-
-my $pkg = $local->find('perl');
+$msg = 'load the simpletest/foo package file';
+$pkg = $alpm->load_pkgfile(pkgpath('simpletest', 'foo'), 1, 'default');
+if($pkg){
+	pass $msg;
+}else{
+	fail $msg;
+	die $alpm->errstr;
+}
 
 my @methnames = qw{ requiredby name version desc
                     url builddate installdate packager
@@ -24,15 +31,13 @@ my @methnames = qw{ requiredby name version desc
                     conflicts provides deltas replaces
                     files backup };
 
-for my $methodname (@methnames) {
-    my $method_ref = $ALPM::Package::{$methodname};
-    ok $method_ref, "$methodname is a package method";
+for my $mname (@methnames) {
+    my $method_ref = $ALPM::Package::{$mname};
+    ok $method_ref, "$mname is a package method";
     my $result = $method_ref->($pkg);
-    ok $result;
+    ok defined $result, "$mname has a defined value";
 }
 
 ok defined $pkg->changelog;
 
-my $attribs_ref = $pkg->attribs_ref;
-ok( $attribs_ref );
-ok( ref $attribs_ref eq 'HASH' );
+done_testing;

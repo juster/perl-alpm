@@ -19,9 +19,3 @@ t/test\.conf
 t/root
 ^\.
 PKGBUILD
-bin/ppacman
-lib/App/PerlPacman
-lib/App/PerlPacman/Query.pm
-lib/App/PerlPacman/Modifier.pm
-lib/App/PerlPacman/Remove.pm
-lib/App/PerlPacman/Upgrade.pm

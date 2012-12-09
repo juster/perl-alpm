@@ -111,6 +111,30 @@ c2p_conflict(void *p)
 	return newRV_noinc((SV*)hv);
 }
 
+static SV*
+c2p_file(alpm_file_t *file){
+	HV *hv;
+	hv = newHV();
+	hv_store(hv, "name", 4, newSVpv(file->name, 0), 0);
+	hv_store(hv, "size", 4, newSViv(file->size), 0);
+	hv_store(hv, "mode", 4, newSViv(file->mode), 0);
+	return newRV_noinc((SV*)hv);
+}
+
+SV*
+c2p_filelist(void *flistPtr){
+	alpm_filelist_t *flist;
+	AV *av;
+	int i;
+
+	flist = flistPtr;
+	av = newAV();
+	for(i = 0; i < flist->count; i++){
+		av_push(av, c2p_file(flist->files + i));
+	}
+	return newRV_noinc((SV*)av);
+}
+
 /* converts siglevel bitflags into a string (default/never) or hashref */
 SV*
 c2p_siglevel(alpm_siglevel_t sig)

@@ -12,6 +12,7 @@ ALPM_SyncDB			T_ALPM_SYNCDB
 ALPM_Package			T_ALPM_PACKAGE
 ALPM_PackageFree		T_ALPM_PACKAGEFREE
 ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
+ALPM_FileList			T_ALPM_FILELIST
 ALPM_SigLevel			T_SIGLEVEL
 
 PackageList		L_PACKAGE
@@ -170,6 +171,9 @@ T_ALPM_PACKAGEORNULL
 	}else{
 		sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
 	}
+
+T_ALPM_FILELIST
+	$arg = c2p_filelist($var);
 
 T_SIGLEVEL
 	$arg = c2p_siglevel($var);

@@ -27,6 +27,8 @@ typedef alpm_list_t * PackageListNoFree;
 typedef alpm_list_t * DependList;
 typedef alpm_list_t * ListAutoFree;
 
+typedef alpm_filelist_t * ALPM_FileList;
+
 /* these are for list converter functions */
 typedef SV* (*scalarmap)(void*);
 typedef void* (*listmap)(SV*);
@@ -47,6 +49,7 @@ SV* c2p_syncdb(void*);
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);
 SV* c2p_conflict(void *);
+SV* c2p_filelist(void *);
 
 SV* c2p_siglevel(alpm_siglevel_t);
 alpm_siglevel_t p2c_siglevel(SV*);

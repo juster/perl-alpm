@@ -97,8 +97,11 @@ INTERFACE:
 	alpm_pkg_get_provides
 	alpm_pkg_get_deltas
 	alpm_pkg_get_replaces
-	alpm_pkg_get_files
 	alpm_pkg_get_backup
+
+ALPM_FileList
+alpm_pkg_get_files(pkg)
+	ALPM_Package pkg
 
 DependList
 alpm_pkg_get_depends(pkg)

@@ -33,7 +33,7 @@ T_ALPM_HANDLE
 	if(sv_derived_from($arg, \"ALPM\")){
 		$var = INT2PTR($type, SvIV((SV *)SvRV($arg)));
 	}else{
-		Perl_croak(\"error: expected an object of class ALPM\");
+		croak(\"error: expected an ALPM object\");
 	}
 
 T_ALPM_DB
@@ -41,9 +41,7 @@ T_ALPM_DB
 		IV tmp = SvIV((SV*)SvRV($arg));
 		$var = INT2PTR($type, tmp);
 	}else{
-		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB\");
+		croak(\"error: expected an ALPM::DB object\");
 	}
 
 T_ALPM_LOCALDB
@@ -51,9 +49,7 @@ T_ALPM_LOCALDB
 		IV tmp = SvIV((SV*)SvRV($arg));
 		$var = INT2PTR($type, tmp);
 	}else{
-		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB::Local\");
+		croak(\"error: expected an ALPM::DB::Local object\");
 	}
 
 T_ALPM_SYNCDB
@@ -61,16 +57,14 @@ T_ALPM_SYNCDB
 		IV tmp = SvIV((SV*)SvRV($arg));
 		$var = INT2PTR($type, tmp);
 	}else{
-		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::DB::Sync\");
+		croak(\"error: expected an ALPM::DB::Sync object\");
 	}
 
 T_ALPM_PACKAGE
 	if(sv_derived_from($arg, \"ALPM::Package\")){
 		$var = INT2PTR($type, SvIV((SV *)SvRV($arg)));
 	}else{
-		Perl_croak(\"error: expected an ALPM::Package object\");
+		croak(\"error: expected an ALPM::Package object\");
 	}
 
 T_ALPM_PACKAGEFREE
@@ -78,9 +72,7 @@ T_ALPM_PACKAGEFREE
 		IV tmp = SvIV((SV*)SvRV($arg));
 		$var = INT2PTR($type,tmp);
 	}else{
-		Perl_croak(aTHX_ \"%s: %s is not of type %s\",
-			${$ALIAS?\q[GvNAME(CvGV(cv))]:\qq[\"$pname\"]},
-			\"$var\", \"ALPM::PackageFree\");
+		croak(\"error: expected an ALPM::PackageFree object\");
 	}
 
 T_SIGLEVEL
@@ -102,7 +94,7 @@ T_STROPT
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		$arg = newSVpv($var, strlen($var));
+		$arg = newSVpv($var, 0);
 	}
 
 T_SETOPT
@@ -124,8 +116,7 @@ I_NEG_IS_ERROR
 
 T_ALPM_HANDLE
 	if($var == NULL){
-		# croakalpm expects a "alpm_handle_t *self" var to exist.
-		croak(\"error: ALPM handle check failed\");
+		croak(\"error: ALPM handle is NULL\");
 	}else{
 		sv_setref_pv($arg, \"ALPM\", (void *)$var);
 	}
@@ -169,7 +160,7 @@ T_ALPM_PACKAGEORNULL
 	if($var == NULL){
 		$arg = &PL_sv_undef;
 	}else{
-		sv_setref_pv($arg, \"ALPM::Package\", (void *)$var);
+		$arg = c2p_pkg($var);
 	}
 
 T_ALPM_FILELIST

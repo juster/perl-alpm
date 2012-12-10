@@ -19,10 +19,6 @@ extern const char * log_lvl_debug;
 extern const char * log_lvl_function;
 extern const char * log_lvl_unknown;
 
-/* GENERAL PURPOSE */
-
-#define croakalpm(PRE) croak(PRE " Error: %s", alpm_strerror(self))
-
 /* CALLBACKS ****************************************************************/
 
 #define DEF_SET_CALLBACK( CBTYPE )                                  \

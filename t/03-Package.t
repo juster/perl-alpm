@@ -5,8 +5,9 @@ sub pkgpath
 {
 	my($dbname, $pkgname) = @_;
 	$db = $alpm->db($dbname);
+	$db->update or die $alpm->err;
 	my($url) = $db->get_servers;
-	$pkg = $db->find($pkgname);
+	$pkg = $db->find($pkgname) or die "$dbname/$pkgname package is missing";
 	$url .= q{/} . $pkg->filename;
 	print "$url\n";
 	if(($url =~ s{^file://}{}) != 1){

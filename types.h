@@ -15,7 +15,6 @@ typedef alpm_db_t * ALPM_LocalDB;
 typedef alpm_db_t * ALPM_SyncDB;
 typedef alpm_pkg_t * ALPM_Package;
 typedef alpm_pkg_t * ALPM_PackageFree;
-typedef alpm_pkg_t * ALPM_PackageOrNull;
 typedef alpm_siglevel_t ALPM_SigLevel;
 
 typedef alpm_depend_t * DependHash;

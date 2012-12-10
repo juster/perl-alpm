@@ -11,7 +11,6 @@ ALPM_LocalDB			T_ALPM_LOCALDB
 ALPM_SyncDB			T_ALPM_SYNCDB
 ALPM_Package			T_ALPM_PACKAGE
 ALPM_PackageFree		T_ALPM_PACKAGEFREE
-ALPM_PackageOrNull	T_ALPM_PACKAGEORNULL
 ALPM_FileList			T_ALPM_FILELIST
 ALPM_SigLevel			T_SIGLEVEL
 
@@ -154,13 +153,6 @@ T_ALPM_PACKAGEFREE
 		$arg = &PL_sv_undef;
 	}else{
 		sv_setref_pv($arg, \"ALPM::PackageFree\", (void *)$var);
-	}
-
-T_ALPM_PACKAGEORNULL
-	if($var == NULL){
-		$arg = &PL_sv_undef;
-	}else{
-		$arg = c2p_pkg($var);
 	}
 
 T_ALPM_FILELIST

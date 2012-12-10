@@ -105,7 +105,7 @@ int
 alpm_errno(self)
 	ALPM_Handle self
 
-ALPM_PackageOrNull
+ALPM_Package
 alpm_find_satisfier(self, depstr, ...)
 	SV * self
 	const char * depstr
@@ -120,7 +120,7 @@ alpm_find_satisfier(self, depstr, ...)
  OUTPUT:
 	RETVAL
 
-ALPM_PackageOrNull
+ALPM_Package
 alpm_find_dbs_satisfier(self, depstr, ...)
 	ALPM_Handle self
 	const char * depstr

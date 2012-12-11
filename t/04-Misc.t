@@ -1,13 +1,7 @@
-#!/usr/bin/perl
-##
 # Test miscellanious functions.
 
-use warnings;
-use strict;
 use Test::More;
-
-use ALPM ('root' => '/',
-          'dbpath' => '/var/lib/pacman');
+use ALPM;
 
 is(ALPM->vercmp('0.1', '0.2'), -1);
 is(ALPM->vercmp('0.10', '0.2'), 1);

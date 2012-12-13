@@ -187,10 +187,10 @@ c2p_siglevel(alpm_siglevel_t sig)
 	return newRV_noinc((SV*)hv);
 }
 
-#define TRUST_NEVER 0
-#define TRUST_REQ 1
-#define TRUST_OPT 2
-#define TRUST_ALL 3
+#define TRUST_NEVER 1
+#define TRUST_REQ 2
+#define TRUST_OPT 4
+#define TRUST_ALL 8
 
 static int
 trustmask(HV *lvlhash, char *lvl, int len)
@@ -219,18 +219,19 @@ trustmask(HV *lvlhash, char *lvl, int len)
 		if(!SvPOK(*flag)) goto averr;
 
 		str = SvPV(*flag, svlen);
-		if(strncmp("never", str, svlen)){
+		if(strncmp("never", str, svlen) == 0){
 			if(mask & ~TRUST_NEVER) goto neverr;
 			mask |= TRUST_NEVER;
 		}else if(mask & TRUST_NEVER){
 			goto neverr;
-		}else if(strncmp("optional", str, svlen)){
+		}else if(strncmp("optional", str, svlen) == 0){
 			if(mask & TRUST_REQ) goto opterr;
 			mask |= TRUST_OPT;
-		}else if(strncmp("required", str, svlen)){
+		}else if(strncmp("required", str, svlen) == 0){
 			if(mask & TRUST_OPT) goto opterr;
 			mask |= TRUST_REQ;
-		}else if(strncmp("trustall", str, svlen)){
+		}else if(strncmp("trustall", str, svlen) == 0){
+			/* trustall may be combined with optional or required */
 			mask |= TRUST_ALL;
 		}
 	}
@@ -275,7 +276,7 @@ p2c_siglevel(SV *sig)
 	hv = (HV*)SvRV(sig);
 
 #define MERGEMASK(SYM) \
-	if(~mask & TRUST_NEVER){ \
+	if(mask != TRUST_NEVER){ \
 		ret |= ALPM_SIG_ ## SYM; \
 		if(mask & TRUST_OPT){ \
 			ret |= ALPM_SIG_ ## SYM ## _OPTIONAL; \
@@ -285,15 +286,15 @@ p2c_siglevel(SV *sig)
 		} \
 	}
 
+	ret = 0;
 	mask = trustmask(hv, "pkg", 3);
 	MERGEMASK(PACKAGE)
-
 	mask = trustmask(hv, "db", 2);
 	MERGEMASK(DATABASE)
 
 #undef MERGEMASK
 
-	return ret;		
+	return ret;
 }
 
 #undef TRUST_NEVER

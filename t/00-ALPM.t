@@ -64,7 +64,7 @@ if(grep { /signatures/ } @caps){
 	ok $alpm->set_defsiglvl({ 'pkg' => ['never'], 'db' => ['required'] });
 	$siglvl = $alpm->get_defsiglvl;
 	is $siglvl->{'pkg'}[0], 'never';
-	is $isglvl->{'db'}[0], 'required';
+	is $siglvl->{'db'}[0], 'required';
 }else{
 	is $alpm->get_defsiglvl, 'never';
 	$siglvl = { 'pkg' => ['never'], 'db' => ['required'] };

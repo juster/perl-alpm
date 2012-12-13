@@ -213,6 +213,7 @@ trustmask(HV *lvlhash, char *lvl, int len)
 		croak("Bad %s SigLevel value: array is empty");
 	}
 
+	mask = 0;
 	for(i = 0; i <= x; i++){
 		flag = av_fetch(flags, i, 0);
 		if(!SvPOK(*flag)) goto averr;
@@ -233,7 +234,6 @@ trustmask(HV *lvlhash, char *lvl, int len)
 			mask |= TRUST_ALL;
 		}
 	}
-
 	return mask;
 
 neverr:

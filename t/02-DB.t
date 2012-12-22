@@ -35,7 +35,7 @@ $db = $alpm->localdb;
 is $db->name, 'local';
 
 ## Make sure DBs are synced.
-$_->update or die $alpm->errstr for ($alpm->syncdbs);
+$_->update or die $alpm->errstr for($alpm->syncdbs);
 
 checkdb('simpletest', qw/foo bar/);
 checkdb('upgradetest', qw/foo replacebaz/);

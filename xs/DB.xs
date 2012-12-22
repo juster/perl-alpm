@@ -82,6 +82,12 @@ search(db, ...)
 	LIST2STACK(fnd, c2p_pkg);
 	alpm_list_free(L);
 
+#-----------------------------
+# PUBLIC SYNC DATABASE METHODS
+#-----------------------------
+
+MODULE = ALPM   PACKAGE = ALPM::DB::Sync
+
 # We have to reverse the arguments because it is a method.
 negative_is_error
 update(db)
@@ -98,10 +104,6 @@ force_update(db)
 	RETVAL = alpm_db_update(1, db);
  OUTPUT:
 	RETVAL
-
-#-----------------------------
-# PUBLIC SYNC DATABASE METHODS
-#-----------------------------
 
 MODULE = ALPM   PACKAGE = ALPM::DB::Sync    PREFIX = alpm_db_
 

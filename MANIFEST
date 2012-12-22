@@ -19,7 +19,6 @@ t/03-Package.t
 t/04-Misc.t
 t/05-Transaction.t
 t/06-Callbacks.t
-t/07-TiedOptions.t
 t/08-TransErrors.t
 t/repos/build/simpletest/bar/.PKGINFO
 t/repos/build/simpletest/bar/usr/foo/bar/bar

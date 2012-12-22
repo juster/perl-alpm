@@ -1,0 +1,43 @@
+=pod
+
+=head1 ALPM::DB::Sync - Synchronized remote database class.
+
+=head1 OBJECT METHODS
+
+=head2 servers
+
+  $SUCCESS = $DB->add_server($URL)
+  $SUCCESS = $DB->remove_server($URL)
+  @URLS = $DB->get_servers()
+
+=over 4
+
+=item C<$URL>
+
+The base url where database files are publicly available.
+
+=item C<@URLS>
+
+The registered urls for the repositories hosting this database.
+
+=item C<$SUCCESS>
+
+Returns 1 on success, undef on failure.
+
+=back
+
+=head1 SEE ALSO
+
+L<ALPM::DB>, L<ALPM>, L<ALPM::Package>
+
+=head1 AUTHOR
+
+Justin Davis, C<< <juster at cpan dot org> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2012 by Justin Davis
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.

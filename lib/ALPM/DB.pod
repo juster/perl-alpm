@@ -48,7 +48,7 @@ The previously assigned name of the database or 'local' for the local database.
 
 A list of packages in the package cache for this database.
 
-=back 4
+=back
 
 =head2 find
 

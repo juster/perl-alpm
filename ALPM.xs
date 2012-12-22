@@ -116,7 +116,7 @@ alpm_find_satisfier(self, depstr, ...)
 	i = 0;
 	STACK2LIST(i, pkgs, p2c_pkg);
 	RETVAL = alpm_find_satisfier(pkgs, depstr);
-	FREELIST(pkgs);
+	alpm_list_free(pkgs);
  OUTPUT:
 	RETVAL
 
@@ -131,7 +131,7 @@ alpm_find_dbs_satisfier(self, depstr, ...)
 	i = 0;
 	STACK2LIST(i, dbs, p2c_db);
 	RETVAL = alpm_find_dbs_satisfier(self, dbs, depstr);
-	FREELIST(dbs);
+	alpm_list_free(dbs);
  OUTPUT:
 	RETVAL
 

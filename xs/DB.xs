@@ -13,7 +13,6 @@ pkgs(db)
 	L = pkgs = alpm_db_get_pkgcache(db);
 	# If pkgs is NULL, we can't report the error because errno is in the handle object.
 	LIST2STACK(pkgs, c2p_pkg);
-	FREELIST(L);
 
 # groups returns a list of pairs. Each pair is a group name followed by
 # an array ref of packages belonging to the group.
@@ -33,7 +32,6 @@ groups(db)
 		pkgarr = list2av(grp->packages, c2p_pkg);
 		XPUSHs(sv_2mortal(newRV_noinc((SV*)pkgarr)));
 	}
-	FREELIST(L);
 
 const char *
 name(db)
@@ -82,7 +80,7 @@ search(db, ...)
 	L = fnd = alpm_db_search(db, terms);
 	ZAPLIST(terms, free);
 	LIST2STACK(fnd, c2p_pkg);
-	FREELIST(L);
+	alpm_list_free(L);
 
 # We have to reverse the arguments because it is a method.
 negative_is_error

@@ -1,6 +1,8 @@
 =pod
 
-=head1 ALPM::DB::Sync - Synchronized remote database class.
+=head1 NAME
+
+ALPM::DB::Sync - Synchronized remote database class.
 
 =head1 OBJECT METHODS
 
@@ -23,6 +25,45 @@ The registered urls for the repositories hosting this database.
 =item C<$SUCCESS>
 
 Returns 1 on success, undef on failure.
+
+=back
+
+=head2 update
+
+  $SUCCESS = $DB->update()
+  $SUCCESS = $DB->force_update()
+
+Updating the database is like pacman -Su. Forcing an update will download a new
+copy of the database even if it seems that we do not need to.
+
+=over 4
+
+=item C<SUCCESS>
+
+Returns 1 on success or undef on error.
+
+=back
+
+=head1 get_valid
+
+  $VALID = $DB->get_valid()
+
+=head1 get_siglevel
+
+  $SIGLEVEL = $DB->get_siglevel()
+
+=head1 unregister
+
+  $SUCCESS = $DB->unregister()
+
+Unregister the sync database. You probably shouldn't try to use the $DB object
+anymore. Right now there are no safety checks.
+
+=over 4
+
+=item C<$SUCCESS>
+
+Returns 1 on success or undef on error.
 
 =back
 

@@ -23,6 +23,13 @@ alpm_option_set_fetchcb(self, cb)
  CODE:
 	DEFSETCB(fetch, self, cb)
 
+void
+alpm_option_set_totaldlcb(self, cb)
+	ALPM_Handle self
+	SV * cb
+ CODE:
+	DEFSETCB(totaldl, self, cb)
+
 #SV *
 #alpm_option_get_dlcb(self)
 #	ALPM_Handle self

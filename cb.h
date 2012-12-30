@@ -22,5 +22,6 @@ extern SV * logcb_ref, * dlcb_ref, * totaldlcb_ref, * fetchcb_ref;
 void c2p_logcb(alpm_loglevel_t, const char *, va_list);
 void c2p_dlcb(const char *, off_t, off_t);
 int c2p_fetchcb(const char *, const char *, int);
+void c2p_totaldlcb(off_t);
 
 #endif

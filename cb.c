@@ -110,3 +110,26 @@ c2p_fetchcb(const char * url, const char * dest, int force)
 	LEAVE;
 	return ret;
 }
+
+void
+c2p_totaldlcb(off_t total)
+{
+	dSP;
+	if(!totaldlcb_ref){
+		return;
+	}
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	EXTEND(SP, 1);
+	PUSHs(sv_2mortal(newSViv(total)));
+	PUTBACK;
+	call_sv(totaldlcb_ref, G_DISCARD);
+
+	FREETMPS;
+	LEAVE;
+	return;
+	
+}
+

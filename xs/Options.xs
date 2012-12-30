@@ -1,5 +1,7 @@
 MODULE = ALPM	PACKAGE = ALPM
 
+## CALLBACKS
+
 SV*
 get_logcb(...)
  CODE:
@@ -7,9 +9,28 @@ get_logcb(...)
  OUTPUT:
 	RETVAL
 
-MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
+SV*
+get_dlcb(...)
+ CODE:
+	RETVAL = (dlcb_ref ? newSVsv(dlcb_ref) : &PL_sv_undef);
+ OUTPUT:
+	RETVAL
 
-## CALLBACKS
+SV*
+get_fetchcb(...)
+ CODE:
+	RETVAL = (fetchcb_ref ? newSVsv(fetchcb_ref) : &PL_sv_undef);
+ OUTPUT:
+	RETVAL
+
+SV*
+get_totaldlcb(...)
+ CODE:
+	RETVAL = (totaldlcb_ref ? newSVsv(totaldlcb_ref) : &PL_sv_undef);
+ OUTPUT:
+	RETVAL
+
+MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 void
 alpm_option_set_logcb(self, cb)

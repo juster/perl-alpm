@@ -17,7 +17,7 @@ my %meta = ('resources' => { 'repository' => 'http://github.com/juster/perl-alpm
 
 sub MY::postamble {
     return <<'END_MAKE';
-ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs xs/Transaction.xs
+ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs
 END_MAKE
 }
 

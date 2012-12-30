@@ -73,3 +73,40 @@ c2p_dlcb(const char * name, off_t curr, off_t total)
 	LEAVE;
 	return;
 }
+
+int
+c2p_fetchcb(const char * url, const char * dest, int force)
+{
+	SV * svret;
+	int ret;
+	dSP;
+
+	if(!fetchcb_ref){
+		return;
+	}
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	EXTEND(SP, 3);
+	PUSHs(sv_2mortal(newSVpv(url, 0)));
+	PUSHs(sv_2mortal(newSVpv(dest, 0)));
+	PUSHs(sv_2mortal(newSViv(force)));
+	PUTBACK;
+
+	ret = 0;
+	if(call_sv(fetchcb_ref, G_SCALAR | G_EVAL) == 1){
+		svret = POPs;
+		if(SvTRUE(ERRSV)){
+			/* the callback died, return an error to libalpm */
+			ret = -1;
+		}else{
+			ret = (SvTRUE(svret) ? 1 : 0);
+		}
+	}
+
+	FREETMPS;
+	LEAVE;
+	return ret;
+}

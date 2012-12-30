@@ -16,6 +16,13 @@ alpm_option_set_dlcb(self, cb)
  CODE:
 	DEFSETCB(dl, self, cb)
 
+void
+alpm_option_set_fetchcb(self, cb)
+	ALPM_Handle self
+	SV * cb
+ CODE:
+	DEFSETCB(fetch, self, cb)
+
 #SV *
 #alpm_option_get_dlcb(self)
 #	ALPM_Handle self
@@ -54,12 +61,6 @@ alpm_option_set_dlcb(self, cb)
 # OUTPUT:
 #	RETVAL
 #
-#void
-#alpm_option_set_fetchcb(self, callback)
-#	ALPM_Handle self
-#	SV * callback
-#  CODE:
-#	DEF_SET_CALLBACK(fetch)
 
 ## REGULAR OPTIONS
 

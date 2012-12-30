@@ -9,6 +9,13 @@ alpm_option_set_logcb(self, cb)
  CODE:
 	DEFSETCB(log, self, cb)
 
+void
+alpm_option_set_dlcb(self, cb)
+	ALPM_Handle self
+	SV * cb
+ CODE:
+	DEFSETCB(dl, self, cb)
+
 #SV *
 #alpm_option_get_dlcb(self)
 #	ALPM_Handle self

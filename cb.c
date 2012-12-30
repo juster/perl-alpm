@@ -45,3 +45,31 @@ void c2p_logcb(alpm_loglevel_t lvl, const char * fmt, va_list args)
 	LEAVE;
 	return;
 }
+
+void
+c2p_dlcb(const char * name, off_t curr, off_t total)
+{
+	SV * svname, * svcurr, * svtotal;
+	dSP;
+
+	if(!dlcb_ref){
+		return;
+	}
+
+	ENTER;
+	SAVETMPS;
+	svname = sv_2mortal(newSVpv(name, 0));
+	svcurr = sv_2mortal(newSViv(curr));
+	svtotal = sv_2mortal(newSViv(total));
+
+	PUSHMARK(SP);
+	XPUSHs(svname);
+	XPUSHs(svcurr);
+	XPUSHs(svtotal);
+	PUTBACK;
+	call_sv(dlcb_ref, G_DISCARD);
+
+	FREETMPS;
+	LEAVE;
+	return;
+}

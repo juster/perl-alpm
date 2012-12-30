@@ -1,3 +1,12 @@
+MODULE = ALPM	PACKAGE = ALPM
+
+SV*
+get_logcb(...)
+ CODE:
+	RETVAL = (logcb_ref ? newSVsv(logcb_ref) : &PL_sv_undef);
+ OUTPUT:
+	RETVAL
+
 MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 ## CALLBACKS
@@ -29,45 +38,6 @@ alpm_option_set_totaldlcb(self, cb)
 	SV * cb
  CODE:
 	DEFSETCB(totaldl, self, cb)
-
-#SV *
-#alpm_option_get_dlcb(self)
-#	ALPM_Handle self
-# CODE:
-#	DEF_GET_CALLBACK(dl)
-# OUTPUT:
-#	RETVAL
-#
-#void
-#alpm_option_set_dlcb(self, callback)
-#	ALPM_Handle self
-#	SV * callback
-# CODE:
-#	DEF_SET_CALLBACK(dl)
-#
-#SV *
-#alpm_option_get_totaldlcb(self)
-#	ALPM_Handle self
-# CODE:
-#	DEF_GET_CALLBACK(totaldl)
-# OUTPUT:
-#	RETVAL
-#
-#void
-#alpm_option_set_totaldlcb(self, callback)
-#	ALPM_Handle self
-#	SV * callback
-# CODE:
-#	DEF_SET_CALLBACK(totaldl)
-#
-#SV *
-#alpm_option_get_fetchcb(self)
-#	ALPM_Handle self
-# CODE:
-#	DEF_GET_CALLBACK(fetch)
-# OUTPUT:
-#	RETVAL
-#
 
 ## REGULAR OPTIONS
 

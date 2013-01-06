@@ -4,19 +4,20 @@ ALPM::DB - Database base class class.
 
 =head1 SYNOPSIS
 
-  my $db = ALPM->localdb;
+  use ALPM::Conf qw(/etc/pacman.conf);
+  my $db = $alpm->localdb;
   printf "Playing with %s database\n", $db->name;
   my $perl = $db->find('perl') or die 'where is perl';
   
   my $url = 'ftp://ftp.archlinux.org/community/os/i686';
-  $db = ALPM->register_db('community' => $url);
+  $db = $alpm->register('community' => $url) or die 'register failed';
   
   for my $pkg ($db->search( 'perl' )){
       printf "%s\t%s\n", $pkg->name, $pkg->version;
   }
   
-  for my $pkg ($db->find_group('xfce4')->pkgs){
-      print join( q{ }, $pkg->attribs('name', 'version') ), "\n";
+  for my $pkg ($db->find_group('xfce4')){
+      printf "xfce4:\t%s\t%s\n", $pkg->name, $pkg->version;
   }
 
   my %grps = $db->groups;

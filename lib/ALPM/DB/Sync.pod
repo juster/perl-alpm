@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-ALPM::DB::Sync - Synchronized remote database class.
+ALPM::DB::Sync - Synchronized remote databases.
 
 =head1 OBJECT METHODS
 
@@ -10,7 +10,10 @@ ALPM::DB::Sync - Synchronized remote database class.
 
   $SUCCESS = $DB->add_server($URL)
   $SUCCESS = $DB->remove_server($URL)
+  $SUCCESS = $DB->set_servers(@URLS)
   @URLS = $DB->get_servers()
+
+A plethora of accessors and mutators for the repo URLs of databases.
 
 =over 4
 
@@ -20,7 +23,7 @@ The base url where database files are publicly available.
 
 =item C<@URLS>
 
-The registered urls for the repositories hosting this database.
+Like $URL, only more so.
 
 =item C<$SUCCESS>
 
@@ -44,13 +47,17 @@ Returns 1 on success or undef on error.
 
 =back
 
-=head1 get_valid
+=head1 valid
 
-  $VALID = $DB->get_valid()
+  $VALID = $DB->valid()
 
-=head1 get_siglevel
+Perform validity checks upon the database, such as a signature check.
 
-  $SIGLEVEL = $DB->get_siglevel()
+=head1 siglevel
+
+  $SIGLEVEL = $DB->siglevel()
+
+Retrieve the signature level requirements that packages in this database must fulfill.
 
 =head1 unregister
 

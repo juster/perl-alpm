@@ -21,7 +21,7 @@ This version of ALPM is compatible with pacman 4.
   our $alpm; # uses "our" package variable, not "my"
   
   ## Querying databases & packages
-  my $localdb = $alpm->get_localdb;
+  my $localdb = $alpm->localdb;
   my $pkg = $localdb->find('perl') or die 'wtfbbq';
   printf "%s %s %s %d\n", $pkg->name, $pkg->version, $pkg->arch, $pkg->size;
   
@@ -42,11 +42,11 @@ This version of ALPM is compatible with pacman 4.
   }
   
   ## $found is undef or the package object for findme.
-  my @syncdbs = $alpm->get_syncdbs;
+  my @syncdbs = $alpm->syncdbs;
   my $found = $alpm->find_dbs_satisfier('findme', @syncdbs);
   $found = $alpm->find_satisfier('findme', $extradb->pkgs);
   
-  ## These are perl wrappers around get_localdb and get_syncdbs:
+  ## These are perl wrappers around localdb and syncdbs:
   
   ## Search all databases/repos (includes localdb).
   printf "%10s: %s %s\n", $_->db->get_name, $_->name,
@@ -339,7 +339,8 @@ Returns 1 on success or undef on error. Check L</errstr> on error.
 
 Set a local package installation reason. Returns 1 on success, undef on error.
 Check L</errstr> on error. This would make more sense as an L<ALPM::DB::Local>
-object method, but this matches the I<alpm_db_set_pkgreason> C function.
+object method, but instead we match the I<alpm_db_set_pkgreason> C function
+in spirit.
 
 =over 4
 
@@ -397,10 +398,6 @@ Similarly the same options return a list.
 =over
 
 =item B<lockfile> - path to the lockfile
-
-=item B<localdb> - the ALPM::DB object representing the local database
-
-=item B<syncdbs>* - a list of sync databases as ALPM::DB objects
 
 =back
 

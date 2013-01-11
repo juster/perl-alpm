@@ -50,6 +50,14 @@ p2c_db(SV *db)
 }
 
 SV*
+c2p_db(void *db)
+{
+	SV *rv = newSV(0);
+	sv_setref_pv(rv, "ALPM::DB", db);
+	return rv;
+}
+
+SV*
 c2p_localdb(void *db)
 {
 	SV *rv = newSV(0);

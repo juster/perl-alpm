@@ -57,18 +57,20 @@ for $k (sort keys %opts){
 }
 
 # TODO: Test SigLevels more in a later test.
-is $alpm->get_defsiglvl, 'never';
-ok $alpm->set_defsiglvl('default');
+is_deeply $alpm->get_defsiglvl, { 'pkg' => 'never', 'db' => 'never' };
 
 if(grep { /signatures/ } @caps){
-	is $alpm->get_defsiglvl, 'default';
-	ok $alpm->set_defsiglvl({ 'pkg' => ['never'], 'db' => ['required'] });
-	$siglvl = $alpm->get_defsiglvl;
-	is $siglvl->{'pkg'}[0], 'never';
-	is $siglvl->{'db'}[0], 'required';
+	$siglvl = { 'pkg' => 'optional', 'db' => 'required' };
+	ok $alpm->set_defsiglvl($siglvl);
+	is_deeply $alpm->get_defsiglvl, $siglvl;
+
+	$siglvl = { 'pkg' => 'never', 'db' => 'optional trustall' };
+	ok $alpm->set_defsiglvl($siglvl);
+	is_deeply $alpm->get_defsiglvl, $siglvl;
 }else{
-	is $alpm->get_defsiglvl, 'never';
-	$siglvl = { 'pkg' => ['never'], 'db' => ['required'] };
+	ok $alpm->set_defsiglvl('default'); # this makes no sense!
+	is_deeply $alpm->get_defsiglvl, { 'pkg' => 'never', 'db' => 'never' };
+	$siglvl = { 'pkg' => 'never', 'db' => 'required' };
 	eval { $alpm->set_defsiglvl($siglvl); };
 	if($@ =~ /^ALPM Error: wrong or NULL argument passed/){
 		pass q{can set siglevel to "default" or "never" without GPGME};

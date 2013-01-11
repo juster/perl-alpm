@@ -143,7 +143,59 @@ c2p_filelist(void *flistPtr){
 	return newRV_noinc((SV*)av);
 }
 
-/* converts siglevel bitflags into a string (default/never) or hashref */
+/*
+This deals with only raw bits, which is bad form, but I prefer the design.
+If the alpm_siglevel_t bitflag enum was not so strange, I wouldn't have
+chosen to do this.
+
+The bit flags are separated into two halves with a special case of the
+"default value" where bit 32 (the MSB) is on. Reading from LSB to MSB,
+the package flags consist of the first four bits. 6 unused bits follow.
+The database flags consist of the next four bits. 17 unused bits follow.
+Finally, the bit flag for ALPM_USE_DEFAULT is the MSB.
+
+Here is the form of the package and database bitmask. Remember the
+database flags are shifted to the left by 10 places.
+
+BIT	DESCRIPTION
+1	Signature checking is enabled for packages or databases respectively.
+2	Signature checking is optional, used only when available.
+3	MARGINAL_OK?
+4	UNKNOWN_OK?
+
+A setting of TrustAll in pacman.conf enables MARGINAL_OK and UNKNOWN_OK.
+These two flags are not enabled separately from one another.
+
+ALPM_SIG_USE_DEFAULT is the default value when set_default_siglevel is never
+called but I have no idea what that could mean when this is the value of the default.
+This seems to be a circular argument with no end.
+
+*/
+
+#define MASK_ENABLE 1
+#define MASK_OPT 3
+#define MASK_TRUSTALL 12
+#define MASK_ALL 15
+#define OFFSET_DB 10
+
+static
+SV* truststring(unsigned long siglvl)
+{
+	SV *str;
+	if(!(siglvl & MASK_ENABLE)){
+		return newSVpv("never", 0);
+	}else if(!(~siglvl & MASK_OPT)){
+		str = newSVpv("optional", 0);
+	}else{
+		str = newSVpv("required", 0);
+	}
+	if(!(~siglvl & MASK_TRUSTALL)){
+		sv_catpv(str, " trustall");
+	}
+	return str;
+}
+
+/* converts siglevel bitflags into a string (default/never) or hashref of strings */
 SV*
 c2p_siglevel(alpm_siglevel_t sig)
 {
@@ -152,163 +204,89 @@ c2p_siglevel(alpm_siglevel_t sig)
 
 	if(sig & ALPM_SIG_USE_DEFAULT){
 		return newSVpv("default", 7);
-	}else if(!sig){
-		return newSVpv("never", 5);
 	}
 
 	hv = newHV();
-
-#define PUSHFLAG(F) av_push(flags, newSVpv(F, 0))
-
-	flags = newAV();
-	if(sig & ALPM_SIG_PACKAGE){
-		if(sig & ALPM_SIG_PACKAGE_OPTIONAL){
-			PUSHFLAG("optional");
-		}else{
-			PUSHFLAG("required");
-		}
-		if(sig & ALPM_SIG_PACKAGE_MARGINAL_OK & ALPM_SIG_PACKAGE_UNKNOWN_OK){
-			PUSHFLAG("trustall");
-		}
-	}else{
-		PUSHFLAG("never");
-	}
-	hv_store(hv, "pkg", 3, newRV_noinc((SV*)flags), 0);
-
-	flags = newAV();
-	if(sig & ALPM_SIG_DATABASE){
-		if(sig & ALPM_SIG_DATABASE_OPTIONAL){
-			PUSHFLAG("optional");
-		}else{
-			PUSHFLAG("required");
-		}
-		if(sig & ALPM_SIG_DATABASE_MARGINAL_OK & ALPM_SIG_DATABASE_UNKNOWN_OK){
-			PUSHFLAG("trustall");
-		}
-	}else{
-		PUSHFLAG("never");
-	}
-	hv_store(hv, "db", 2, newRV_noinc((SV*)flags), 0);
-
-#undef PUSHFLAG
-
+	hv_store(hv, "pkg", 3, truststring(sig & MASK_ALL), 0);
+	hv_store(hv, "db", 2, truststring((sig >> OFFSET_DB) & MASK_ALL), 0);
 	return newRV_noinc((SV*)hv);
 }
 
-#define TRUST_NEVER 1
-#define TRUST_REQ 2
-#define TRUST_OPT 4
-#define TRUST_ALL 8
-
-static int
-trustmask(HV *lvlhash, char *lvl, int len)
+static unsigned long
+trustmask(char *str, STRLEN len)
 {
-	SV **ref, **flag;
-	AV *flags;
-	I32 i, x;
-	char *str;
-	STRLEN svlen;
-	int mask;
+	unsigned long flags;
 
-	ref = hv_fetch(lvlhash, lvl, len, 0);
-	if(ref == NULL || !SvROK(*ref) || SvTYPE(SvRV(*ref)) != SVt_PVAV){
-		croak("SigLevel hashref must contain array refs as values");
+	if(len == 5 && strcmp(str, "never") == 0){
+		return 0;
 	}
 
-	flags = (AV*)SvRV(*ref);
-	x = av_len(flags);
-	if(x == -1){
-		croak("Bad %s SigLevel value: array is empty");
+	if(len < 8){
+		goto badstr;
+	}else if(strncmp(str, "required", 8) == 0){
+		flags = MASK_ENABLE;
+	}else if(strncmp(str, "optional", 8) == 0){
+		flags = MASK_OPT;
+	}else {
+		goto badstr;
 	}
 
-	mask = 0;
-	for(i = 0; i <= x; i++){
-		flag = av_fetch(flags, i, 0);
-		if(!SvPOK(*flag)) goto averr;
-
-		str = SvPV(*flag, svlen);
-		if(strncmp("never", str, svlen) == 0){
-			if(mask & ~TRUST_NEVER) goto neverr;
-			mask |= TRUST_NEVER;
-		}else if(mask & TRUST_NEVER){
-			goto neverr;
-		}else if(strncmp("optional", str, svlen) == 0){
-			if(mask & TRUST_REQ) goto opterr;
-			mask |= TRUST_OPT;
-		}else if(strncmp("required", str, svlen) == 0){
-			if(mask & TRUST_OPT) goto opterr;
-			mask |= TRUST_REQ;
-		}else if(strncmp("trustall", str, svlen) == 0){
-			/* trustall may be combined with optional or required */
-			mask |= TRUST_ALL;
-		}
+	if(len == 8){
+		return flags;
+	}else if(len != 17 || strcmp(str + 8, " trustall") != 0){
+		goto badstr;
 	}
-	return mask;
+	return flags | MASK_TRUSTALL;
 
-neverr:
-	croak("Bad %s SigLevel: the never trust level cannot be combined.", lvl);
-
-opterr:
-	croak("Bad %s SigLevel: trust cannot be both required and optional", lvl);
-
-averr:
-	croak("Bad %s SigLevel: valid elements are never, required, optional, or trustall", lvl);
+	badstr:
+	croak("Unrecognized signature level string: %s", str);
 }
 
-/* converts a siglevel string or hashref into bitflags */
+static unsigned long
+fetch_trustmask(HV *hv, const char *key){
+	SV **val;
+	char *str;
+	STRLEN len;
+
+	val = hv_fetch(hv, key, strlen(key), 0);
+	if(val == NULL){
+		croak("Invalid signature level hash: %s key is missing", key);
+	}
+	str = SvPV(*val, len);
+	return trustmask(str, len);
+}
+
+/* converts a siglevel string or hashref into bitflags. */
 alpm_siglevel_t
 p2c_siglevel(SV *sig)
 {
-	HV *hv;
 	char *str;
 	STRLEN len;
-	int mask;
 	alpm_siglevel_t ret;
+	HV *hv;
 
 	if(SvPOK(sig)){
 		str = SvPV(sig, len);
-		if(strncmp(str, "default", len) == 0){
+		if(len == 7 && strncmp(str, "default", len) == 0){
 			return ALPM_SIG_USE_DEFAULT;
-		}else if(strncmp(str, "never", len) == 0){
-			return 0;
 		}else {
 			/* XXX: might not be null terminated? */
-			croak("Unrecognized SigLevel string: %s", str);
+			croak("Unrecognized global signature level string: %s", str);
 		}
+	}else if(SvROK(sig) && SvTYPE(SvRV(sig)) == SVt_PVHV){
+		hv = (HV*)SvRV(sig);
+		ret = fetch_trustmask(hv, "pkg");
+		ret |= fetch_trustmask(hv, "db") << OFFSET_DB;
+		return ret;
 	}
-
-	if(!SvROK(sig) || SvTYPE(SvRV(sig)) != SVt_PVHV){
-		croak("SigLevel must be a string or hash reference");
-	}
-
-	hv = (HV*)SvRV(sig);
-
-#define MERGEMASK(SYM) \
-	if(mask != TRUST_NEVER){ \
-		ret |= ALPM_SIG_ ## SYM; \
-		if(mask & TRUST_OPT){ \
-			ret |= ALPM_SIG_ ## SYM ## _OPTIONAL; \
-		} \
-		if(mask & TRUST_ALL){ \
-			ret |= ALPM_SIG_## SYM ## _MARGINAL_OK | ALPM_SIG_ ## SYM ## _UNKNOWN_OK; \
-		} \
-	}
-
-	ret = 0;
-	mask = trustmask(hv, "pkg", 3);
-	MERGEMASK(PACKAGE)
-	mask = trustmask(hv, "db", 2);
-	MERGEMASK(DATABASE)
-
-#undef MERGEMASK
-
-	return ret;
+	croak("A global signature level must be a string or hash reference");
 }
 
-#undef TRUST_NEVER
-#undef TRUST_REQ
-#undef TRUST_OPT
-#undef TRUST_ALL
+#undef MASK_ENABLE
+#undef MASK_OPT
+#undef MASK_TRUSTALL
+#undef MASK_ALL
+#undef OFFSET_DB
 
 SV*
 c2p_pkgreason(alpm_pkgreason_t rsn)

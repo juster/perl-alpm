@@ -273,9 +273,13 @@ get_defsiglvl(self)
 SetOption
 set_defsiglvl(self, siglvl)
 	ALPM_Handle self
-	ALPM_SigLevel siglvl
+	SV* siglvl
  CODE:
-	RETVAL = alpm_option_set_default_siglevel(self, siglvl);
+	if(strcmp(SvPV_nolen(siglvl), "default") == 0){
+		croak("Default signature level cannot itself be set to default. You hear the sound of one hand clapping");
+	}else{
+		RETVAL = alpm_option_set_default_siglevel(self, p2c_siglevel(siglvl));
+	}
  OUTPUT:
 	RETVAL
 

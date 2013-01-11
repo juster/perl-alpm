@@ -68,7 +68,7 @@ if(grep { /signatures/ } @caps){
 	ok $alpm->set_defsiglvl($siglvl);
 	is_deeply $alpm->get_defsiglvl, $siglvl;
 }else{
-	ok $alpm->set_defsiglvl('default'); # this makes no sense!
+	ok $alpm->set_defsiglvl({ 'pkg' => 'required', 'db' => 'required' });
 	is_deeply $alpm->get_defsiglvl, { 'pkg' => 'never', 'db' => 'never' };
 	$siglvl = { 'pkg' => 'never', 'db' => 'required' };
 	eval { $alpm->set_defsiglvl($siglvl); };
@@ -78,5 +78,7 @@ if(grep { /signatures/ } @caps){
 		fail 'should not be able to set complicated siglevel without GPGME';
 	}
 }
+
+ok not eval { $alpm->set_defsiglvl('default') };
 
 done_testing;

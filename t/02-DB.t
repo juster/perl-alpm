@@ -40,4 +40,12 @@ $_->update or die $alpm->errstr for($alpm->syncdbs);
 checkdb('simpletest', qw/foo bar/);
 checkdb('upgradetest', qw/foo replacebaz/);
 
+## Check that register siglevel defaults to 'default' when not provided.
+$db = $alpm->register('empty') or die 'register failed';
+
+## Due to libalpm trickery, if the db's siglevel is set to default, then the siglevel
+## that is retrieved is a copy of the handle's default siglevel.
+$siglvl = $alpm->get_defsiglvl;
+is_deeply $db->siglevel, $siglvl;
+
 done_testing;

@@ -169,11 +169,17 @@ MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
 # Why name this register_sync when there is no register_local? Redundant.
 
 ALPM_SyncDB
-alpm_db_register(self, name, siglvl)
+alpm_db_register(self, name, ...)
 	ALPM_Handle self
 	const char * name
-	ALPM_SigLevel siglvl
+ PREINIT:
+	alpm_siglevel_t siglvl;
  CODE:
+	if(items >= 3){
+		siglvl = p2c_siglevel(ST(2));
+	}else{
+		siglvl = ALPM_SIG_USE_DEFAULT;
+	}
 	RETVAL = alpm_db_register_sync(self, name, siglvl);
  OUTPUT:
 	RETVAL

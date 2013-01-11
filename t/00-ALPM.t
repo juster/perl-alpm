@@ -34,9 +34,9 @@ sub meth
 {
 	my $name = shift;
 	my $m = *{"ALPM::$name"}{CODE} or die "missing $name method";
-	my $ret = eval { $m->($alpm, @_) };
+	my @ret = eval { $m->($alpm, @_) };
 	if($@){ die "method call to $name failed: $@" }
-	return $ret;
+	return (wantarray ? @ret : $ret[0]);
 }
 
 for $k (sort keys %opts){
@@ -52,7 +52,8 @@ for $k (sort keys %opts){
 
 	next unless($k =~ s/s$//);
 	is meth("remove_$k", $v[0]), 1, "remove_$k reported success";
-	ok scalar meth("get_${k}s") == (@v - 1), "$v[0] removed from ${k}s";
+	@w = meth("get_${k}s");
+	ok @w == (@v - 1), "$v[0] removed from ${k}s";
 }
 
 # TODO: Test SigLevels more in a later test.

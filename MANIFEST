@@ -14,7 +14,7 @@ t/01-Conf.t
 t/02-DB.t
 t/03-Package.t
 t/04-Misc.t
-t/06-Callbacks.t
+t/05-Callbacks.t
 t/repos/build/simpletest/bar/.PKGINFO
 t/repos/build/simpletest/bar/usr/foo/bar/bar
 t/repos/build/simpletest/foo/.PKGINFO

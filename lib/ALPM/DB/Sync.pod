@@ -33,7 +33,7 @@ Returns 1 on success, undef on failure.
 
 =head2 update
 
-  $SUCCESS = $DB->update()
+  $UPDATE_STATUS = $DB->update()
   $SUCCESS = $DB->force_update()
 
 Updating the database is like pacman -Su. Forcing an update will download a new
@@ -41,9 +41,13 @@ copy of the database even if it seems that we do not need to.
 
 =over 4
 
+=item C<$UPDATE_STATUS>
+
+Returns 1 on success, -1 if the update was unnecessary, or 0 on error.
+
 =item C<SUCCESS>
 
-Returns 1 on success or undef on error.
+Returns 1 on success or 0 on error.
 
 =back
 

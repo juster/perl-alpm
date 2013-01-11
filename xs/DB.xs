@@ -89,11 +89,18 @@ search(db, ...)
 MODULE = ALPM   PACKAGE = ALPM::DB::Sync
 
 # We have to reverse the arguments because it is a method.
-negative_is_error
+int
 update(db)
 	ALPM_SyncDB db
+ PREINIT:
+	int ret;
  CODE:
-	RETVAL = alpm_db_update(0, db);
+	ret = alpm_db_update(0, db);
+	switch(ret){
+	case 0: RETVAL = 1; break;
+	case 1: RETVAL = -1; break; /* DB did not need to be updated */
+	case -1: RETVAL = 0; break;
+	}
  OUTPUT:
 	RETVAL
 

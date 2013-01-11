@@ -4,6 +4,7 @@ SetOption		T_SETOPT
 IntOption		T_INTOPT
 StringOption	T_STROPT
 
+# This should really be called zero_is_success...
 negative_is_error		I_NEG_IS_ERROR
 ALPM_Handle			T_ALPM_HANDLE
 ALPM_DB				T_ALPM_DB

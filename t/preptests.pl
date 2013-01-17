@@ -51,7 +51,7 @@ CheckSpace
 #VerbosePkgLists
 
 # PGP signature checking
-#SigLevel = Optional
+SigLevel = Optional
 
 END_CONF
 

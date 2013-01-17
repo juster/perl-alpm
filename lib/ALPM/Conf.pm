@@ -143,6 +143,67 @@ sub _nullhooks
 	map { ($_ => \&_null) } @_
 }
 
+sub _getdb
+{
+	my($dbs, $name) = @_;
+
+	# The order databases are added must be preserved as must the order of URLs.
+	for my $db (@$dbs){
+		return $db if($db->{'name'} eq $name);
+	}
+	my $new = { 'name' => $name };
+	push @$dbs, $new;
+	return $new;
+}
+
+sub _setsiglvl
+{
+	my($dbs, $sect, $siglvl) = @_;
+	my $db = _getdb($dbs, $sect);
+	$db->{'siglvl'} = $siglvl;
+	return;
+}
+
+sub _parse_siglvl
+{
+	my($str) = @_;
+	my $siglvl;
+
+	my $opt;
+	for(split /\s+/, $str){
+		my @types = qw/pkg db/;
+
+		if(s/^Package//){
+			@types = qw/pkg/;
+		}elsif(s/^Database//){
+			@types = qw/db/;
+		}
+
+		if(/^Never$/){
+			$opt->{$_} = 'never' for(@types);
+		}elsif(/^Optional$/){
+			$opt->{$_} = 'optional' for(@types);
+		}elsif(/^Required$/){
+			$opt->{$_} = 'required' for(@types);
+		}elsif(/^TrustedOnly$/){
+			;
+		}elsif(/^TrustAll$/){
+			for my $t (@types){
+				$opt->{$t} = 'optional' unless(defined $opt->{$t});
+				$opt->{$t} .= ' trustall';
+			}
+		}else{
+			die "Unknown SigLevel option: $_\n";
+		}
+	}
+
+	# Check for a blank SigLevel
+	unless(defined $opt){
+		die "SigLevel was empty\n";
+	}
+	return $opt;
+}
+
 my $ARCH;
 sub _addmirror
 {
@@ -151,20 +212,8 @@ sub _addmirror
 
 	# Expand $arch like pacman would do.
 	$url =~ s{\$arch(/|\$)}{$ARCH}g;
-
-	# The order databases are added must be preserved as must the order of URLs.
-	my $fnd;
-	for my $db (@$dbs){
-		if($db->{'name'} eq $sect){
-			$fnd = $db;
-			last;
-		}
-	}
-	unless($fnd){
-		$fnd = { 'name' => $sect };
-		push @$dbs, $fnd;
-	}
-	push @{$fnd->{'mirrors'}}, $url;
+	my $db = _getdb($dbs, $sect);
+	push @{$db->{'mirrors'}}, $url;
 	return;
 }
 
@@ -198,8 +247,9 @@ sub _applyopts
 		my $name = $db->{'name'};
 		my $mirs = $db->{'mirrors'};
 		next unless(@$mirs);
+		my $siglvl = $db->{'siglvl'};
 
-		my $db = $alpm->register($name, 'default');
+		my $db = $alpm->register($name, $siglvl || 'default');
 		for my $url (@$mirs){
 			$db->add_server($url);
 		}
@@ -213,7 +263,7 @@ sub parse
 
 	chomp ($ARCH = `uname -m`); # used by _addmirror
 
-	my (%opts, @dbs, $currsect);
+	my (%opts, @dbs, $currsect, $defsiglvl);
 	my %fldhooks = (
 		_confhooks(\%opts, \$currsect),
 		_nullhooks(@NULL_OPTS),
@@ -225,12 +275,19 @@ sub parse
 			# An include directive spawns its own little parser...
 			_parse(shift, _mlisthooks(\@dbs, \$currsect));
 		},
+		'SigLevel' => sub {
+			if($currsect eq 'options'){
+				$defsiglvl = _parse_siglvl(shift);
+			}else{
+				_setsiglvl(\@dbs, $currsect, _parse_siglvl(shift));
+			}
+		},
 		($self->{'cfields'} ? %{$self->{'cfields'}} : ()),
 	);
 
 	my %hooks = (
 		'field' => \%fldhooks,
-		'section' => sub { $currsect = shift }
+		'section' => sub { $currsect = shift; }
 	);
 
 	_parse($self->{'path'}, \%hooks);

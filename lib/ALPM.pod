@@ -18,15 +18,18 @@ This version of ALPM is compatible with pacman 4.
   
   ## Or use ALPM::Conf, a handy module for pacman.conf parsing.
   use ALPM::Conf qw(/etc/pacman.conf);
-  our $alpm; # uses "our" package variable, not "my"
+  ## ALPM::Conf loads an object into "our" package variable.
+  our $alpm; 
   
   ## Querying databases & packages
   my $localdb = $alpm->localdb;
   my $pkg = $localdb->find('perl') or die 'wtfbbq';
-  printf "%s %s %s %d\n", $pkg->name, $pkg->version, $pkg->arch, $pkg->size;
+  printf "%s %s %s %d\n", $pkg->name, $pkg->version,
+      $pkg->arch, $pkg->size;
   
-  my $extradb = $alpm->register('extra', 'ftp://ftp.archlinux.org/extra/os/i686' )
-  	or die $alpm->errstr;
+  my $extradb = $alpm->register('extra') or die $alpm->errstr;
+  $extradb->add_mirror('ftp://ftp.archlinux.org/extra/os/i686')
+      or die $alpm->errstr;
   $extradb->update or die $alpm->errstr;
   my @perlpkgs = $extradb->search('perl');
   printf "%d perl packages found.\n", scalar @perlpkgs;
@@ -35,7 +38,7 @@ This version of ALPM is compatible with pacman 4.
   my $cmp = ALPM->vercmp('0.01', '0.02');
   if($cmp == -1){
   	print "less than\n";
-  elsif($cmp == 0){
+  }elsif($cmp == 0){
   	print "equal\n";
   }elsif($cmp == 1){
   	print "greater than\n";
@@ -259,7 +262,7 @@ That happened with clyde once.
 
 =item C<$SIGLEVEL>
 
-Signature level hashref. See L</Signature Level>.
+Signature level hashref or the string C<"default">. See L</Signature Level>.
 
 =item C<$PKG>
 
@@ -285,7 +288,7 @@ An L<ALPM::DB::Local> object.
 
 =head2 register
 
-  $DB | undef = $OBJ->register($NAME, $URL)
+  $DB | undef = $OBJ->register($NAME, $SIGLEVEL?)
 
 Registers a remote synchronizable database.
 
@@ -295,10 +298,12 @@ Registers a remote synchronizable database.
 
 The name to use for the database (e.g. core, extra, community.)
 
-=item C<$URL>
+=item C<$SIGLEVEL> I<(Optional>)
 
-The URL provides the base directory where the database files are
-publicly available.
+The signature level to use for the database, including the database file and each
+package file downloaded from the database mirror. If none is specified, then the
+signature level is set to C<'default'> which is equivalent to the signature level set with
+the I<set_defsiglvl> method.
 
 =item C<$DB>
 
@@ -389,7 +394,9 @@ Similarly the same options return a list.
 
 =item B<checkspace> - check for available diskspace
 
-=item B<defsiglvl> - the "default" (is there another?) signature level. See L</Signature Level>. This name was shortened from I<alpm_option_set_default_signature_level>. You're welcome.
+=item B<defsiglvl> - the default signature level. See L</Signature Level>.
+This name was shortened from I<alpm_option_set_default_signature_level>.
+You're welcome.
 
 =back
 
@@ -408,13 +415,20 @@ Similarly the same options return a list.
 
 Callbacks can only be set to code references.
 
-=over
-
-=item B<logcb> - Generic logging
+=head3 logcb - Generic logging
 
 The log message and level are passed to the provided code ref as
-arguments.  I<level> can be: error, warning, debug, function, or
-unknown.
+arguments.
+
+=over 4
+
+=item 1. level
+
+This is one of the following strings: error, warning, debug, function, or unknown.
+
+=item 2. message
+
+This is the message itself.
 
 =back
 
@@ -444,7 +458,7 @@ A version string, which can be empty.
 
 A boolean operator used to compare package versions to our dependency
 version, must be either an empty string (which allows any version), =, >=,
-<=, >, <, or ? if an internal error occurred and the dependency is unknown.
+<=, >, <, or ? if an internal error occurred.
 
 =back
 
@@ -470,14 +484,16 @@ A hashref that is identical to a dependency. See L</Dependency>.
 
 =head2 Signature Level
 
-Signature levels describe the level of security which is required by packages or
-by databases. These determine what degree of signature checking is performed.
-Bear with me as I'm not sure I understand them myself.
+Signature levels describe the level of security which is required for packages files
+and by databases files. Different degrees of signature checking can be used for
+either type of file. The signature checking is performed after the file is downloaded
+in order to verify the original packager. B<When gpg is not available an invalid argument
+error will be raised from libalpm if you try to set the siglevel.>
 
-A "siglvl" can either be a string or a hashref. Strings must either be C<"default"> or
-C<"never">. I'm not sure what C<"default"> signifies. A siglvl hashref contains a
-I<pkg> key and a I<db> key. If those keys are missing, it is the same as those keys
-having the value of C<"never">.
+A "siglvl" can either be the string C<"default"> or a hash reference. A value of C<"default">
+can be used when registering a database to instruct libalpm to use the default siglevel
+that is set by I<set_defsiglvl>. A siglvl hashref must contain a C<"pkg"> key
+and a C<"db"> key. Other keys are ignored.
 
 Possible hash values include:
 
@@ -495,22 +511,16 @@ Signatures are optional. They are checked if they are available.
 
 Signatures are required.
 
-=item C<"trustall">
-
-Trusts signatures regardless of whose signature it is. This can be combined with
-I<optional> or <required>.
-
 =back
+
+The string C<"trustall">, preceded by a space, can be added to C<"optional"> or
+C<"required"> options to specify that signatures from anyone are to be trusted.
 
 Here are some example siglevels:
 
-  $alpm->set_defsiglvl('never') or die $alpm->errstr;
-  $alpm->set_defsiglvl('default') or die $alpm->errstr;
-  $alpm->set_defsiglvl({ 'pkg' => [ 'optional' ], 'db' => [ 'required', 'trustall' ]}) or die $alpm->errstr;
-  $alpm->set_defsiglvl({ 'db' => [ 'optional' ]}) or die $alpm->errstr;
-
-I<TODO: I should probably employ simple strings, split on spaces, instead of arrayrefs in
-the off-chance that trustall is used. This would look nicer.>
+  $alpm->set_defsiglvl({ 'pkg' => 'never', 'db' => 'never' });
+  $alpm->set_defsiglvl({ 'pkg' => 'optional', 'db' => 'required trustall' });
+  $alpm->set_defsiglvl({ 'pkg' => 'required', 'db' => 'optional' });
 
 =head1 ERRORS
 
@@ -527,7 +537,7 @@ up with an "or die". Something like this:
   $db->force_update or die $alpm->errstr;
 
 This is annoying but not unlike most other perl error checking. If you find yourself
-calling methods on an undefined value then an error probably occurred.
+calling methods on an undefined value then an error most likely occurred.
 
 But wait there's more! Errors are actually thrown when getting/setting options and
 an error condition occurs.

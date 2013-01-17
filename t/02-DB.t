@@ -46,6 +46,6 @@ $db = $alpm->register('empty') or die 'register failed';
 ## Due to libalpm trickery, if the db's siglevel is set to default, then the siglevel
 ## that is retrieved is a copy of the handle's default siglevel.
 $siglvl = $alpm->get_defsiglvl;
-is_deeply $db->siglevel, $siglvl;
+is_deeply $db->siglvl, $siglvl;
 
 done_testing;

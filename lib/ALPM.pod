@@ -19,7 +19,7 @@ This version of ALPM is compatible with pacman 4.
   ## Or use ALPM::Conf, a handy module for pacman.conf parsing.
   use ALPM::Conf qw(/etc/pacman.conf);
   ## ALPM::Conf loads an object into "our" package variable.
-  our $alpm; 
+  our $alpm;
   
   ## Querying databases & packages
   my $localdb = $alpm->localdb;

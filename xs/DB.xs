@@ -88,7 +88,6 @@ search(db, ...)
 
 MODULE = ALPM   PACKAGE = ALPM::DB::Sync
 
-# We have to reverse the arguments because it is a method.
 int
 update(db)
 	ALPM_SyncDB db
@@ -100,6 +99,7 @@ update(db)
 	case 0: RETVAL = 1; break;
 	case 1: RETVAL = -1; break; /* DB did not need to be updated */
 	case -1: RETVAL = 0; break;
+	default: croak("Unrecognized return value of alpm_db_update");
 	}
  OUTPUT:
 	RETVAL
@@ -109,6 +109,14 @@ force_update(db)
 	ALPM_SyncDB db
  CODE:
 	RETVAL = alpm_db_update(1, db);
+ OUTPUT:
+	RETVAL
+
+ALPM_SigLevel
+siglvl(db)
+	ALPM_SyncDB db
+ CODE:
+	RETVAL = alpm_db_get_siglevel(db);
  OUTPUT:
 	RETVAL
 
@@ -153,8 +161,4 @@ MODULE = ALPM	PACKAGE = ALPM::DB::Sync	PREFIX = alpm_db_get_
 
 int
 alpm_db_get_valid(db)
-	ALPM_SyncDB db
-
-ALPM_SigLevel
-alpm_db_get_siglevel(db)
 	ALPM_SyncDB db

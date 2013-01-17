@@ -57,9 +57,9 @@ Returns 1 on success or 0 on error.
 
 Perform validity checks upon the database, such as a signature check.
 
-=head1 siglevel
+=head1 siglvl
 
-  $SIGLEVEL = $DB->siglevel()
+  $SIGLEVEL = $DB->siglvl()
 
 Retrieve the signature level requirements that packages in this database must fulfill.
 

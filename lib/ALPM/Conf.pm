@@ -234,8 +234,13 @@ sub _applyopts
 {
 	my($opts, $dbs) = @_;
 	my ($root, $dbpath) = delete @{$opts}{'root', 'dbpath'};
-	unless($root && $dbpath){
-		Carp::croak 'RootDir and DBPath must be defined in .conf file';
+
+	unless($root){
+		$root = '/';
+		unless($dbpath){
+			$dbpath = "$root/var/lib/pacman";
+			$dbpath =~ tr{/}{/}s;
+		}
 	}
 
 	my $alpm = ALPM->new($root, $dbpath);

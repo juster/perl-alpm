@@ -15,7 +15,7 @@ MODULE = ALPM	PACKAGE = ALPM
 PROTOTYPES: DISABLE
 
 # ALPM::PackageFree is a subclass of ALPM::Package.
-# ALPM::DB::Sync and ALPM::DB::Local are a subclass of ALPM::DB.
+# ALPM::DB::Sync and ALPM::DB::Local are each subclasses of ALPM::DB.
 BOOT:
 	av_push(get_av("ALPM::PackageFree::ISA", GV_ADD), newSVpv("ALPM::Package", 0));
 	av_push(get_av("ALPM::DB::Sync::ISA", GV_ADD), newSVpv("ALPM::DB", 0));
@@ -94,7 +94,7 @@ alpm_version(class)
 	RETVAL
 
 const char *
-alpm_errstr(self)
+alpm_strerror(self)
 	ALPM_Handle self;
  CODE:
 	RETVAL = alpm_strerror(alpm_errno(self));

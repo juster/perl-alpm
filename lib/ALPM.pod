@@ -27,10 +27,10 @@ This version of ALPM is compatible with pacman 4.
   printf "%s %s %s %d\n", $pkg->name, $pkg->version,
       $pkg->arch, $pkg->size;
   
-  my $extradb = $alpm->register('extra') or die $alpm->errstr;
+  my $extradb = $alpm->register('extra') or die $alpm->strerror;
   $extradb->add_mirror('ftp://ftp.archlinux.org/extra/os/i686')
-      or die $alpm->errstr;
-  $extradb->update or die $alpm->errstr;
+      or die $alpm->strerror;
+  $extradb->update or die $alpm->strerror;
   my @perlpkgs = $extradb->search('perl');
   printf "%d perl packages found.\n", scalar @perlpkgs;
   
@@ -146,9 +146,9 @@ The internal libalpm error number. If no error occurs this is zero.
 
 =back
 
-=head2 errstr
+=head2 strerror
 
-  $ERRSTR = $OBJ->errstr()
+  $ERRSTR = $OBJ->strerror()
 
 =over 4
 
@@ -239,7 +239,7 @@ The path to our package file if the download succeeds.
 
 =item C<undef>
 
-If the download fails. Check L</errstr>.
+If the download fails. Check L</strerror>.
 
 =back
 
@@ -270,7 +270,7 @@ On success, an L<ALPM::Package> object.
 
 =item C<undef>
 
-On failure. Check L</errstr>.
+On failure. Check L</strerror>.
 
 =back
 
@@ -311,7 +311,7 @@ On success, an L<ALPM::DB::Sync> object.
 
 =item C<undef>
 
-On failure. Check L</errstr>.
+On failure. Check L</strerror>.
 
 =back
 
@@ -336,14 +336,14 @@ A list of L<ALPM::DB::Sync> objects.
 Unregisters all sync databases. If you try to use previously registered
 L<ALPM::DB::Sync> objects, they will probable cause a segfault...
 
-Returns 1 on success or undef on error. Check L</errstr> on error.
+Returns 1 on success or undef on error. Check L</strerror> on error.
 
 =head2 set_pkg_reason
 
   1 | undef = $OBJ->set_pkg_reason($PKG, $REASON)
 
 Set a local package installation reason. Returns 1 on success, undef on error.
-Check L</errstr> on error. This would make more sense as an L<ALPM::DB::Local>
+Check L</strerror> on error. This would make more sense as an L<ALPM::DB::Local>
 object method, but instead we match the I<alpm_db_set_pkgreason> C function
 in spirit.
 
@@ -534,7 +534,7 @@ Whatever. I'm too lazy for either of those. What this means for you is you reall
 should check for errors yourself. If a method call returns undef you should follow it
 up with an "or die". Something like this:
 
-  $db->force_update or die $alpm->errstr;
+  $db->force_update or die $alpm->strerror;
 
 This is annoying but not unlike most other perl error checking. If you find yourself
 calling methods on an undefined value then an error most likely occurred.

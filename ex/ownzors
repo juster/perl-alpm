@@ -6,22 +6,27 @@
 # Pass the -q flag to only print the owning package names.
 #
 
-use ALPM qw(/etc/pacman.conf);
+use ALPM::Conf qw(/etc/pacman.conf);
 use File::Spec;
 
-for my $pkg ( ALPM->localdb->pkgs ) {
-    $who_owns{ $_ } = $pkg->name for @{$pkg->files};
+unless(@ARGV){
+    print STDERR "usage: ownzors [file paths]\n";
+    exit 2;
 }
 
-push @{ $results{ $who_owns{ $_ }}}, $_
-    for map { s{\A/}{}; $_ } map { File::Spec->rel2abs( $_ ) } @ARGV;
-               # ^ A is happy! \o/
+for my $pkg ($alpm->localdb->pkgs) {
+    $who_owns{$_->{'name'}} = $pkg->name for(@{$pkg->files});
+}
 
-if ( $q ) {
-    print $_, "\n" for sort keys %results;
+push @{$results{$who_owns{$_}}}, $_
+    for(map { s{\A/}{}; $_ } map { File::Spec->rel2abs($_) } @ARGV);
+## Happy A! \o/
+
+if($q){
+    print $_, "\n" for(sort keys %results);
     exit 0;
 }
 
-for my $pkgname ( sort keys %results ) {
-    print $pkgname, "\n", map { "\t/$_\n" } sort @{$results{ $pkgname }};
+for my $pkgname (sort keys %results){
+    print $pkgname, "\n", map { "\t/$_\n" } sort @{$results{$pkgname}};
 }

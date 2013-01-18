@@ -4,14 +4,16 @@
 # Pass the -i switch to only print implicitly installed packages.
 # Pass the -e switch to only print explicitly installed packages.
 # Pass neither to print both.
-use ALPM qw(/etc/pacman.conf);
+
+use ALPM::Conf qw(/etc/pacman.conf);
 
 die q{You can't use both -i and -e} if $i && $e;
 
-for my $pkg ( ALPM->localdb->pkgs ) {
-    next if @{$pkg->requiredby} > 0;
-    next if (( $i || $e )
-             && $pkg->reason ne ( $i ? q{implicit} : q{explicit} ));
+for my $pkg ($alpm->localdb->pkgs){
+    next if(@{$pkg->requiredby} > 0);
+    if($i || $e){
+        next if($pkg->reason ne ($i ? 'implicit' : 'explicit'));
+    }
     push @dangles, $pkg->name;
 }
 

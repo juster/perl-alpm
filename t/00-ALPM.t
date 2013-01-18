@@ -2,12 +2,19 @@
 ##
 # Initialize ALPM then set and check a few options.
 # Checks add/remove on what we can.
+# Then create the test repositories.
 
 use Test::More;
 
-$ENV{'LANGUAGE'} = 'en_US';
-
 BEGIN { use_ok('ALPM') };
+
+## I could not hack this into the Makefile so we initialize
+## test repositories here so the modules required are
+## only needed when running the tests.
+
+system 'perl' => 't/preptests.pl';
+
+$ENV{'LANGUAGE'} = 'en_US';
 
 $r = 't/root';
 $alpm = ALPM->new($r, "$r/db");

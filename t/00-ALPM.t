@@ -12,7 +12,9 @@ BEGIN { use_ok('ALPM') };
 ## test repositories here so the modules required are
 ## only needed when running the tests.
 
-system 'perl' => 't/preptests.pl';
+if(system 'perl' => 't/preptests.pl'){
+	die 'failed to initialize our test root/packages/repos';
+}
 
 $ENV{'LANGUAGE'} = 'en_US';
 

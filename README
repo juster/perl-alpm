@@ -1,7 +1,7 @@
 ALPM version 3.00
 =================
 
-This is a perl XS module which provides an interface to the libalpm C library. 
+This is a perl XS module which provides an interface to the libalpm C library.
 libalpm is used by Archlinux (and other distributions) who use pacman as the
 package managing program.
 

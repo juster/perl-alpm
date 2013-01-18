@@ -154,9 +154,7 @@ sub main
 
 	$REPOSHARE = rel2abs('repos/share');
 	$TESTROOT = rel2abs('root');
-	if(-d $REPOSHARE){
-		print STDERR "$PROG: warning: test repositories are already created!\n";
-	}else{
+	unless(-d $REPOSHARE){
 		my $repos = buildrepos($REPOSHARE);
 		createconf($TESTCONF, $TESTROOT, $repos);
 	}

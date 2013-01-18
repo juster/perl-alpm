@@ -417,7 +417,7 @@ Callbacks can only be set to code references.
 
 =head3 logcb - Generic logging
 
-The log message and level are passed to the provided code ref as
+The log level and message are passed to the provided code ref as
 arguments.
 
 =over 4

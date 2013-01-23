@@ -217,7 +217,7 @@ trustmask(char *str, STRLEN len)
 {
 	unsigned long flags;
 
-	if(len == 5 && strcmp(str, "never") == 0){
+	if(len == 5 && strncmp(str, "never", 5) == 0){
 		return 0;
 	}
 
@@ -232,8 +232,9 @@ trustmask(char *str, STRLEN len)
 	}
 
 	if(len == 8){
+		/* Conveniently, the strings "required" and "optional" are both 8 characters long. */
 		return flags;
-	}else if(len != 17 || strcmp(str + 8, " trustall") != 0){
+	}else if(len != 17 || strncmp(str + 8, " trustall", 8) != 0){
 		goto badstr;
 	}
 	return flags | MASK_TRUSTALL;

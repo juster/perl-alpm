@@ -61,7 +61,8 @@ Perform validity checks upon the database, such as a signature check.
 
   $SIGLEVEL = $DB->siglvl()
 
-Retrieve the signature level requirements that packages in this database must fulfill.
+Retrieve the signature level requirements that package and database files of this database
+must fulfill.
 
 =head1 unregister
 

@@ -18,18 +18,17 @@ ALPM::Package - libalpm packages of files, with dependencies, etc.
   ## Dependencies are arrayrefs of hashrefs (AoH):
   print "$name depends on:\n";
   for my $deps (@{$perlpkg->depends}){
-      print "  @{$dep}{'name', 'mod', 'version'}\n";
+      print "\t@{$dep}{'name', 'mod', 'version'}\n";
   }
 
   ## File lists are also arrayrefs of hashrefs (AoH):
   print "$name owns files:\n";
   for my $f (@{$perlpkg->files}){
-      print "\t%s %o %d", $f->{'name'}, $f->{'mode'}, $f->{'size'};
+      printf "\t%s %o %d\n", $f->{'name'}, $f->{'mode'}, $f->{'size'};
   }
   
   ## Others lists are arrayrefs of scalars:
-  print "$name owns files:\n";
-  print "  $_\n" foreach (@{$perlpkg->licenses});
+  print "$name is licensed under: @{$perlpkg->licenses}";
 
 =head1 DESCRIPTION
 
@@ -39,12 +38,10 @@ access its information.
 
 =head1 ACCESSORS
 
-The accessors are named I<(almost)> exactly the same as the
-C<alpm_pkg_get...> functions.  They are easy to use if you only want a
-few attributes.
-
-I have removed the get_ prefix on the accessors.  This is because you
-can't really I<set> anything so you should know it's a get anyways.
+The accessors are named almost exactly the same as the C<alpm_pkg_get...>
+functions. I have removed the get_ prefix on the accessors.  This is
+because you can't really I<set> anything so you should know it's a get
+anyways.
 
 =over
 
@@ -106,8 +103,9 @@ can't really I<set> anything so you should know it's a get anyways.
 
 =back
 
-Attributes with plural names return an arrayref of strings. I<depends> and I<files> return
-an arrayref of hashrefs. I<db> returns an L<ALPM::DB> object.
+Attributes with plural names return an arrayref of strings.
+I<depends> and I<files> return an arrayref of hashrefs.
+I<db> returns an L<ALPM::DB> object.
 
 =head1 SEE ALSO
 

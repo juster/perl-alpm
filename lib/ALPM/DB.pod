@@ -1,6 +1,6 @@
 =head1 NAME
 
-ALPM::DB - Database base class class.
+ALPM::DB - Database base class, inherited by local and sync databases.
 
 =head1 SYNOPSIS
 

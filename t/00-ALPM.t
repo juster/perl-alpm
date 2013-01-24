@@ -80,7 +80,7 @@ if(grep { /signatures/ } @caps){
 	$siglvl = { 'pkg' => 'never', 'db' => 'required' };
 	eval { $alpm->set_defsiglvl($siglvl); };
 	if($@ =~ /^ALPM Error: wrong or NULL argument passed/){
-		pass q{can set siglevel to "default" or "never" without GPGME};
+		pass q{can set siglevel to "never" without GPGME};
 	}else{
 		fail 'should not be able to set complicated siglevel without GPGME';
 	}

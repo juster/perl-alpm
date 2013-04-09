@@ -16,6 +16,7 @@ typedef alpm_db_t * ALPM_SyncDB;
 typedef alpm_pkg_t * ALPM_Package;
 typedef alpm_pkg_t * ALPM_PackageFree;
 typedef alpm_siglevel_t ALPM_SigLevel;
+typedef alpm_pkgfrom_t ALPM_Origin;
 
 typedef alpm_depend_t * DependHash;
 typedef alpm_conflict_t * ConflictArray;
@@ -55,6 +56,8 @@ alpm_siglevel_t p2c_siglevel(SV*);
 
 SV* c2p_pkgreason(alpm_pkgreason_t);
 alpm_pkgreason_t p2c_pkgreason(SV*);
+
+SV* c2p_pkgfrom(alpm_pkgfrom_t);
 
 /* LIST CONVERTER FUNC PROTOS */
 

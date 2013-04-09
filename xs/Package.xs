@@ -110,3 +110,8 @@ alpm_pkg_get_depends(pkg)
 ALPM_DB
 alpm_pkg_get_db(pkg)
 	ALPM_Package pkg
+
+ALPM_Origin
+alpm_pkg_get_origin(pkg)
+	ALPM_Package pkg
+

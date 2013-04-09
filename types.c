@@ -330,6 +330,21 @@ p2c_pkgreason(SV *sv)
 	}
 }
 
+SV *
+c2p_pkgfrom(alpm_pkgfrom_t from)
+{
+	char *str;
+
+	switch(from){
+	case ALPM_PKG_FROM_FILE: str = "file"; break;
+	case ALPM_PKG_FROM_LOCALDB: str = "localdb"; break;
+	case ALPM_PKG_FROM_SYNCDB: str = "syncdb"; break;
+	default: str = "unknown"; break;
+	}
+
+	return newSVpv(str, 0);
+}
+
 /* LIST CONVERSIONS */
 
 AV *

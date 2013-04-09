@@ -1,27 +1,28 @@
 TYPEMAP
 
-SetOption		T_SETOPT
-IntOption		T_INTOPT
+SetOption	T_SETOPT
+IntOption	T_INTOPT
 StringOption	T_STROPT
 
 # This should really be called zero_is_success...
-negative_is_error		I_NEG_IS_ERROR
-ALPM_Handle			T_ALPM_HANDLE
-ALPM_DB				T_ALPM_DB
-ALPM_LocalDB			T_ALPM_LOCALDB
-ALPM_SyncDB			T_ALPM_SYNCDB
-ALPM_Package			T_ALPM_PACKAGE
-ALPM_PackageFree		T_ALPM_PACKAGEFREE
-ALPM_FileList			T_ALPM_FILELIST
-ALPM_SigLevel			T_SIGLEVEL
+negative_is_error	I_NEG_IS_ERROR
+ALPM_Handle		T_ALPM_HANDLE
+ALPM_DB			T_ALPM_DB
+ALPM_LocalDB		T_ALPM_LOCALDB
+ALPM_SyncDB		T_ALPM_SYNCDB
+ALPM_Package		T_ALPM_PACKAGE
+ALPM_PackageFree	T_ALPM_PACKAGEFREE
+ALPM_FileList		T_ALPM_FILELIST
+ALPM_SigLevel		T_SIGLEVEL
+ALPM_Origin		T_ORIGIN
 
 PackageList		L_PACKAGE
 DependList		L_DEPEND
-StringList			L_STRING
+StringList		L_STRING
 StringListFree		L_STRINGFREE
 
 alpm_pkgreason_t	T_PKGREASON
-off_t				T_INT
+off_t			T_INT
 
 #--------------------
 # INPUT # Perl ==> C
@@ -162,6 +163,9 @@ T_ALPM_FILELIST
 T_SIGLEVEL
 	$arg = c2p_siglevel($var);
 
+T_ORIGIN
+	$arg = c2p_pkgfrom($var);
+
 T_PKGREASON
 	$arg = c2p_pkgreason($var);
 
@@ -177,3 +181,4 @@ L_STRING
 L_STRINGFREE
 	$arg = newRV_noinc((SV*)list2av($var, c2p_str));
 	ZAPLIST($var, free);
+

@@ -101,6 +101,8 @@ anyways.
 
 =item * checkmd5sum
 
+=item * origin
+
 =back
 
 Attributes with plural names return an arrayref of strings.

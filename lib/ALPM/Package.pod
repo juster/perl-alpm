@@ -103,6 +103,8 @@ anyways.
 
 =item * origin
 
+=item * validation
+
 =back
 
 Attributes with plural names return an arrayref of strings.

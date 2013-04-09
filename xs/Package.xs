@@ -115,3 +115,7 @@ ALPM_Origin
 alpm_pkg_get_origin(pkg)
 	ALPM_Package pkg
 
+ALPM_Validity
+alpm_pkg_get_validation(pkg)
+	ALPM_Package pkg
+

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <alpm.h>
 
 /* Perl API headers. */
@@ -343,6 +344,25 @@ c2p_pkgfrom(alpm_pkgfrom_t from)
 	}
 
 	return newSVpv(str, 0);
+}
+
+SV *
+c2p_pkgvalidation(alpm_pkgvalidation_t v)
+{
+	char buf[128] = "";
+	int len;
+
+	if(v == ALPM_PKG_VALIDATION_UNKNOWN) goto unknown;
+	if(v & ALPM_PKG_VALIDATION_NONE) strcat(buf, "none ");
+	if(v & ALPM_PKG_VALIDATION_MD5SUM) strcat(buf, "MD5 ");
+	if(v & ALPM_PKG_VALIDATION_SHA256SUM) strcat(buf, "SHA ");
+	if(v & ALPM_PKG_VALIDATION_SIGNATURE) strcat(buf, "PGP ");
+
+	if((len = strlen(buf)) == 0) goto unknown;
+	return newSVpv(buf, len-1);
+
+unknown:
+	return newSVpv("unknown", 0);
 }
 
 /* LIST CONVERSIONS */

@@ -15,6 +15,7 @@ ALPM_PackageFree	T_ALPM_PACKAGEFREE
 ALPM_FileList		T_ALPM_FILELIST
 ALPM_SigLevel		T_SIGLEVEL
 ALPM_Origin		T_ORIGIN
+ALPM_Validity		T_VALIDITY
 
 PackageList		L_PACKAGE
 DependList		L_DEPEND
@@ -168,6 +169,9 @@ T_ORIGIN
 
 T_PKGREASON
 	$arg = c2p_pkgreason($var);
+
+T_VALIDITY
+	$arg = c2p_pkgvalidation($var);
 
 L_PACKAGE
 	$arg = newRV_noinc((SV*)list2av($var, c2p_pkg));

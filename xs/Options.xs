@@ -245,29 +245,29 @@ alpm_option_set_deltaratio(self, ratio)
 	ALPM_Handle self
 	double ratio
 
+MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
+
 # Why have get_localdb when there is no set_localdb? s/get_//;
 
 ALPM_LocalDB
-alpm_option_localdb(self)
+localdb(self)
 	ALPM_Handle self
  CODE:
-	RETVAL = alpm_option_get_localdb(self);
+	RETVAL = alpm_get_localdb(self);
  OUTPUT:
 	RETVAL
 
 # Ditto.
 
 void
-alpm_option_syncdbs(self)
+syncdbs(self)
 	ALPM_Handle self
  PREINIT:
 	alpm_list_t *lst;
  PPCODE:
-	lst = alpm_option_get_syncdbs(self);
+	lst = alpm_get_syncdbs(self);
 	if(lst == NULL && alpm_errno(self)) alpm_croak(self);
 	LIST2STACK(lst, c2p_syncdb);
-
-MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_option_
 
 ALPM_SigLevel
 get_defsiglvl(self)

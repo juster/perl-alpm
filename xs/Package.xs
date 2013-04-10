@@ -31,13 +31,14 @@ changelog(pkg)
  OUTPUT:
 	RETVAL
 
+MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_compute_
+
 StringListFree
-requiredby(pkg)
+pkg_compute(pkg)
 	ALPM_Package pkg
- CODE:
-	RETVAL = alpm_pkg_compute_requiredby(pkg);
- OUTPUT:
-	RETVAL
+ INTERFACE:
+	alpm_pkg_compute_requiredby
+	alpm_pkg_compute_optionalfor
 
 MODULE=ALPM    PACKAGE=ALPM::Package    PREFIX=alpm_pkg_
 

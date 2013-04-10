@@ -17,6 +17,11 @@ The ALPM object method was relocated to the ALPM::DB::Local class and I have
 renamed it to set_install_reason. This was prompted by the libalpm function
 name change from alpm_db_set_pkgreason to alpm_pkg_set_reason.
 
+** New ALPM::Package::optionalfor accessor.
+
+Returns an arrayref of strings. These are package names of packages which
+optionally depend on the given package.
+
 * Release 3.00
 
 ** Major rewrite to continue compatibility with Pacman 4.

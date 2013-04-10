@@ -97,6 +97,8 @@ anyways.
 
 =item * requiredby
 
+=item * optionalfor
+
 =item * db
 
 =item * checkmd5sum

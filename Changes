@@ -7,6 +7,16 @@
 : /_/   \_\_____|_|   |_|  |_|  \____|_| |_|\__,_|_| |_|\__, |\___||___/
 :                                                       |___/           
 
+* Release 3.01
+
+Compatible with pacman 4.1.
+
+** set_pkg_reason moved to ALPM::DB::Local and renamed set_install_reason.
+
+The ALPM object method was relocated to the ALPM::DB::Local class and I have
+renamed it to set_install_reason. This was prompted by the libalpm function
+name change from alpm_db_set_pkgreason to alpm_pkg_set_reason.
+
 * Release 3.00
 
 ** Major rewrite to continue compatibility with Pacman 4.

@@ -83,6 +83,23 @@ search(db, ...)
 	alpm_list_free(L);
 
 #-----------------------------
+# PUBLIC LOCAL DATABASE METHODS
+#-----------------------------
+
+MODULE = ALPM   PACKAGE = ALPM::DB::Local
+
+negative_is_error
+set_install_reason(self, pkg, rsn)
+	ALPM_LocalDB self
+	ALPM_Package pkg
+	alpm_pkgreason_t rsn
+ CODE:
+	if(SvPOK(
+	RETVAL = alpm_pkg_set_reason(pkg, rsn);
+ OUTPUT:
+	RETVAL
+
+#-----------------------------
 # PUBLIC SYNC DATABASE METHODS
 #-----------------------------
 

@@ -338,28 +338,6 @@ L<ALPM::DB::Sync> objects, they will probable cause a segfault...
 
 Returns 1 on success or undef on error. Check L</strerror> on error.
 
-=head2 set_pkg_reason
-
-  1 | undef = $OBJ->set_pkg_reason($PKG, $REASON)
-
-Set a local package installation reason. Returns 1 on success, undef on error.
-Check L</strerror> on error. This would make more sense as an L<ALPM::DB::Local>
-object method, but instead we match the I<alpm_db_set_pkgreason> C function
-in spirit.
-
-=over 4
-
-=item $PKG
-
-An L<ALPM::Package> object. I assume this must be a package retrieved
-from the localdb.
-
-=item $REASON
-
-Must be either C<"explicit"> or C<"implicit"/"depend">.
-
-=back
-
 =head1 ALPM OPTIONS
 
 ALPM has a number of options corresponding to the

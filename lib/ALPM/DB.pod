@@ -120,7 +120,7 @@ found then this is empty.
 
 =head1 SEE ALSO
 
-L<ALPM::DB::Sync>, L<ALPM::Package>, L<ALPM>
+L<ALPM::DB::Local>, L<ALPM::DB::Sync>, L<ALPM::Package>, L<ALPM>
 
 =head1 AUTHOR
 

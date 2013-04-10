@@ -165,10 +165,6 @@ alpm_fetch_pkgurl(self, url)
 	RETVAL
 
 
-negative_is_error
-alpm_db_unregister_all(self)
-	ALPM_Handle self
-
 MODULE = ALPM	PACKAGE = ALPM
 
 # Why name this register_sync when there is no register_local? Redundant.
@@ -186,6 +182,14 @@ register(self, name, ...)
 		siglvl = ALPM_SIG_USE_DEFAULT;
 	}
 	RETVAL = alpm_register_syncdb(self, name, siglvl);
+ OUTPUT:
+	RETVAL
+
+negative_is_error
+unregister_all(self)
+	ALPM_Handle self
+ CODE:
+	RETVAL = alpm_db_unregister_all_syncdbs(self);
  OUTPUT:
 	RETVAL
 

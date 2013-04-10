@@ -59,7 +59,7 @@ SV* c2p_pkgreason(alpm_pkgreason_t);
 alpm_pkgreason_t p2c_pkgreason(SV*);
 
 SV* c2p_pkgfrom(alpm_pkgfrom_t);
-SV* c2p_validation(alpm_pkgvalidation_t);
+SV* c2p_pkgvalidation(alpm_pkgvalidation_t);
 
 /* LIST CONVERTER FUNC PROTOS */
 

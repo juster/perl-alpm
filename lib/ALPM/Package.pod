@@ -107,11 +107,27 @@ anyways.
 
 =item * validation
 
+=item * signature
+
 =back
 
 Attributes with plural names return an arrayref of strings.
 I<depends> and I<files> return an arrayref of hashrefs.
 I<db> returns an L<ALPM::DB> object.
+
+=head2 origin
+
+This should be either C<"file">, C<"localdb">, or <"syncdb">. If this returns C<"unknown"> something went wrong.
+
+=head2 validation
+
+This returns a string which can either be C<"unknown">, C<"none"> or one or
+more of the following seperated by spaces:
+C<"MD5">, C<"SHA">, or C<"PGP">.
+
+=head2 signature
+
+Returns the package signature as a string encoded in Base64.
 
 =head1 SEE ALSO
 

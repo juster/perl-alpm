@@ -4,6 +4,14 @@
 
 MODULE = ALPM	PACKAGE = ALPM::Package
 
+const char *
+signature(pkg)
+	ALPM_Package pkg
+ CODE:
+	RETVAL = alpm_pkg_get_base64_sig(pkg);
+ OUTPUT:
+	RETVAL
+
 SV *
 changelog(pkg)
 	ALPM_Package pkg
@@ -119,4 +127,3 @@ alpm_pkg_get_origin(pkg)
 ALPM_Validity
 alpm_pkg_get_validation(pkg)
 	ALPM_Package pkg
-

@@ -103,6 +103,7 @@ c2p_depend(void *p)
 	hv_store(hv, "name", 4, newSVpv(dep->name, 0), 0);
 	hv_store(hv, "version", 7, newSVpv(dep->version, 0), 0);
 	hv_store(hv, "mod", 3, c2p_depmod(dep->mod), 0);
+	if(dep->desc) hv_store(hv, "desc", 4, newSVpv(dep->desc, 0), 0);
 	return newRV_noinc((SV*)hv);
 }
 

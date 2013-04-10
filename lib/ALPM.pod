@@ -460,6 +460,10 @@ A boolean operator used to compare package versions to our dependency
 version, must be either an empty string (which allows any version), =, >=,
 <=, >, <, or ? if an internal error occurred.
 
+=item desc
+
+If the dependency is optional this key gives a description of the dependency. This key does not exist on a regular dependency.
+
 =back
 
 =head2 Conflict

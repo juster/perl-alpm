@@ -164,12 +164,17 @@ alpm_fetch_pkgurl(self, url)
  OUTPUT:
 	RETVAL
 
-MODULE = ALPM	PACKAGE = ALPM	PREFIX = alpm_db_
+
+negative_is_error
+alpm_db_unregister_all(self)
+	ALPM_Handle self
+
+MODULE = ALPM	PACKAGE = ALPM
 
 # Why name this register_sync when there is no register_local? Redundant.
 
 ALPM_SyncDB
-alpm_db_register(self, name, ...)
+register(self, name, ...)
 	ALPM_Handle self
 	const char * name
  PREINIT:
@@ -180,15 +185,9 @@ alpm_db_register(self, name, ...)
 	}else{
 		siglvl = ALPM_SIG_USE_DEFAULT;
 	}
-	RETVAL = alpm_db_register_sync(self, name, siglvl);
+	RETVAL = alpm_register_syncdb(self, name, siglvl);
  OUTPUT:
 	RETVAL
-
-negative_is_error
-alpm_db_unregister_all(self)
-	ALPM_Handle self
-
-MODULE = ALPM	PACKAGE = ALPM
 
 # Packages created with load_pkgfile must be freed by the caller.
 # Hence we use ALPM_PackageFree. NULL pointers are converted

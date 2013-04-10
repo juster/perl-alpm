@@ -62,7 +62,7 @@ find_group(db, name)
 	alpm_group_t *grp;
 	alpm_list_t *pkgs;
  PPCODE:
-	grp = alpm_db_readgroup(db, name);
+	grp = alpm_db_get_group(db, name);
 	if(grp){
 		pkgs = grp->packages;
 		LIST2STACK(pkgs, c2p_pkg);

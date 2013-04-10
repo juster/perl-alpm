@@ -94,7 +94,6 @@ set_install_reason(self, pkg, rsn)
 	ALPM_Package pkg
 	alpm_pkgreason_t rsn
  CODE:
-	if(SvPOK(
 	RETVAL = alpm_pkg_set_reason(pkg, rsn);
  OUTPUT:
 	RETVAL

@@ -41,7 +41,7 @@ new(class, root, dbpath)
 	char * root
 	char * dbpath
  PREINIT:
-	enum _alpm_errno_t err;
+	alpm_errno_t err;
 	ALPM_Handle h;
  CODE:
 	h = alpm_initialize(root, dbpath, &err);

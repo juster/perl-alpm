@@ -226,7 +226,6 @@ option_int_get(self)
 	ALPM_Handle self
 INTERFACE:
 	alpm_option_get_usesyslog
-	alpm_option_get_usedelta
 	alpm_option_get_checkspace
 
 SetOption
@@ -235,8 +234,16 @@ option_int_set(self, new_int)
 	int new_int
 INTERFACE:
 	alpm_option_set_usesyslog
-	alpm_option_set_usedelta
 	alpm_option_set_checkspace
+
+double
+alpm_option_get_deltaratio(self)
+	ALPM_Handle self
+
+SetOption
+alpm_option_set_deltaratio(self, ratio)
+	ALPM_Handle self
+	double ratio
 
 # Why have get_localdb when there is no set_localdb? s/get_//;
 

@@ -390,7 +390,7 @@ Similarly the same options return a list.
 
 =item B<usesyslog> - if true, log to the system log as well
 
-=item B<usedelta>+ - should you use deltas? not really sure, never tried it...
+=item B<deltaratio> - accepts a decimal from 0 to 1
 
 =item B<checkspace> - check for available diskspace
 
@@ -409,7 +409,6 @@ You're welcome.
 =back
 
   * = the option is set with (and gets you) a list
-  + = the option is boolean and is either 0 or 1
 
 =head2 Callback options
 

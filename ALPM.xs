@@ -189,7 +189,7 @@ negative_is_error
 unregister_all(self)
 	ALPM_Handle self
  CODE:
-	RETVAL = alpm_db_unregister_all_syncdbs(self);
+	RETVAL = alpm_unregister_all_syncdbs(self);
  OUTPUT:
 	RETVAL
 

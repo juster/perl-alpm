@@ -35,7 +35,7 @@ ok $alpm->version; # just checks it works
 	'ignorepkgs' => [ 'baz' ],
 	'ignoregroups' => [ 'core' ],
 	'usesyslog' => 0,
-	'usedelta' => 0,
+	'deltaratio' => 0.5,
 	'checkspace' => 1,
 );
 

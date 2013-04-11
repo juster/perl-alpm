@@ -4,7 +4,7 @@ use strict;
 
 our $VERSION;
 BEGIN {
-	$VERSION = '3.00';
+	$VERSION = '3.01';
 	require XSLoader;
 	XSLoader::load(__PACKAGE__, $VERSION);
 }

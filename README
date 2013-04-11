@@ -22,7 +22,7 @@ DEPENDENCIES
 
 This module requires the alpm C library that is included with
 ArchLinux's pacman. While developing I have used, among other
-versions, libalpm 7.0.2 included with pacman version 4.0.2.
+versions, libalpm 8.0.0 included with pacman version 4.1.0.
 
 COPYRIGHT AND LICENCE
 

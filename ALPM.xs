@@ -113,7 +113,7 @@ alpm_find_satisfier(self, depstr, ...)
 	alpm_list_t *pkgs;
 	int i;
  CODE:
-	i = 0;
+	i = 2;
 	STACK2LIST(i, pkgs, p2c_pkg);
 	RETVAL = alpm_find_satisfier(pkgs, depstr);
 	alpm_list_free(pkgs);
@@ -128,7 +128,7 @@ alpm_find_dbs_satisfier(self, depstr, ...)
 	alpm_list_t *dbs;
 	int i;
  CODE:
-	i = 0;
+	i = 2;
 	STACK2LIST(i, dbs, p2c_db);
 	RETVAL = alpm_find_dbs_satisfier(self, dbs, depstr);
 	alpm_list_free(dbs);

@@ -82,7 +82,7 @@ c2p_fetchcb(const char * url, const char * dest, int force)
 	dSP;
 
 	if(!fetchcb_ref){
-		return;
+		return -1;
 	}
 
 	ENTER;

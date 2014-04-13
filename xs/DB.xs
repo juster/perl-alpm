@@ -8,9 +8,9 @@ void
 pkgs(db)
 	ALPM_DB db
  PREINIT:
-	alpm_list_t *L, *pkgs;
+	alpm_list_t *pkgs;
  PPCODE:
-	L = pkgs = alpm_db_get_pkgcache(db);
+	pkgs = alpm_db_get_pkgcache(db);
 	# If pkgs is NULL, we can't report the error because errno is in the handle object.
 	LIST2STACK(pkgs, c2p_pkg);
 
@@ -21,11 +21,11 @@ void
 groups(db)
 	ALPM_DB db
  PREINIT:
-	alpm_list_t *L, *grps, *pkglst;
+	alpm_list_t *grps;
 	alpm_group_t *grp;
 	AV *pkgarr;
  PPCODE:
-	L = grps = alpm_db_get_groupcache(db);
+	grps = alpm_db_get_groupcache(db);
 	while(grps){
 		grp = grps->data;
 		XPUSHs(sv_2mortal(newSVpv(grp->name, strlen(grp->name))));
@@ -155,9 +155,9 @@ alpm_db_remove_server(self, url)
 void alpm_db_get_servers(self)
 	ALPM_SyncDB self
  PREINIT:
-	alpm_list_t *L, *srvs;
+	alpm_list_t *srvs;
  PPCODE:
-	L = srvs = alpm_db_get_servers(self);
+	srvs = alpm_db_get_servers(self);
 	LIST2STACK(srvs, c2p_str);
 
 negative_is_error

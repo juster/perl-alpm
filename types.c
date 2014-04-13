@@ -77,7 +77,6 @@ c2p_syncdb(void *db)
 SV*
 c2p_depmod(alpm_depmod_t mod)
 {
-	SV *sv;
 	char *cmp;
 	switch(mod){
 	case ALPM_DEP_MOD_ANY: cmp = ""; break; /* ? */
@@ -202,7 +201,6 @@ SV*
 c2p_siglevel(alpm_siglevel_t sig)
 {
 	HV *hv;
-	AV *flags;
 
 	if(sig & ALPM_SIG_USE_DEFAULT){
 		return newSVpv("default", 7);
@@ -307,7 +305,6 @@ c2p_pkgreason(alpm_pkgreason_t rsn)
 alpm_pkgreason_t
 p2c_pkgreason(SV *sv)
 {
-	alpm_pkgreason_t rsn;
 	STRLEN len;
 	char *rstr;
 
@@ -387,6 +384,7 @@ av2list(AV *A, listmap F)
 	int i;
 	SV **sv;
 
+	L = NULL;
 	for(i = 0; i < av_len(A); i++){
 		sv = av_fetch(A, i, 0);
 		L = alpm_list_add(L, F(*sv));

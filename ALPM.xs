@@ -64,8 +64,6 @@ DESTROY(self)
 	}
 	# errno is only inside a handle, which was just released...
 
-MODULE = ALPM    PACKAGE = ALPM
-
 void
 caps(class)
 	SV * class
@@ -83,10 +81,8 @@ caps(class)
 		XPUSHs(sv_2mortal(newSVpv("signatures", 0)));
 	}
 
-MODULE = ALPM    PACKAGE = ALPM    PREFIX=alpm_
-
 const char *
-alpm_version(class)
+version(class)
 	SV * class
  CODE:
 	RETVAL = alpm_version();
@@ -102,11 +98,15 @@ alpm_strerror(self)
 	RETVAL
 
 int
-alpm_errno(self)
+errno(self)
 	ALPM_Handle self
+ CODE:
+	RETVAL = alpm_errno(self);
+ OUTPUT:
+	RETVAL
 
 ALPM_Package
-alpm_find_satisfier(self, depstr, ...)
+find_satisfier(self, depstr, ...)
 	SV * self
 	const char * depstr
  PREINIT:
@@ -121,7 +121,7 @@ alpm_find_satisfier(self, depstr, ...)
 	RETVAL
 
 ALPM_Package
-alpm_find_dbs_satisfier(self, depstr, ...)
+find_dbs_satisfier(self, depstr, ...)
 	ALPM_Handle self
 	const char * depstr
  PREINIT:
@@ -136,7 +136,7 @@ alpm_find_dbs_satisfier(self, depstr, ...)
 	RETVAL
 
 void
-alpm_check_conflicts(self, ...)
+check_conflicts(self, ...)
 	ALPM_Handle self
  PREINIT:
 	alpm_list_t *L, *clist;
@@ -149,7 +149,7 @@ alpm_check_conflicts(self, ...)
 	ZAPLIST(L, freeconflict);
 
 SV *
-alpm_fetch_pkgurl(self, url)
+fetch_pkgurl(self, url)
 	ALPM_Handle self
 	const char * url
  PREINIT:
@@ -164,10 +164,7 @@ alpm_fetch_pkgurl(self, url)
  OUTPUT:
 	RETVAL
 
-
-MODULE = ALPM	PACKAGE = ALPM
-
-# Why name this register_sync when there is no register_local? Redundant.
+## Why name this register_sync when there is no register_local? Redundant.
 
 ALPM_SyncDB
 register(self, name, ...)

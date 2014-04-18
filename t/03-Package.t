@@ -22,7 +22,7 @@ if($pkg){
 	pass $msg;
 }else{
 	fail $msg;
-	die $alpm->errstr;
+	die $alpm->strerror;
 }
 
 my @methnames = qw{ requiredby name version desc

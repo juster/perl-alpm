@@ -226,7 +226,7 @@ sub _setopt
 	die "The ALPM::set_$opt method is missing" unless($meth);
 
 	my @val = ($opt =~ /s$/ ? map { split } $valstr : $valstr);
-	$meth->($alpm, @val);
+	return $meth->($alpm, @val);
 }
 
 
@@ -245,16 +245,26 @@ sub _applyopts
 
 	my $alpm = ALPM->new($root, $dbpath);
 	while(my ($opt, $val) = each %$opts){
+		# SetOption type in typemap croaks on error for us
 		_setopt($alpm, $opt, $val);
 	}
 
+	my $sigs = grep { /signatures/ } $alpm->caps;
 	for my $db (@$dbs){
 		my $name = $db->{'name'};
 		my $mirs = $db->{'mirrors'};
 		next unless(@$mirs);
 		my $siglvl = $db->{'siglvl'};
+		if(!$sigs){
+			# Do not pass a siglvl if signatures are not supported or this
+			# will cause an ALPM error!
+			undef $siglvl;
+		}
 
 		my $db = $alpm->register($name, $siglvl || 'default');
+		if(!$db){
+			die "Failed to register $name database: " . $alpm->strerror;
+		}
 		for my $url (@$mirs){
 			$db->add_server($url);
 		}

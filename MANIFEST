@@ -31,6 +31,7 @@ t/repos/package.pl
 t/preptests.pl
 lib/ALPM/Conf.pm
 lib/ALPM/Conf.pod
+lib/ALPM/DB/Local.pod
 lib/ALPM/DB/Sync.pod
 lib/ALPM/DB.pod
 lib/ALPM/Package.pod

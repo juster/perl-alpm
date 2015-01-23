@@ -39,7 +39,7 @@ sub info
 
 	close $if;
 	unlink '.PKGINFO';
-	$pi{'version'} = [ join q{-}, map { $_->[0] } delete @pi{'ver', 'rel'} ];
+	$pi{'version'} = delete $pi{'ver'};
 	return $self->{'info'} = \%pi;
 }
 

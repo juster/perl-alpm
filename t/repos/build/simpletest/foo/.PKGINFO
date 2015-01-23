@@ -1,6 +1,5 @@
 pkgdesc = Foo!
-pkgrel = 1
-pkgver = 1.0
+pkgver = 1.0-1
 arch = any
 pkgname = foo
 license = GPL

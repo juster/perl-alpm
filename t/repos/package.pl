@@ -86,8 +86,8 @@ sub mktmpdir
 sub pkgfname
 {
 	my($pi) = @_;
-	return sprintf '%s-%s-%d-%s.pkg.tar.xz',
-		map { $_->[0] } @{$pi}{qw/pkgname pkgver pkgrel arch/};
+	return sprintf '%s-%s-%s.pkg.tar.xz',
+		map { $_->[0] } @{$pi}{qw/pkgname pkgver arch/};
 }
 
 sub buildpkg

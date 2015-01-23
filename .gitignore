@@ -3,6 +3,7 @@ META.yml
 Makefile.*
 Build
 MYMETA.yml
+MYMETA.json
 _build/*
 blib/*
 *.tmp

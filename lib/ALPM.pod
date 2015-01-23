@@ -1,6 +1,6 @@
 =head1 NAME
 
-ALPM - ArchLinux Package Manager backend library.
+ALPM - readonly access to pacman's libalpm.
 
 =head1 VERSION
 
@@ -63,6 +63,11 @@ This version of ALPM is compatible with pacman 4.
 Archlinux uses a package manager called pacman.  Pacman internally
 uses the alpm library for handling its database of packages.  This
 module creates a perlish object-oriented interface to the libalpm C library.
+
+In the past this module implemented transactions as well, allowing you
+to modify the system/database. This is no longer implemented because
+I grew tired of rewriting this module every time the pacman API was
+changed.
 
 =head1 CLASS METHODS
 

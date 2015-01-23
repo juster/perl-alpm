@@ -90,7 +90,7 @@ version(class)
 	RETVAL
 
 const char *
-alpm_strerror(self)
+strerror(self)
 	ALPM_Handle self;
  CODE:
 	RETVAL = alpm_strerror(alpm_errno(self));

@@ -4,7 +4,7 @@ ALPM - readonly access to pacman's libalpm.
 
 =head1 VERSION
 
-3.03
+3.04
 
 This version of ALPM is compatible with pacman 4.
 

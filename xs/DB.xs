@@ -31,6 +31,7 @@ groups(db)
 		XPUSHs(sv_2mortal(newSVpv(grp->name, strlen(grp->name))));
 		pkgarr = list2av(grp->packages, c2p_pkg);
 		XPUSHs(sv_2mortal(newRV_noinc((SV*)pkgarr)));
+		grps = alpm_list_next(grps);
 	}
 
 const char *

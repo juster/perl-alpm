@@ -10,7 +10,7 @@ ALPM::DB - Database base class, inherited by local and sync databases.
   my $perl = $db->find('perl') or die 'where is perl';
   
   $db = $alpm->register('community') or die;
-  $db->add_mirror('ftp://ftp.archlinux.org/community/os/i686') or die;
+  $db->add_server('ftp://ftp.archlinux.org/community/os/i686') or die;
   
   for my $pkg ($db->search('perl')){
       printf "%s\t%s\n", $pkg->name, $pkg->version;

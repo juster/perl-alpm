@@ -70,6 +70,8 @@ option_string_get(self)
 	alpm_option_get_lockfile
 	alpm_option_get_arch
 	alpm_option_get_gpgdir
+	alpm_option_get_root
+	alpm_option_get_dbpath
 
 SetOption
 option_string_set(self, string)

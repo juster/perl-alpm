@@ -387,6 +387,10 @@ You're welcome.
 
 =over
 
+=item B<root> - path to the installation root
+
+=item B<dbpath> - path to the database
+
 =item B<lockfile> - path to the lockfile
 
 =back

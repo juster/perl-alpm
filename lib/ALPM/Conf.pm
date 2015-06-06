@@ -226,11 +226,27 @@ sub _setopt
 	return $meth->($alpm, @val);
 }
 
+sub _setarch
+{
+    my($opts) = @_;
+    if(!$opts->{'arch'} || $opts->{'arch'} eq 'auto'){
+        chomp $opts->{'arch'} = `uname -m`;
+    }
+}
+
+sub _expurls
+{
+    my($urls, $arch, $repo) = @_;
+    for(@$urls){
+        s/\$arch\b/$arch/g;
+        s/\$repo\b/$repo/g;
+    }
+}
 
 sub _applyopts
 {
 	my($opts, $dbs) = @_;
-	my ($root, $dbpath) = delete @{$opts}{'root', 'dbpath'};
+	my($root, $dbpath) = delete @{$opts}{'root', 'dbpath'};
 
 	unless($root){
 		$root = '/';
@@ -240,38 +256,24 @@ sub _applyopts
 		}
 	}
 
-	if(not $opts->{arch} or $opts->{arch} eq 'auto') {
-		chomp($opts->{arch} = `uname -m`);
-	}
-
 	my $alpm = ALPM->new($root, $dbpath);
+
+	_setarch($opts);
 	while(my ($opt, $val) = each %$opts){
-		# SetOption type in typemap croaks on error for us
+		# The SetOption type in typemap croaks on error, no need to check.
 		_setopt($alpm, $opt, $val);
 	}
 
-	my $sigs = grep { /signatures/ } $alpm->caps;
+	my $usesl = grep { /signatures/ } $alpm->caps;
 	for my $db (@$dbs){
-		my $name = $db->{'name'};
-		my $mirs = $db->{'mirrors'};
-		next unless(@$mirs);
-		my $siglvl = $db->{'siglvl'};
-		if(!$sigs){
-			# Do not pass a siglvl if signatures are not supported or this
-			# will cause an ALPM error!
-			undef $siglvl;
-		}
+        my($r, $sl, $mirs) = @{$db}{'name', 'siglvl', 'mirrors'};
+        next if(!@$mirs);
 
-		my $db = $alpm->register($name, $siglvl || 'default');
-		if(!$db){
-			die "Failed to register $name database: " . $alpm->strerror;
-		}
-		for my $url (@$mirs){
-			# Expand $repo and $arch like pacman would do.
-			$url =~ s{\$arch}{$opts->{arch}}g;
-			$url =~ s{\$repo}{$name}g;
-			$db->add_server($url);
-		}
+        _expurls($mirs, $opts->{'arch'}, $r);
+        $sl = 'default' if(!$usesl);
+        my $x = $alpm->register($r, $sl)
+            or die "Failed to register $r database: " . $alpm->strerror;
+        $x->add_server($_) for(@$mirs);
 	}
 	return $alpm;
 }

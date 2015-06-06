@@ -51,14 +51,6 @@ p2c_db(SV *db)
 }
 
 SV*
-c2p_db(void *db)
-{
-	SV *rv = newSV(0);
-	sv_setref_pv(rv, "ALPM::DB", db);
-	return rv;
-}
-
-SV*
 c2p_localdb(void *db)
 {
 	SV *rv = newSV(0);
@@ -72,6 +64,16 @@ c2p_syncdb(void *db)
 	SV *rv = newSV(0);
 	sv_setref_pv(rv, "ALPM::DB::Sync", db);
 	return rv;
+}
+
+SV*
+c2p_db(void *db)
+{
+    if(strcmp(alpm_db_get_name(db), "local") == 0) {
+        return c2p_localdb(db);
+    } else {
+        return c2p_syncdb(db);
+    }
 }
 
 SV*

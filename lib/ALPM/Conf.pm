@@ -3,7 +3,6 @@ use warnings;
 use strict;
 
 BEGIN {
-	require IO::Handle;
 	require Carp;
 	require ALPM;
 }
@@ -66,8 +65,7 @@ sub _parse
 	if($err){
 		# Print the offending file and line number along with any errors...
 		# (This is why we use dies with newlines, for cascading error msgs)
-		my $lineno = $if->input_line_number();
-		die "$@$path:$lineno $line\n"
+		die "$@$path:$. $line\n"
 	}
 	return;
 }

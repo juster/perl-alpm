@@ -204,14 +204,11 @@ sub _parse_siglvl
 	return $opt;
 }
 
-my $ARCH;
 sub _addmirror
 {
 	my($dbs, $url, $sect) = @_;
 	die "Section has not previously been declared, cannot set URL\n" unless($sect);
 
-	# Expand $arch like pacman would do.
-	$url =~ s{\$arch(/|\$)}{$ARCH}g;
 	my $db = _getdb($dbs, $sect);
 	push @{$db->{'mirrors'}}, $url;
 	return;
@@ -243,6 +240,10 @@ sub _applyopts
 		}
 	}
 
+	if(not $opts->{arch} or $opts->{arch} eq 'auto') {
+		chomp($opts->{arch} = `uname -m`);
+	}
+
 	my $alpm = ALPM->new($root, $dbpath);
 	while(my ($opt, $val) = each %$opts){
 		# SetOption type in typemap croaks on error for us
@@ -266,6 +267,9 @@ sub _applyopts
 			die "Failed to register $name database: " . $alpm->strerror;
 		}
 		for my $url (@$mirs){
+			# Expand $repo and $arch like pacman would do.
+			$url =~ s{\$arch}{$opts->{arch}}g;
+			$url =~ s{\$repo}{$name}g;
 			$db->add_server($url);
 		}
 	}
@@ -275,8 +279,6 @@ sub _applyopts
 sub parse
 {
 	my($self) = @_;
-
-	chomp ($ARCH = `uname -m`); # used by _addmirror
 
 	my (%opts, @dbs, $currsect, $defsiglvl);
 	my %fldhooks = (

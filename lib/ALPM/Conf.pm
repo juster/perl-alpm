@@ -236,8 +236,8 @@ sub _expurls
 {
 	my($urls, $arch, $repo) = @_;
 	for(@$urls){
-		s/\$arch\b/$arch/g;
-		s/\$repo\b/$repo/g;
+		s/\$arch/$arch/g;
+		s/\$repo/$repo/g;
 	}
 }
 

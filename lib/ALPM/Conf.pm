@@ -97,7 +97,7 @@ sub _mlisthooks
 		'section' => sub {
 			my $file = shift;
 			die q{Section declaration is not allowed in Include-ed file\n($file)\n};
-	  	},
+		},
 		'field' => {
 			'Server' => sub { _addmirror($dbsref, shift, $$sectref) }
 		},
@@ -226,19 +226,19 @@ sub _setopt
 
 sub _setarch
 {
-    my($opts) = @_;
-    if(!$opts->{'arch'} || $opts->{'arch'} eq 'auto'){
-        chomp $opts->{'arch'} = `uname -m`;
-    }
+	my($opts) = @_;
+	if(!$opts->{'arch'} || $opts->{'arch'} eq 'auto'){
+		chomp $opts->{'arch'} = `uname -m`;
+	}
 }
 
 sub _expurls
 {
-    my($urls, $arch, $repo) = @_;
-    for(@$urls){
-        s/\$arch\b/$arch/g;
-        s/\$repo\b/$repo/g;
-    }
+	my($urls, $arch, $repo) = @_;
+	for(@$urls){
+		s/\$arch\b/$arch/g;
+		s/\$repo\b/$repo/g;
+	}
 }
 
 sub _applyopts
@@ -264,14 +264,14 @@ sub _applyopts
 
 	my $usesl = grep { /signatures/ } $alpm->caps;
 	for my $db (@$dbs){
-        my($r, $sl, $mirs) = @{$db}{'name', 'siglvl', 'mirrors'};
-        next if(!@$mirs);
+		my($r, $sl, $mirs) = @{$db}{'name', 'siglvl', 'mirrors'};
+		next if(!@$mirs);
 
-        _expurls($mirs, $opts->{'arch'}, $r);
-        $sl = 'default' if(!$usesl);
-        my $x = $alpm->register($r, $sl)
-            or die "Failed to register $r database: " . $alpm->strerror;
-        $x->add_server($_) for(@$mirs);
+		_expurls($mirs, $opts->{'arch'}, $r);
+		$sl = 'default' if(!$usesl);
+		my $x = $alpm->register($r, $sl)
+			or die "Failed to register $r database: " . $alpm->strerror;
+		$x->add_server($_) for(@$mirs);
 	}
 	return $alpm;
 }

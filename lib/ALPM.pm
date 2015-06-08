@@ -2,6 +2,11 @@ package ALPM;
 use warnings;
 use strict;
 
+use ALPM::Conflict;
+use ALPM::Dependency;
+use ALPM::File;
+use ALPM::FileList;
+
 our $VERSION;
 BEGIN {
 	$VERSION = '3.05';

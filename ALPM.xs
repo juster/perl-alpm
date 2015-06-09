@@ -56,14 +56,9 @@ new(class, root, dbpath)
 void
 DESTROY(self)
 	ALPM_Handle self;
- PREINIT:
-	int ret;
  CODE:
-	ret = alpm_release(self);
-	if(ret == -1){
-		croak("ALPM Error: failed to release ALPM handle");
-	}
-	# errno is only inside a handle, which was just released...
+	alpm_trans_release(self);
+	alpm_release(self);
 
 void
 caps(class)

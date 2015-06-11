@@ -228,7 +228,7 @@ sub _setarch
 {
 	my($opts) = @_;
 	if(!$opts->{'arch'} || $opts->{'arch'} eq 'auto'){
-		chomp $opts->{'arch'} = `uname -m`;
+		chomp ($opts->{'arch'} = `uname -m`);
 	}
 }
 

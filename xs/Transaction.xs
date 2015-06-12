@@ -64,3 +64,9 @@ alpm_trans_init(handle, flags=0)
 		alpm_transflag_t flags
 	POSTCALL:
 		if(RETVAL != 0) alpm_hthrow(handle);
+
+NO_OUTPUT int
+alpm_trans_interrupt(handle)
+		ALPM_Handle handle
+	POSTCALL:
+		if(RETVAL != 0) alpm_hthrow(handle);

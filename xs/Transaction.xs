@@ -76,3 +76,35 @@ alpm_trans_release(handle)
 		ALPM_Handle handle
 	POSTCALL:
 		if(RETVAL != 0) alpm_hthrow(handle);
+
+NO_OUTPUT int
+alpm_add_pkg(handle, pkg)
+		ALPM_Handle handle
+		ALPM_Package pkg
+	POSTCALL:
+		if(RETVAL != 0) alpm_hthrow(handle);
+
+NO_OUTPUT int
+alpm_remove_pkg(handle, pkg)
+		ALPM_Handle handle
+		ALPM_Package pkg
+	POSTCALL:
+		if(RETVAL != 0) alpm_hthrow(handle);
+
+void
+alpm_trans_get_add(handle)
+		ALPM_Handle handle
+	PREINIT:
+		alpm_list_t *l;
+	PPCODE:
+		l = alpm_trans_get_add(handle);
+		LIST2STACK(l, c2p_pkg);
+
+void
+alpm_trans_get_remove(handle)
+		ALPM_Handle handle
+	PREINIT:
+		alpm_list_t *l;
+	PPCODE:
+		l = alpm_trans_get_remove(handle);
+		LIST2STACK(l, c2p_pkg);

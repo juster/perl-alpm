@@ -218,7 +218,7 @@ INCLUDE: xs/Package.xs
 
 INCLUDE: xs/DB.xs
 
-# INCLUDE: xs/Transaction.xs
+INCLUDE: xs/Transaction.xs
 
 INCLUDE: xs/Exception.xs
 

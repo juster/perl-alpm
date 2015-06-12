@@ -11,7 +11,7 @@ unless(DynaLoader::dl_findfile('-lalpm')){
 
 sub MY::postamble {
     return <<'END_MAKE';
-ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs xs/Exception.xs
+ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs xs/Exception.xs xs/Transaction.xs
 END_MAKE
 }
 

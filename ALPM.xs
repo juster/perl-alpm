@@ -7,8 +7,9 @@
 #include "types.h"
 #include "cb.h"
 
-#define alpm_croak(HND)\
-	croak("ALPM Error: %s", alpm_strerror(alpm_errno(HND)));
+#include "exception.h"
+
+#define alpm_hthrow(HND) alpm_throw(alpm_errno(HND));
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -46,7 +47,7 @@ new(class, root, dbpath)
  CODE:
 	h = alpm_initialize(root, dbpath, &err);
 	if(h == NULL){
-		croak("ALPM Error: %s", alpm_strerror(err));
+		alpm_throw(err);
 	}
 	RETVAL = h;
  OUTPUT:
@@ -223,5 +224,7 @@ INCLUDE: xs/Package.xs
 INCLUDE: xs/DB.xs
 
 # INCLUDE: xs/Transaction.xs
+
+INCLUDE: xs/Exception.xs
 
 # EOF

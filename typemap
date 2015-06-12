@@ -101,14 +101,14 @@ T_STROPT
 
 T_SETOPT
 	if($var == -1){
-		alpm_croak(self);
+		alpm_hthrow(self);
 	}else{
 		$arg = &PL_sv_yes;
 	}
 
 T_INTOPT
 	if($var == -1){
-		alpm_croak(self);
+		alpm_hthrow(self);
 	}else{
 		$arg = newSViv($var);
 	}

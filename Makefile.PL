@@ -11,7 +11,7 @@ unless(DynaLoader::dl_findfile('-lalpm')){
 
 sub MY::postamble {
     return <<'END_MAKE';
-ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs
+ALPM.xs: xs/DB.xs xs/Package.xs xs/Options.xs xs/Exception.xs
 END_MAKE
 }
 
@@ -25,6 +25,6 @@ WriteMakefile(
 	'LIBS' => [ '-lalpm' ],
 	'META_MERGE' => \%meta,
 	'clean' => { 'FILES' => 't/root t/repos/share const-*.inc' },
-	'OBJECT' => 'ALPM.o types.o cb.o',
+	'OBJECT' => 'ALPM.o types.o cb.o exception.o',
 	'XS' => { 'ALPM.xs' => 'ALPM.c' },
 );

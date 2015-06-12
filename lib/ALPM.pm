@@ -4,6 +4,7 @@ use strict;
 
 use ALPM::Conflict;
 use ALPM::Dependency;
+use ALPM::Exception;
 use ALPM::File;
 use ALPM::FileList;
 

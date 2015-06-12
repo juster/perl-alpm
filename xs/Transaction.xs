@@ -70,3 +70,9 @@ alpm_trans_interrupt(handle)
 		ALPM_Handle handle
 	POSTCALL:
 		if(RETVAL != 0) alpm_hthrow(handle);
+
+NO_OUTPUT int
+alpm_trans_release(handle)
+		ALPM_Handle handle
+	POSTCALL:
+		if(RETVAL != 0) alpm_hthrow(handle);

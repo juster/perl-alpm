@@ -134,6 +134,23 @@ c2p_conflict(void *p)
 	return BLESS(newRV_noinc((SV*)hv), "ALPM::Conflict");
 }
 
+SV*
+c2p_fileconflict(alpm_fileconflict_t *c)
+{
+	HV *hv = newHV();
+	char *class = "ALPM::FileConflict";
+	if(c->type == ALPM_FILECONFLICT_TARGET) {
+		class = "ALPM::FileConflict::Target";
+	} else if(c->type == ALPM_FILECONFLICT_FILESYSTEM) {
+		class = "ALPM::FileConflict::Filesystem";
+	}
+
+	hv_store(hv, "target", 6, newSVpv(c->target, 0), 0);
+	hv_store(hv, "file", 4, newSVpv(c->file, 0), 0);
+	hv_store(hv, "ctarget", 7, newSVpv(c->ctarget, 0), 0);
+	return BLESS(newRV_noinc((SV*)hv), class);
+}
+
 static SV*
 c2p_file(alpm_file_t *file){
 	HV *hv;

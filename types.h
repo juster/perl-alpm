@@ -52,6 +52,7 @@ SV* c2p_depend(void *);
 SV* c2p_depmissing(alpm_depmissing_t *dep);
 SV* c2p_conflict(void *);
 SV* c2p_filelist(void *);
+SV* c2p_fileconflict(alpm_fileconflict_t *c);
 
 SV* c2p_siglevel(alpm_siglevel_t);
 alpm_siglevel_t p2c_siglevel(SV*);

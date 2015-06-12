@@ -111,6 +111,46 @@ alpm_trans_prepare(handle)
 		}
 
 NO_OUTPUT int
+alpm_trans_commit(handle)
+		ALPM_Handle handle
+	PREINIT:
+		alpm_list_t *data = NULL;
+	CODE:
+		if(alpm_trans_commit(handle, &data) != 0) {
+			alpm_list_t *i;
+			alpm_errno_t err = alpm_errno(handle);
+			const char *eclass = lookup_eclass(err);
+			AV *edata;
+			HV *e = newHV();
+			hv_stores(e, "errno", newSViv(alpm_errno(handle)));
+			switch(alpm_errno(handle)) {
+				case ALPM_ERR_FILE_CONFLICTS:
+					edata = newAV();
+					for(i = data; i; i = alpm_list_next(i)) {
+						av_push(edata, c2p_fileconflict(i->data));
+						alpm_fileconflict_free(i->data);
+					}
+					hv_stores(e, "fileconflicts", newRV_noinc((SV*) edata));
+					break;
+				case ALPM_ERR_PKG_INVALID:
+				case ALPM_ERR_PKG_INVALID_CHECKSUM:
+				case ALPM_ERR_PKG_INVALID_SIG:
+				case ALPM_ERR_DLT_INVALID:
+					edata = newAV();
+					for(i = data; i; i = alpm_list_next(i)) {
+						av_push(edata, newSVpvn(i->data, strlen(i->data)));
+						free(i->data);
+					}
+					hv_stores(e, "files", newRV_noinc((SV*) edata));
+					break;
+				default:
+					break;
+			}
+			alpm_list_free(data);
+			croak_sv(sv_bless(newRV_noinc((SV*) e), gv_stashpv(eclass, GV_ADD)));
+		}
+
+NO_OUTPUT int
 alpm_trans_interrupt(handle)
 		ALPM_Handle handle
 	POSTCALL:

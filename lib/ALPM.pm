@@ -6,6 +6,7 @@ use ALPM::Conflict;
 use ALPM::Dependency;
 use ALPM::Exception;
 use ALPM::File;
+use ALPM::FileConflict;
 use ALPM::FileList;
 use ALPM::MissingDependency;
 

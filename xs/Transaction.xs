@@ -66,6 +66,51 @@ alpm_trans_init(handle, flags=0)
 		if(RETVAL != 0) alpm_hthrow(handle);
 
 NO_OUTPUT int
+alpm_trans_prepare(handle)
+		ALPM_Handle handle
+	PREINIT:
+		alpm_list_t *data = NULL;
+	CODE:
+		if(alpm_trans_prepare(handle, &data) != 0) {
+			alpm_list_t *i;
+			alpm_errno_t err = alpm_errno(handle);
+			const char *eclass = lookup_eclass(err);
+			AV *edata;
+			HV *e = newHV();
+			hv_stores(e, "errno", newSViv(alpm_errno(handle)));
+			switch(alpm_errno(handle)) {
+				case ALPM_ERR_PKG_INVALID_ARCH:
+					edata = newAV();
+					for(i = data; i; i = alpm_list_next(i)) {
+						av_push(edata, newSVpvn(i->data, strlen(i->data)));
+						free(i->data);
+					}
+					hv_stores(e, "packages", newRV_noinc((SV*) edata));
+					break;
+				case ALPM_ERR_UNSATISFIED_DEPS:
+					edata = newAV();
+					for(i = data; i; i = alpm_list_next(i)) {
+						av_push(edata, c2p_depmissing(i->data));
+						alpm_depmissing_free(i->data);
+					}
+					hv_stores(e, "dependencies", newRV_noinc((SV*) edata));
+					break;
+				case ALPM_ERR_CONFLICTING_DEPS:
+					edata = newAV();
+					for(i = data; i; i = alpm_list_next(i)) {
+						av_push(edata, c2p_conflict(i->data));
+						alpm_conflict_free(i->data);
+					}
+					hv_stores(e, "conflicts", newRV_noinc((SV*) edata));
+					break;
+				default:
+					break;
+			}
+			alpm_list_free(data);
+			croak_sv(sv_bless(newRV_noinc((SV*) e), gv_stashpv(eclass, GV_ADD)));
+		}
+
+NO_OUTPUT int
 alpm_trans_interrupt(handle)
 		ALPM_Handle handle
 	POSTCALL:

@@ -111,6 +111,16 @@ c2p_depend(void *p)
 }
 
 SV*
+c2p_depmissing(alpm_depmissing_t *dep)
+{
+	HV *hv = newHV();
+	hv_stores(hv, "target", newSVpvn(dep->target, strlen(dep->target)));
+	hv_stores(hv, "causingpkg", newSVpvn(dep->causingpkg, strlen(dep->causingpkg)));
+	hv_stores(hv, "depend", c2p_depend(dep->depend));
+	return BLESS(newRV_noinc((SV*)hv), "ALPM::MissingDependency");
+}
+
+SV*
 c2p_conflict(void *p)
 {
 	alpm_conflict_t *c;

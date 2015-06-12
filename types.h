@@ -49,6 +49,7 @@ SV* c2p_localdb(void*);
 SV* c2p_syncdb(void*);
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);
+SV* c2p_depmissing(alpm_depmissing_t *dep);
 SV* c2p_conflict(void *);
 SV* c2p_filelist(void *);
 

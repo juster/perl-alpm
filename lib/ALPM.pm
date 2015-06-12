@@ -7,6 +7,7 @@ use ALPM::Dependency;
 use ALPM::Exception;
 use ALPM::File;
 use ALPM::FileList;
+use ALPM::MissingDependency;
 
 our $VERSION;
 BEGIN {

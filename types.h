@@ -79,13 +79,8 @@ alpm_list_t* av2list(AV*, listmap);
 	}
 
 #define ZAPLIST(L, F)\
-	alpm_list_free_inner(L, F);\
+	alpm_list_free_inner(L, (alpm_list_fn_free) F);\
 	alpm_list_free(L);\
 	L = NULL
-
-/* MEMORY DEALLOCATION */
-
-void freedepend(void *);
-void freeconflict(void *);
 
 #endif /*_ALPMXS_TYPES */

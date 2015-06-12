@@ -146,7 +146,7 @@ check_conflicts(self, ...)
 	STACK2LIST(i, L, p2c_pkg);
 	L = clist = alpm_checkconflicts(self, L);
 	LIST2STACK(clist, c2p_conflict);
-	ZAPLIST(L, freeconflict);
+	ZAPLIST(L, alpm_conflict_free);
 
 SV *
 fetch_pkgurl(self, url)

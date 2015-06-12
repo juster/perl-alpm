@@ -393,18 +393,3 @@ av2list(AV *A, listmap F)
 	}
 	return L;
 }
-
-void
-freedepend(void *p)
-{
-	free((alpm_depend_t*)p);
-}
-
-void
-freeconflict(void *p)
-{
-	alpm_conflict_t *c;
-	c = p;
-	freedepend(c->reason);
-	free(c);
-}

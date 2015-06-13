@@ -2,6 +2,14 @@ package ALPM;
 use warnings;
 use strict;
 
+use ALPM::Conflict;
+use ALPM::Dependency;
+use ALPM::Exception;
+use ALPM::File;
+use ALPM::FileConflict;
+use ALPM::FileList;
+use ALPM::MissingDependency;
+
 our $VERSION;
 BEGIN {
 	$VERSION = '3.05';

@@ -10,6 +10,8 @@
 
 #include "types.h"
 
+#define BLESS(rv, class) sv_bless(rv, gv_stashpv(class, GV_ADD))
+
 /* SCALAR CONVERSIONS */
 
 SV*
@@ -105,7 +107,17 @@ c2p_depend(void *p)
 	hv_store(hv, "version", 7, newSVpv(dep->version, 0), 0);
 	hv_store(hv, "mod", 3, c2p_depmod(dep->mod), 0);
 	if(dep->desc) hv_store(hv, "desc", 4, newSVpv(dep->desc, 0), 0);
-	return newRV_noinc((SV*)hv);
+	return BLESS(newRV_noinc((SV*)hv), "ALPM::Dependency");
+}
+
+SV*
+c2p_depmissing(alpm_depmissing_t *dep)
+{
+	HV *hv = newHV();
+	hv_stores(hv, "target", newSVpvn(dep->target, strlen(dep->target)));
+	hv_stores(hv, "causingpkg", newSVpvn(dep->causingpkg, strlen(dep->causingpkg)));
+	hv_stores(hv, "depend", c2p_depend(dep->depend));
+	return BLESS(newRV_noinc((SV*)hv), "ALPM::MissingDependency");
 }
 
 SV*
@@ -119,7 +131,24 @@ c2p_conflict(void *p)
 	hv_store(hv, "package1", 8, newSVpv(c->package1, 0), 0);
 	hv_store(hv, "package2", 8, newSVpv(c->package2, 0), 0);
 	hv_store(hv, "reason", 6, c2p_depend(c->reason), 0);
-	return newRV_noinc((SV*)hv);
+	return BLESS(newRV_noinc((SV*)hv), "ALPM::Conflict");
+}
+
+SV*
+c2p_fileconflict(alpm_fileconflict_t *c)
+{
+	HV *hv = newHV();
+	char *class = "ALPM::FileConflict";
+	if(c->type == ALPM_FILECONFLICT_TARGET) {
+		class = "ALPM::FileConflict::Target";
+	} else if(c->type == ALPM_FILECONFLICT_FILESYSTEM) {
+		class = "ALPM::FileConflict::Filesystem";
+	}
+
+	hv_store(hv, "target", 6, newSVpv(c->target, 0), 0);
+	hv_store(hv, "file", 4, newSVpv(c->file, 0), 0);
+	hv_store(hv, "ctarget", 7, newSVpv(c->ctarget, 0), 0);
+	return BLESS(newRV_noinc((SV*)hv), class);
 }
 
 static SV*
@@ -129,7 +158,7 @@ c2p_file(alpm_file_t *file){
 	hv_store(hv, "name", 4, newSVpv(file->name, 0), 0);
 	hv_store(hv, "size", 4, newSViv(file->size), 0);
 	hv_store(hv, "mode", 4, newSViv(file->mode), 0);
-	return newRV_noinc((SV*)hv);
+	return BLESS(newRV_noinc((SV*)hv), "ALPM::File");
 }
 
 SV*
@@ -143,7 +172,7 @@ c2p_filelist(void *flistPtr){
 	for(i = 0; i < flist->count; i++){
 		av_push(av, c2p_file(flist->files + i));
 	}
-	return newRV_noinc((SV*)av);
+	return BLESS(newRV_noinc((SV*)av), "ALPM::Filelist");
 }
 
 /*
@@ -392,19 +421,4 @@ av2list(AV *A, listmap F)
 		L = alpm_list_add(L, F(*sv));
 	}
 	return L;
-}
-
-void
-freedepend(void *p)
-{
-	free((alpm_depend_t*)p);
-}
-
-void
-freeconflict(void *p)
-{
-	alpm_conflict_t *c;
-	c = p;
-	freedepend(c->reason);
-	free(c);
 }

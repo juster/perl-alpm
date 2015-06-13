@@ -49,8 +49,10 @@ SV* c2p_localdb(void*);
 SV* c2p_syncdb(void*);
 SV* c2p_depmod(alpm_depmod_t);
 SV* c2p_depend(void *);
+SV* c2p_depmissing(alpm_depmissing_t *dep);
 SV* c2p_conflict(void *);
 SV* c2p_filelist(void *);
+SV* c2p_fileconflict(alpm_fileconflict_t *c);
 
 SV* c2p_siglevel(alpm_siglevel_t);
 alpm_siglevel_t p2c_siglevel(SV*);
@@ -79,13 +81,8 @@ alpm_list_t* av2list(AV*, listmap);
 	}
 
 #define ZAPLIST(L, F)\
-	alpm_list_free_inner(L, F);\
+	alpm_list_free_inner(L, (alpm_list_fn_free) F);\
 	alpm_list_free(L);\
 	L = NULL
-
-/* MEMORY DEALLOCATION */
-
-void freedepend(void *);
-void freeconflict(void *);
 
 #endif /*_ALPMXS_TYPES */

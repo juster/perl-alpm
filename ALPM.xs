@@ -7,8 +7,9 @@
 #include "types.h"
 #include "cb.h"
 
-#define alpm_croak(HND)\
-	croak("ALPM Error: %s", alpm_strerror(alpm_errno(HND)));
+#include "exception.h"
+
+#define alpm_hthrow(HND) alpm_throw(alpm_errno(HND));
 
 MODULE = ALPM	PACKAGE = ALPM
 
@@ -46,7 +47,7 @@ new(class, root, dbpath)
  CODE:
 	h = alpm_initialize(root, dbpath, &err);
 	if(h == NULL){
-		croak("ALPM Error: %s", alpm_strerror(err));
+		alpm_throw(err);
 	}
 	RETVAL = h;
  OUTPUT:
@@ -55,14 +56,9 @@ new(class, root, dbpath)
 void
 DESTROY(self)
 	ALPM_Handle self;
- PREINIT:
-	int ret;
  CODE:
-	ret = alpm_release(self);
-	if(ret == -1){
-		croak("ALPM Error: failed to release ALPM handle");
-	}
-	# errno is only inside a handle, which was just released...
+	alpm_trans_release(self);
+	alpm_release(self);
 
 void
 caps(class)
@@ -146,7 +142,7 @@ check_conflicts(self, ...)
 	STACK2LIST(i, L, p2c_pkg);
 	L = clist = alpm_checkconflicts(self, L);
 	LIST2STACK(clist, c2p_conflict);
-	ZAPLIST(L, freeconflict);
+	ZAPLIST(L, alpm_conflict_free);
 
 SV *
 fetch_pkgurl(self, url)
@@ -222,6 +218,8 @@ INCLUDE: xs/Package.xs
 
 INCLUDE: xs/DB.xs
 
-# INCLUDE: xs/Transaction.xs
+INCLUDE: xs/Transaction.xs
+
+INCLUDE: xs/Exception.xs
 
 # EOF

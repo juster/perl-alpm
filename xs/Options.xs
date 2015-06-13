@@ -268,7 +268,7 @@ syncdbs(self)
 	alpm_list_t *lst;
  PPCODE:
 	lst = alpm_get_syncdbs(self);
-	if(lst == NULL && alpm_errno(self)) alpm_croak(self);
+	if(lst == NULL && alpm_errno(self)) alpm_hthrow(self);
 	LIST2STACK(lst, c2p_syncdb);
 
 ALPM_SigLevel
